@@ -46,7 +46,7 @@ void* fcitx_utils_malloc0(size_t bytes);
 
 void fcitx_utils_free(void*);
 
-static inline uintptr_t
+static _FCITX_INLINE_ uintptr_t
 fcitx_utils_align_to(uintptr_t len, uintptr_t align)
 {
     uintptr_t left;

@@ -68,11 +68,7 @@ FcitxStringList *fcitx_utils_string_list_append_len(FcitxStringList *list,
 FcitxStringList *fcitx_utils_string_list_append_split(FcitxStringList *list, const char* str,
                                                       const char *delm);
 
-static inline FcitxStringList*
-fcitx_utils_string_list_append_lines(FcitxStringList *list, const char* str)
-{
-    return fcitx_utils_string_list_append_split(list, str, "\n");
-}
+#define fcitx_utils_string_list_append_lines(list, str) fcitx_utils_string_list_append_split(list, str, "\n")
 
 FCITX_DECL_END
 

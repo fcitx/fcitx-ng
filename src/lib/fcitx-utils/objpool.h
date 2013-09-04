@@ -48,7 +48,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <fcitx-utils/macro.h>
-#include "types.h"
+#include <fcitx-utils/types.h>
 
 FCITX_DECL_BEGIN
 
@@ -116,7 +116,7 @@ int fcitx_obj_pool_alloc_id(FcitxObjPool *pool);
 boolean fcitx_obj_pool_free_id(FcitxObjPool *pool, int i);
 
 
-static inline size_t
+static _FCITX_INLINE_ size_t
 fcitx_obj_pool_offset(FcitxObjPool *pool, int i)
 {
     return i * pool->ele_size;
@@ -130,7 +130,7 @@ fcitx_obj_pool_offset(FcitxObjPool *pool, int i)
  * @return void
  * @since 4.2.7
  **/
-static inline void*
+static _FCITX_INLINE_ void*
 fcitx_obj_pool_get(FcitxObjPool *pool, int i)
 {
     return pool->array + fcitx_obj_pool_offset(pool, i) + sizeof(int);

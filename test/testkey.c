@@ -5,7 +5,7 @@
 #include "fcitx-utils/key.h"
 
 #define CHECK_ARRAY_ORDER(ARRAY, COMPARE_FUNC) \
-    for (int i = 0; i < FCITX_ARRAY_SIZE(ARRAY) - 1; i ++) { \
+    for (size_t i = 0; i < FCITX_ARRAY_SIZE(ARRAY) - 1; i ++) { \
         assert (COMPARE_FUNC(ARRAY[i], ARRAY[i + 1])); \
     }
 
@@ -20,7 +20,7 @@ int main(int argc, char* argv[])
     CHECK_ARRAY_ORDER(keyNameListCompat, _STRING_LESS_2);
 
     // Test convert
-    for (int i = 0; i < FCITX_ARRAY_SIZE(keyNameOffsetByValue); i++) {
+    for (size_t i = 0; i < FCITX_ARRAY_SIZE(keyNameOffsetByValue); i++) {
         const char* keyName = FcitxKeySymToString(keyNameOffsetByValue[0].sym);
         assert(keyName);
         FcitxKeySym sym = FcitxKeySymFromString(keyName);
@@ -56,7 +56,7 @@ int main(int argc, char* argv[])
         FCITX_KEY(FcitxKey_equal, FcitxKeyState_Super | FcitxKeyState_Alt),
     };
 
-    for(int i = 0; i < FCITX_ARRAY_SIZE(hotkey); i++) {
+    for(size_t i = 0; i < FCITX_ARRAY_SIZE(hotkey); i++) {
         assert (FcitxKeyListCheck(keyList, hotkey[i]));
     }
 

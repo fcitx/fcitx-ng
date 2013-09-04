@@ -36,10 +36,9 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <fcitx-utils/macro.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+FCITX_DECL_BEGIN
 
 /** max length of a utf8 character */
 #define UTF8_MAX_LENGTH 6
@@ -47,36 +46,36 @@ extern "C" {
 /** check utf8 character */
 #define ISUTF8_CB(c)  (((c)&0xc0) == 0x80)
 
-    static inline int
-    fcitx_utf8_type(char c)
-    {
-        if (!(c & 0x80))
-            return 1;
-        if (!(c & 0x40))
-            return 0;
-        if (!(c & 0x20))
-            return 2;
-        if (!(c & 0x10))
-            return 3;
-        if (!(c & 0x08))
-            return 4;
-        if (!(c & 0x04))
-            return 5;
-        if (!(c & 0x02))
-            return 6;
-        return -1;
-    }
+static _FCITX_INLINE_ int
+fcitx_utf8_type(char c)
+{
+    if (!(c & 0x80))
+        return 1;
+    if (!(c & 0x40))
+        return 0;
+    if (!(c & 0x20))
+        return 2;
+    if (!(c & 0x10))
+        return 3;
+    if (!(c & 0x08))
+        return 4;
+    if (!(c & 0x04))
+        return 5;
+    if (!(c & 0x02))
+        return 6;
+    return -1;
+}
 
-    static inline int
-    fcitx_utf8_valid_start(char c)
-    {
-        unsigned char uc = (unsigned char)c;
-        if (!(uc & 0x80))
-            return 1;
-        if (!(uc & 0x40))
-            return 0;
-        return uc < 0xfe;
-    }
+static _FCITX_INLINE_ int
+fcitx_utf8_valid_start(char c)
+{
+    unsigned char uc = (unsigned char)c;
+    if (!(uc & 0x80))
+        return 1;
+    if (!(uc & 0x40))
+        return 0;
+    return uc < 0xfe;
+}
 
 /**
  * Get utf8 string length
@@ -240,9 +239,7 @@ char *fcitx_utils_get_ascii_endn(const char *string, size_t len);
  **/
 char *fcitx_utils_get_ascii_end(const char *string);
 
-#ifdef __cplusplus
-}
-#endif
+FCITX_DECL_END
 
 #endif /* ifndef UTF8_H */
 

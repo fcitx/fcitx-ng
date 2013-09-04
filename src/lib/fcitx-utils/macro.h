@@ -19,6 +19,19 @@
 #define _FCITX_UNUSED_
 #endif
 
+#ifdef __GNUC__
+#define _FCITX_INLINE_ inline __attribute__ ((__unused__))
+#else
+#define _FCITX_INLINE_
+#endif
+
+#ifdef __GNUC__
+#define _FCITX_ALWAYS_INLINE_ _FCITX_INLINE_ __attribute__ ((always_inline))
+#else
+#define _FCITX_ALWAYS_INLINE_
+#endif
+
+
 #ifdef __cplusplus
 #define FCITX_DECL_BEGIN extern "C" {
 #define FCITX_DECL_END }

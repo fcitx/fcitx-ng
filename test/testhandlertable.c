@@ -1,6 +1,8 @@
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
 #include <stdint.h>
+#include "fcitx-utils/objpool.h"
 #include "fcitx-utils/handler-table.h"
 
 #define KEY1 "key1"

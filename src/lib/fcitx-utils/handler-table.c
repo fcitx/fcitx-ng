@@ -21,6 +21,7 @@
 #include "uthash.h"
 #include "handler-table.h"
 #include "objpool.h"
+#include "utils.h"
 
 struct _FcitxHandlerKey {
     int first;
@@ -85,11 +86,7 @@ FCITX_EXPORT_API FcitxHandlerKey*
     return key_struct;
 }
 
-static inline FcitxHandlerObj*
-fcitx_handler_table_get_obj(FcitxHandlerTable *table, int id)
-{
-    return fcitx_obj_pool_get(table->objs, id);
-}
+#define fcitx_handler_table_get_obj(table, id) ((FcitxHandlerObj*)fcitx_obj_pool_get((table)->objs, id))
 
 FCITX_EXPORT_API int
 fcitx_handler_key_append(FcitxHandlerTable *table, FcitxHandlerKey *key_struct,

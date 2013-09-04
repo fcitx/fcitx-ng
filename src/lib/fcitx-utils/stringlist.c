@@ -9,8 +9,7 @@ FCITX_EXPORT_API const UT_icd *const fcitx_str_icd = &ut_str_icd;
 FCITX_EXPORT_API FcitxStringList*
 fcitx_utils_string_list_new()
 {
-    FcitxStringList *array;
-    utarray_new(array, fcitx_str_icd);
+    FcitxStringList *array = utarray_new(fcitx_str_icd);
     return array;
 }
 
@@ -33,8 +32,7 @@ fcitx_utils_string_list_append_split(FcitxStringList *list,
 FCITX_EXPORT_API
 FcitxStringList* fcitx_utils_string_split(const char* str, const char* delm)
 {
-    FcitxStringList* array;
-    utarray_new(array, fcitx_str_icd);
+    FcitxStringList* array = utarray_new(fcitx_str_icd);
     return fcitx_utils_string_list_append_split(array, str, delm);
 }
 

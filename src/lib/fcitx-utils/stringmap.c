@@ -15,7 +15,7 @@ struct _FcitxStringMap {
     FcitxStringMapItem* items;
 };
 
-static inline void
+static _FCITX_INLINE_ void
 fcitx_string_map_item_free(FcitxStringMapItem* item)
 {
     free(item->key);

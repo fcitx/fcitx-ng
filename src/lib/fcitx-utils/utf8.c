@@ -400,7 +400,7 @@ fcitx_utils_get_ascii_part(char *string)
     return fcitx_utils_get_ascii_partn(string, strlen(string));
 }
 
-static inline int
+static _FCITX_INLINE_ int
 is_valid_ascii(char c)
 {
     return (!(c & 0x80)) && c;

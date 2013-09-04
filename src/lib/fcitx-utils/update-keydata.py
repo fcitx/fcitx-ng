@@ -92,7 +92,7 @@ static const int32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
 }};
 
 static const struct KeyNameOffsetByValue {{
-    int32_t sym;
+    uint32_t sym;
     uint16_t offset;
 }} keyNameOffsetByValue[] _FCITX_UNUSED_ = {{
 {2}

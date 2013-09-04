@@ -54,16 +54,12 @@ FCITX_EXPORT_API
 FcitxMemoryPool* fcitx_memory_pool_create()
 {
     FcitxMemoryPool* pool = fcitx_utils_malloc0(sizeof(FcitxMemoryPool));
-    utarray_new(pool->fullchunks, &chunk_icd);
-    utarray_new(pool->chunks, &chunk_icd);
+    pool->fullchunks = utarray_new(&chunk_icd);
+    pool->chunks = utarray_new(&chunk_icd);
     return pool;
 }
 
-static inline void*
-memory_align_ptr(void *p)
-{
-    return (void*)fcitx_utils_align_to((uintptr_t)p, sizeof(int));
-}
+#define memory_align_ptr(p) ((void*)fcitx_utils_align_to((uintptr_t)p, sizeof(int)))
 
 FCITX_EXPORT_API
 void* fcitx_memory_pool_alloc_align(FcitxMemoryPool* pool, size_t size, int align)

@@ -15,7 +15,7 @@ char *fcitx_utils_set_unescape_str(char *res, const char *str);
 char fcitx_utils_escape_char(char c);
 char *fcitx_utils_set_escape_str_with_set(char *res, const char *str,
                                               const char *set);
-static inline char*
+static _FCITX_INLINE_ char*
 fcitx_utils_set_escape_str(char *res, const char *str)
 {
     return fcitx_utils_set_escape_str_with_set(res, str, NULL);
@@ -23,7 +23,7 @@ fcitx_utils_set_escape_str(char *res, const char *str)
 
 char *fcitx_utils_set_str_with_len(char *res, const char *str, size_t len);
 
-static inline char*
+static _FCITX_INLINE_ char*
 fcitx_utils_set_str(char *res, const char *str)
 {
     return fcitx_utils_set_str_with_len(res, str, strlen(str));
