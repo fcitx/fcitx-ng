@@ -4,6 +4,13 @@ set(FCITX_UTILS_SOURCES
     qsort_r.c
     msort_r.c
     utils.c
+    handler-table.c
+    memory-pool.c
+    objpool.c
+    stringmap.c
+    stringutils.c
+    stringlist.c
+    stringhashset.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -15,6 +22,13 @@ set(FCITX_UTILS_HEADERS
     uthash.h
     utarray.h
     utils.h
+    handler-table.h
+    memory-pool.h
+    objpool.h
+    stringmap.h
+    stringutils.h
+    stringlist.h
+    stringhashset.h
     )
 
 if(LIBKVM_FOUND)

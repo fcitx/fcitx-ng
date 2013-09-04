@@ -20,8 +20,7 @@
 
 #include <string.h>
 
-#include "fcitx/fcitx.h"
-#include "fcitx-utils/utarray.h"
+#include "utarray.h"
 #include "sort_common.h"
 
 #define MINIMUM_INSERT_SORT 10

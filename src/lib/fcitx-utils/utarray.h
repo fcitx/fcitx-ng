@@ -354,7 +354,10 @@ static const UT_icd ut_int_icd _FCITX_UNUSED_ = {
     fcitx_utils_custom_bsearch(key, (a)->d, (a)->i, (a)->icd->sz, acc, cmp)
 
 #define utarray_foreach(key, array, type)               \
-    type *key;                                          \
+    for (type *key = (type*)utarray_front(array);key;   \
+         key = (type*)utarray_next((array), key))
+
+#define utarray_foreach_nl(key, array, type)            \
     for (key = (type*)utarray_front(array);key;         \
          key = (type*)utarray_next((array), key))
 

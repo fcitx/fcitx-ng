@@ -21,6 +21,17 @@ typedef int32_t boolean;
 #define false (0)
 #endif
 
+
+/**
+ * Function used to free the pointer
+ **/
+typedef void (*FcitxDestroyNotify)(void *p);
+/**
+ * Function used to free the content of a structure,
+ * DO NOT free the pointer itself
+ **/
+typedef void (*FcitxCallBack)();
+
 FCITX_DECL_END
 
 #endif

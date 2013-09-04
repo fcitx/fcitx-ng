@@ -911,7 +911,8 @@
 #define HASH_CNT(hh, head) (head?(head->hh.tbl->num_items):0)
 
 #define HASH_FOREACH(key, head, type)                                   \
-                type* key;                                              \
+                for(type* key = (type*)head;key != NULL;key = (type*)key->hh.next)
+#define HASH_FOREACH_NL(key, head, type)                                   \
                 for(key = (type*)head;key != NULL;key = (type*)key->hh.next)
 
 typedef struct UT_hash_bucket {

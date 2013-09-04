@@ -21,7 +21,6 @@
  */
 
 #include <stdlib.h>
-#include "fcitx/fcitx.h"
 #include "utarray.h"
 #include "sort_common.h"
 

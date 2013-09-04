@@ -8,6 +8,8 @@
 #include "utils.h"
 #include "keynametable-compat.h"
 #include "utf8.h"
+#include "stringutils.h"
+#include "stringlist.h"
 #include <stdlib.h>
 #include <string.h>
 

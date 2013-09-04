@@ -19,8 +19,9 @@
  ***************************************************************************/
 
 #include <string.h>
-#include "fcitx/fcitx.h"
-#include "fcitx-utils/utf8.h"
+#include <stdint.h>
+#include "macro.h"
+#include "utf8.h"
 
 #define CONT(i)   ISUTF8_CB(in[i])
 #define VAL(i, s) ((in[i]&0x3f) << s)
