@@ -1,5 +1,5 @@
 set(FCITX_UTILS_SOURCES
-    hotkey.c
+    key.c
     utf8.c
     qsort_r.c
     msort_r.c
@@ -7,7 +7,7 @@ set(FCITX_UTILS_SOURCES
     )
 
 set(FCITX_UTILS_HEADERS
-    hotkey.h
+    key.h
     utf8.h
     keydata.h
     keysym.h

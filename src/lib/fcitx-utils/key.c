@@ -4,7 +4,7 @@
 #include "macro.h"
 #include "keysym.h"
 #include "utarray.h"
-#include "hotkey.h"
+#include "key.h"
 #include "utils.h"
 #include "keynametable-compat.h"
 #include "utf8.h"
@@ -13,14 +13,14 @@
 
 #define _WHITE_SPACE "\f\n\r\t\v "
 
-struct _FcitxHotkeyList {
+struct _FcitxKeyList {
     UT_array list;
 };
 
-FCITX_DEFINE_SIMPLE_UT_ICD(FcitxHotkey, hotkey)
+FCITX_DEFINE_SIMPLE_UT_ICD(FcitxKey, hotkey)
 
 FCITX_EXPORT_API
-FcitxHotkey FcitxHotkeyParse(const char* keyString)
+FcitxKey FcitxKeyParse(const char* keyString)
 {
     FcitxKeyStates state = 0;
     /* old compatible code */
@@ -49,11 +49,46 @@ FcitxHotkey FcitxHotkeyParse(const char* keyString)
 
     FcitxKeySym sym = FcitxKeySymFromString(lastModifier);
 
-    return FCITX_HOTKEY(sym, state, false);
+    return FCITX_KEY(sym, state);
+}
+
+/*
+ * Do some custom process
+ */
+FCITX_EXPORT_API
+FcitxKey FcitxKeyNormalize(FcitxKey key)
+{
+    /* key state != 0 */
+    if (key.state) {
+        if (key.state != FcitxKeyState_Shift && FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0)))
+            key.sym = key.sym + FcitxKey_A - FcitxKey_a;
+        /*
+         * alt shift 1 shoud be alt + !
+         * shift+s should be S
+         */
+
+        if (FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0)) || FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0))) {
+            if (key.state == FcitxKeyState_Shift)
+                key.state &= ~FcitxKeyState_Shift;
+        }
+        else {
+            if ((key.state & FcitxKeyState_Shift)
+                && (((FcitxKeyIsSimple(FCITX_KEY(key.sym, 0)) || FcitxKeySymToUnicode(key.sym) != 0)
+                    && key.sym != FcitxKey_space && key.sym != FcitxKey_Return)
+                    || (key.sym >= FcitxKey_KP_0 && key.sym <= FcitxKey_KP_9)))
+                key.state &= ~FcitxKeyState_Shift;
+        }
+    }
+
+    if (key.sym == FcitxKey_ISO_Left_Tab) {
+        key.sym = FcitxKey_Tab;
+    }
+
+    return key;
 }
 
 FCITX_EXPORT_API
-char* FcitxHotkeyToString(FcitxHotkey hotkey)
+char* FcitxKeyToString(FcitxKey hotkey)
 {
     if (hotkey.sym == FcitxKey_None) {
         return NULL;
@@ -101,16 +136,104 @@ char* FcitxHotkeyToString(FcitxHotkey hotkey)
 }
 
 FCITX_EXPORT_API
-boolean FcitxHotkeyCheck(FcitxHotkey toCheck, FcitxHotkey key)
+boolean FcitxKeyCheck(FcitxKey toCheck, FcitxKey key)
 {
     toCheck.state &= FcitxKeyState_Ctrl_Alt_Shift | FcitxKeyState_Super;
     return (toCheck.sym == key.sym && toCheck.state == key.state);
 }
 
 FCITX_EXPORT_API
-FcitxHotkeyList* FcitxHotkeyListNew(void)
+boolean FcitxKeyIsDigit(FcitxKey key)
 {
-    FcitxHotkeyList* keyList = fcitx_utils_new(FcitxHotkeyList);
+    if (key.state) {
+        return false;
+    }
+
+    if (key.sym >= FcitxKey_0 && key.sym <= FcitxKey_9) {
+        return true;
+    }
+
+    return false;
+}
+
+
+FCITX_EXPORT_API
+boolean FcitxKeyIsUAZ(FcitxKey key)
+{
+    if (key.state) {
+        return false;
+    }
+
+    if (key.sym >= FcitxKey_A && key.sym <= FcitxKey_Z)
+        return true;
+
+    return false;
+}
+
+FCITX_EXPORT_API
+boolean FcitxKeyIsLAZ(FcitxKey key)
+{
+    if (key.state) {
+        return false;
+    }
+
+    if (key.sym >= FcitxKey_a && key.sym <= FcitxKey_z) {
+        return true;
+    }
+
+    return false;
+}
+
+FCITX_EXPORT_API
+boolean FcitxKeyIsSimple(FcitxKey key)
+{
+    if (key.state) {
+        return false;
+    }
+
+    if (key.sym >= FcitxKey_space && key.sym <= FcitxKey_asciitilde) {
+        return true;
+    }
+
+    return false;
+}
+
+FCITX_EXPORT_API
+boolean FcitxKeyIsModifierCombine(FcitxKey key)
+{
+    if (key.sym == FcitxKey_Control_L || key.sym == FcitxKey_Control_R
+     || key.sym == FcitxKey_Alt_L || key.sym == FcitxKey_Alt_R
+     || key.sym == FcitxKey_Super_L || key.sym == FcitxKey_Super_R
+     || key.sym == FcitxKey_Hyper_L || key.sym == FcitxKey_Hyper_R
+     || key.sym == FcitxKey_Shift_L || key.sym == FcitxKey_Shift_R)
+        return true;
+    return false;
+}
+
+FCITX_EXPORT_API
+boolean FcitxKeyIsCursorMove(FcitxKey key)
+{
+    if ((key.sym == FcitxKey_Left
+     || key.sym == FcitxKey_Right
+     || key.sym == FcitxKey_Up
+     || key.sym == FcitxKey_Down
+     || key.sym == FcitxKey_Page_Up
+     || key.sym == FcitxKey_Page_Down
+     || key.sym == FcitxKey_Home
+     || key.sym == FcitxKey_End)
+    && (key.state == FcitxKeyState_Ctrl
+     || key.state == FcitxKeyState_Ctrl_Shift
+     || key.state == FcitxKeyState_Shift
+     || key.state == FcitxKeyState_None)) {
+        return true;
+    }
+    return false;
+}
+
+FCITX_EXPORT_API
+FcitxKeyList* FcitxKeyListNew(void)
+{
+    FcitxKeyList* keyList = fcitx_utils_new(FcitxKeyList);
     if (keyList) {
         utarray_init(&keyList->list, &__fcitx_hotkey_icd);
     }
@@ -118,9 +241,9 @@ FcitxHotkeyList* FcitxHotkeyListNew(void)
 }
 
 FCITX_EXPORT_API
-FcitxHotkeyList* FcitxHotkeyListParse(const char* keyString)
+FcitxKeyList* FcitxKeyListParse(const char* keyString)
 {
-    FcitxHotkeyList* keyList = FcitxHotkeyListNew();
+    FcitxKeyList* keyList = FcitxKeyListNew();
     if (!keyList) {
         return NULL;
     }
@@ -134,7 +257,7 @@ FcitxHotkeyList* FcitxHotkeyListParse(const char* keyString)
             break;
         }
 
-        FcitxHotkey key = FcitxHotkeyParse(token);
+        FcitxKey key = FcitxKeyParse(token);
 
         if (key.sym == FcitxKey_None) {
             continue;
@@ -149,17 +272,17 @@ FcitxHotkeyList* FcitxHotkeyListParse(const char* keyString)
 }
 
 FCITX_EXPORT_API
-void FcitxHotkeyListFree(FcitxHotkeyList* keyList)
+void FcitxKeyListFree(FcitxKeyList* keyList)
 {
     utarray_done(&keyList->list);
     free(keyList);
 }
 
 FCITX_EXPORT_API
-boolean FcitxHotkeyListCheck(FcitxHotkeyList* keyList, FcitxHotkey key)
+boolean FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key)
 {
-    utarray_foreach(curKey, &keyList->list, FcitxHotkey) {
-        if (FcitxHotkeyCheck(*curKey, key)) {
+    utarray_foreach(curKey, &keyList->list, FcitxKey) {
+        if (FcitxKeyCheck(*curKey, key)) {
             return true;
         }
     }
@@ -167,23 +290,23 @@ boolean FcitxHotkeyListCheck(FcitxHotkeyList* keyList, FcitxHotkey key)
 }
 
 FCITX_EXPORT_API
-void FcitxHotkeyListAppend(FcitxHotkeyList* keyList, FcitxHotkey key)
+void FcitxKeyListAppend(FcitxKeyList* keyList, FcitxKey key)
 {
     utarray_push_back(&keyList->list, &key);
 }
 
 FCITX_EXPORT_API
-void FcitxHotkeyListClear(FcitxHotkeyList* keyList)
+void FcitxKeyListClear(FcitxKeyList* keyList)
 {
     utarray_clear(&keyList->list);
 }
 
 FCITX_EXPORT_API
-char* FcitxHotkeyListToString(FcitxHotkeyList* keyList)
+char* FcitxKeyListToString(FcitxKeyList* keyList)
 {
     FcitxStringList* list = fcitx_utils_string_list_new();
-    utarray_foreach(curKey, &keyList->list, FcitxHotkey) {
-        char* keyString = FcitxHotkeyToString(*curKey);
+    utarray_foreach(curKey, &keyList->list, FcitxKey) {
+        char* keyString = FcitxKeyToString(*curKey);
         if (keyString) {
             fcitx_utils_string_list_append_no_copy(list, keyString);
         }
