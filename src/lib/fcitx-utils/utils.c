@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "config.h"
+#include "stringutils.h"
 #include "utils.h"
 
 FCITX_EXPORT_API
@@ -20,3 +22,57 @@ void fcitx_utils_free(void* ptr)
     free(ptr);
 }
 
+FCITX_EXPORT_API
+char* fcitx_utils_get_fcitx_path(const char* type)
+{
+    char* fcitxdir = getenv("FCITXDIR");
+    char* result = NULL;
+    if (strcmp(type, "datadir") == 0) {
+        if (fcitxdir) {
+            fcitx_utils_alloc_cat_str(result, fcitxdir, "/share");
+        } else {
+            result = strdup(FCITX_INSTALL_DATADIR);
+        }
+    }
+    else if (strcmp(type, "pkgdatadir") == 0) {
+        if (fcitxdir) {
+            fcitx_utils_alloc_cat_str(result, fcitxdir, "/share/fcitx");
+        } else {
+            result = strdup(FCITX_INSTALL_PKGDATADIR);
+        }
+    }
+    else if (strcmp(type, "bindir") == 0) {
+        if (fcitxdir) {
+            fcitx_utils_alloc_cat_str(result, fcitxdir, "/bin");
+        }
+        else
+            result = strdup(FCITX_INSTALL_BINDIR);
+    }
+    else if (strcmp(type, "libdir") == 0) {
+        if (fcitxdir) {
+            fcitx_utils_alloc_cat_str(result, fcitxdir, "/lib");
+        }
+        else
+            result = strdup(FCITX_INSTALL_LIBDIR);
+    }
+    else if (strcmp(type, "localedir") == 0) {
+        if (fcitxdir) {
+            fcitx_utils_alloc_cat_str(result, fcitxdir, "/share/locale");
+        }
+        else
+            result = strdup(FCITX_INSTALL_LOCALEDIR);
+    }
+    return result;
+}
+
+FCITX_EXPORT_API
+char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* filename)
+{
+    char* path = fcitx_utils_get_fcitx_path(type);
+    if (path == NULL)
+        return NULL;
+    char *result;
+    fcitx_utils_alloc_cat_str(result, path, "/", filename);
+    free(path);
+    return result;
+}

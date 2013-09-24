@@ -3,6 +3,22 @@
 #include <stdarg.h>
 #include <stdio.h>
 
+/* last we pre-define a few icd for common utarrays of ints and strings */
+static void utarray_str_cpy(void *dst, const void *src)
+{
+    char **_src = (char**)src, **_dst = (char**)dst;
+    *_dst = (*_src == NULL) ? NULL : strdup(*_src);
+}
+static void utarray_str_dtor(void *elt)
+{
+    char **eltc = (char**)elt;
+    if (*eltc)
+        free(*eltc);
+}
+
+static const UT_icd ut_str_icd = {
+    sizeof(char*), NULL, utarray_str_cpy, utarray_str_dtor
+};
 
 FCITX_EXPORT_API const UT_icd *const fcitx_str_icd = &ut_str_icd;
 

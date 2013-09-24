@@ -21,11 +21,18 @@ typedef int32_t boolean;
 #define false (0)
 #endif
 
+typedef enum _FcitxTriState
+{
+    Tri_False = false,
+    Tri_True = true,
+    Tri_Unknown
+} FcitxTriState;
 
 /**
  * Function used to free the pointer
  **/
 typedef void (*FcitxDestroyNotify)(void *p);
+typedef void (*FcitxClosureFunc)(void*, void*);
 /**
  * Function used to free the content of a structure,
  * DO NOT free the pointer itself

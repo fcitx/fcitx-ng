@@ -7,6 +7,7 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
 
 option(ENABLE_TEST "Build Test" On)
+option(ENABLE_COVERAGE "Enable coverage" Off)
 
 set_property(GLOBAL PROPERTY "__FCITX_INTERNAL_BUILD" On)
 
@@ -21,10 +22,28 @@ include(GNUInstallDirs)
 
 # directory needed by bsd
 if(NOT CMAKE_INSTALL_LIBDATADIR)
-  set(CMAKE_INSTALL_LIBDATADIR "" CACHE PATH "libdata root (LIBDIR)")
+  set(CMAKE_INSTALL_LIBDATADIR "${CMAKE_INSTALL_LIBDIR}" CACHE PATH "libdata root (LIBDIR)")
   set(CMAKE_INSTALL_LIBDATADIR "${CMAKE_INSTALL_LIBDIR}")
   mark_as_advanced(CMAKE_INSTALL_LIBDATADIR)
 endif()
+
+macro(MAKE_INSTALL_PATH_ABSOLUTE out in)
+   if (IS_ABSOLUTE "${in}")    # IS_ABSOLUTE is new since cmake 2.4.8
+      set(${out} "${in}")
+   else()
+      set(${out} "${CMAKE_INSTALL_PREFIX}/${in}")
+   endif()
+endmacro()
+
+make_install_path_absolute(FCITX_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
+make_install_path_absolute(FCITX_INSTALL_LIBDATADIR ${CMAKE_INSTALL_LIBDATADIR})
+make_install_path_absolute(FCITX_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR})
+make_install_path_absolute(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_DATADIR}/fcitx")
+make_install_path_absolute(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
+make_install_path_absolute(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_LOCALEDIR})
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 # process rpath
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_LIBDIR}" _isSystemPlatformLibDir)
@@ -44,10 +63,22 @@ find_package(Libkvm)
 
 # we want some useful function like asprintf
 add_definitions(-D_GNU_SOURCE)
-set(CMAKE_C_FLAGS "-std=c99 -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "-Wall -Wextra -Wno-unused-parameter -fvisibility=hidden ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "-fPIC -std=c99 -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "-fPIC -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden ${CMAKE_CXX_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
+
+if (ENABLE_COVERAGE)
+    add_definitions(-fprofile-arcs -ftest-coverage)
+    set(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage ${CMAKE_EXE_LINKER_FLAGS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "-fprofile-arcs -ftest-coverage ${CMAKE_SHARED_LINKER_FLAGS}")
+    set(CMAKE_MODULE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage ${CMAKE_MODULE_LINKER_FLAGS}")
+    add_custom_target(coverage
+                      COMMAND "${CMAKE_CTEST_COMMAND}"
+                      COMMAND lcov --capture --directory ./ --output-file coverage.info
+                      COMMAND genhtml coverage.info --output-directory "coverage_pages"
+                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endif()
 
 include_directories(src/lib)
 

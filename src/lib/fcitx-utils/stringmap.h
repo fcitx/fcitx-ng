@@ -6,6 +6,12 @@
 
 FCITX_DECL_BEGIN
 
+/**
+ * FcitxStringMap is a string-to-boolean hash table, which mean to easily store/parse
+ * a single/multi-line string. like a:True,b:False
+ *
+ * This can be used in configuration storage.
+ */
 typedef struct _FcitxStringMap FcitxStringMap;
 
 FcitxStringMap* fcitx_string_map_new(const char* str, char delim);

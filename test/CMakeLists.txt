@@ -6,6 +6,7 @@ set(FCITX_UTILS_TEST
     testobjpool
     testsort
     teststring
+    testdict
     testutf8)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})

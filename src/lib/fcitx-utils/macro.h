@@ -22,13 +22,13 @@
 #ifdef __GNUC__
 #define _FCITX_INLINE_ inline __attribute__ ((__unused__))
 #else
-#define _FCITX_INLINE_
+#define _FCITX_INLINE_ inline
 #endif
 
 #ifdef __GNUC__
 #define _FCITX_ALWAYS_INLINE_ _FCITX_INLINE_ __attribute__ ((always_inline))
 #else
-#define _FCITX_ALWAYS_INLINE_
+#define _FCITX_ALWAYS_INLINE_ inline
 #endif
 
 

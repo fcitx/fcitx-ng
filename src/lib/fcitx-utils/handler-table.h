@@ -30,6 +30,20 @@ FCITX_DECL_BEGIN
 typedef void (*FcitxFreeKeyFunc)(void *data, const void* key, size_t len, void *owner);
 typedef void (*FcitxInitKeyFunc)(void *data, const void* key, size_t len, void *owner);
 
+/**
+ * FcitxHandlerTable is a multi hash table specialized for handler.
+ *
+ * The key of the handler can be any sequence of bytes, for each key, there is a sequence
+ * of values which is usually used as a single handler.
+ *
+ * For example, if you want to implement a file monitor, then you can use FcitxHandlerTable
+ * like this: Let key to be the file name, value to be the handler, then you can define a
+ * function to initialize some os specific data/resource for one new file name, and you
+ * can get a unique id for each handler (id can be reused once its removed).
+ *
+ * If one file is not watched anymore, FcitxFreeKeyFunc will be called and you can release
+ * any resource you alloced for this file.
+ */
 typedef struct _FcitxHandlerTable FcitxHandlerTable;
 typedef struct _FcitxHandlerKey FcitxHandlerKey;
 

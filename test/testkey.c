@@ -1,5 +1,7 @@
 #include <assert.h>
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 #include "fcitx-utils/keynametable.h"
 #include "fcitx-utils/keynametable-compat.h"
 #include "fcitx-utils/key.h"
@@ -20,11 +22,9 @@ int main(int argc, char* argv[])
     CHECK_ARRAY_ORDER(keyNameListCompat, _STRING_LESS_2);
 
     // Test convert
-    for (size_t i = 0; i < FCITX_ARRAY_SIZE(keyNameOffsetByValue); i++) {
-        const char* keyName = FcitxKeySymToString(keyNameOffsetByValue[0].sym);
-        assert(keyName);
-        FcitxKeySym sym = FcitxKeySymFromString(keyName);
-        assert(sym == keyNameOffsetByValue[0].sym);
+    for (size_t i = 0; i < FCITX_ARRAY_SIZE(keyValueByNameOffset); i++) {
+        assert(FcitxKeySymToString(keyValueByNameOffset[i]));
+        assert(FcitxKeySymFromString(keyNameList[i]) == keyValueByNameOffset[i]);
     }
 
     assert(FcitxUnicodeToKeySym(' ') == FcitxKey_space);
@@ -62,6 +62,7 @@ int main(int argc, char* argv[])
 
     char* keyString = FcitxKeyListToString(keyList);
     assert(strcmp(keyString, "Control+A Control+B Control+Alt+c Control+Alt+Shift+d Control+Alt+Shift+Super+E Alt+Super+equal") == 0);
+    free(keyString);
 
     FcitxKeyListFree(keyList);
 

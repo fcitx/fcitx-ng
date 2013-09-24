@@ -1,10 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2002~2005 by Yuking                                     *
- *   yuking_net@sohu.com                                                   *
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
+ *   Copyright (C) 2010~2010 by CSSlayer                                   *
  *   wengxt@gmail.com                                                      *
- *   Copyright (C) 2012~2013 by Yichao Yu                                  *
- *   yyc1992@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -22,41 +18,31 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+/**
+ * @addtogroup Fcitx
+ * @{
+ */
 
-#ifndef _FCITX_UTILS_UTILS_H_
-#define _FCITX_UTILS_UTILS_H_
+#ifndef __FCITX_INSTANCE_H__
+#define __FCITX_INSTANCE_H__
 
 #include <fcitx-utils/macro.h>
-#include <stdint.h>
-#include <stddef.h>
+#include <fcitx/inputcontext.h>
 
 FCITX_DECL_BEGIN
 
+typedef struct _FcitxInstance FcitxInstance;
 
-/**
- * Malloc and memset all memory to zero
- *
- * @param bytes malloc size
- * @return void* malloced pointer
- **/
-void* fcitx_utils_malloc0(size_t bytes);
-
-#define fcitx_utils_new(TYPE) ((TYPE*) fcitx_utils_malloc0(sizeof(TYPE)))
-#define fcitx_utils_newv(TYPE, _N) ((TYPE*) fcitx_utils_malloc0(_N*sizeof(TYPE)))
-
-void fcitx_utils_free(void*);
-char* fcitx_utils_get_fcitx_path(const char* type);
-char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* filename);
-
-static _FCITX_INLINE_ uintptr_t
-fcitx_utils_align_to(uintptr_t len, uintptr_t align)
-{
-    uintptr_t left;
-    if ((left = len % align))
-        return len + align - left;
-    return len;
-}
+FcitxInputContext* FcitxInstanceCreateInputContext(FcitxInstance* instance);
+void FcitxInstanceDestroyInputContext(FcitxInstance* instance, FcitxInputContext* inputContext);
+void FcitxInstanceLookupInputContextById(FcitxInstance* instance, uint64_t id);
+void FcitxInstanceFocusIn(FcitxInstance* instance, FcitxInputContext* inputContext);
+void FcitxInstanceFocusOut(FcitxInstance* instance, FcitxInputContext* inputContext);
 
 FCITX_DECL_END
 
 #endif
+/**
+ * @}
+ */
+// kate: indent-mode cstyle; space-indent on; indent-width 0;
