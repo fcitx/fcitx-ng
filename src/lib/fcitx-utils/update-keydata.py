@@ -86,7 +86,7 @@ static const char *keyNameList[] _FCITX_UNUSED_ =
 {0}
 }};
 
-static const int32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
+static const uint32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
 {{
 {1}
 }};

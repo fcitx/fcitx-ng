@@ -2304,7 +2304,7 @@ static const char *keyNameList[] _FCITX_UNUSED_ =
 "zstroke",
 };
 
-static const int32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
+static const uint32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
 {
 0x0030,
 0x0031,

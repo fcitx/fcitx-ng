@@ -62,23 +62,25 @@ FcitxKey FcitxKeyNormalize(FcitxKey key)
 {
     /* key state != 0 */
     if (key.state) {
-        if (key.state != FcitxKeyState_Shift && FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0)))
+        if (key.state != FcitxKeyState_Shift && FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0))) {
             key.sym = key.sym + FcitxKey_A - FcitxKey_a;
+        }
         /*
          * alt shift 1 shoud be alt + !
          * shift+s should be S
          */
 
-        if (FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0)) || FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0))) {
-            if (key.state == FcitxKeyState_Shift)
+        if (FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0)) || FcitxKeyIsUAZ(FCITX_KEY(key.sym, 0))) {
+            if (key.state == FcitxKeyState_Shift) {
                 key.state &= ~FcitxKeyState_Shift;
-        }
-        else {
+            }
+        } else {
             if ((key.state & FcitxKeyState_Shift)
                 && (((FcitxKeyIsSimple(FCITX_KEY(key.sym, 0)) || FcitxKeySymToUnicode(key.sym) != 0)
                     && key.sym != FcitxKey_space && key.sym != FcitxKey_Return)
-                    || (key.sym >= FcitxKey_KP_0 && key.sym <= FcitxKey_KP_9)))
+                    || (key.sym >= FcitxKey_KP_0 && key.sym <= FcitxKey_KP_9))) {
                 key.state &= ~FcitxKeyState_Shift;
+            }
         }
     }
 
@@ -339,7 +341,7 @@ FcitxKeySymToString (FcitxKeySym keysym)
 static int
 keynameCompare (const void *pkey, const void *pbase)
 {
-    return strcmp((const char*) pkey, keyNameList[((const int32_t *) pbase) - keyValueByNameOffset]);
+    return strcmp((const char*) pkey, keyNameList[((const uint32_t *) pbase) - keyValueByNameOffset]);
 }
 
 static int

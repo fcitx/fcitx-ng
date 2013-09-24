@@ -29,6 +29,7 @@ int main(int argc, char* argv[])
 
     assert(FcitxUnicodeToKeySym(' ') == FcitxKey_space);
     assert(FcitxKeyIsDigit(FcitxKeyParse("1")));
+    assert(!FcitxKeyIsDigit(FcitxKeyParse("Ctrl+1")));
     assert(!FcitxKeyIsDigit(FcitxKeyParse("a")));
     assert(FcitxKeyIsLAZ(FcitxKeyParse("a")));
     assert(!FcitxKeyIsLAZ(FcitxKeyParse("Shift_L")));
@@ -41,6 +42,9 @@ int main(int argc, char* argv[])
     assert(FcitxKeyIsCursorMove(FcitxKeyParse("Left")));
     assert(!FcitxKeyIsCursorMove(FcitxKeyParse("Cancel")));
     assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Shift+S")), FcitxKeyParse("S")));
+    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Shift+F4")), FcitxKeyParse("Shift+F4")));
+    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Ctrl+a")), FcitxKeyParse("Ctrl+A")));
+    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Alt+Shift+exclam")), FcitxKeyParse("Alt+exclam")));
     assert(FcitxKeyParse("").sym == FcitxKey_None);
     assert(FcitxKeyParse("-").sym == FcitxKey_minus);
 
@@ -60,8 +64,16 @@ int main(int argc, char* argv[])
         assert (FcitxKeyListCheck(keyList, hotkey[i]));
     }
 
-    char* keyString = FcitxKeyListToString(keyList);
-    assert(strcmp(keyString, "Control+A Control+B Control+Alt+c Control+Alt+Shift+d Control+Alt+Shift+Super+E Alt+Super+equal") == 0);
+    FcitxKeyListAppend(keyList, FCITX_KEY(FcitxKey_A, 0));
+
+    char* keyString;
+    keyString = FcitxKeyListToString(keyList);
+    assert(strcmp(keyString, "Control+A Control+B Control+Alt+c Control+Alt+Shift+d Control+Alt+Shift+Super+E Alt+Super+equal A") == 0);
+    free(keyString);
+
+    FcitxKeyListClear(keyList);
+    keyString = FcitxKeyListToString(keyList);
+    assert(strcmp(keyString, "") == 0);
     free(keyString);
 
     FcitxKeyListFree(keyList);

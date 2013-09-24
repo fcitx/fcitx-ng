@@ -53,7 +53,7 @@ boolean fcitx_dict_insert(FcitxDict* dict, const char* key, void* value, boolean
     item->key = strdup(key);
     item->data = value;
     HASH_ADD_KEYPTR(hh, dict->head, item->key, strlen(item->key), item);
-    return false;
+    return true;
 }
 
 FCITX_EXPORT_API
@@ -110,7 +110,7 @@ boolean fcitx_dict_remove(FcitxDict* dict, const char* key, void** dataOut)
 }
 
 FCITX_EXPORT_API
-void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictStealFunc func, void* data) {
+void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictForeachFunc func, void* data) {
     while (dict->head) {
         FcitxDictItem* item = dict->head;
         HASH_DEL(dict->head, item);
@@ -120,10 +120,10 @@ void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictStealFunc func, void* data) 
 }
 
 FCITX_EXPORT_API
-void fcitx_dict_foreach(FcitxDict* dict, FcitxClosureFunc func, void* data)
+void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data)
 {
     HASH_FOREACH(item, dict->head, FcitxDictItem) {
-        func(item->data, data);
+        func(item->key, item->data, data);
     }
 }
 
