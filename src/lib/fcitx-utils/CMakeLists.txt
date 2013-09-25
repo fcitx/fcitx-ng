@@ -12,6 +12,8 @@ set(FCITX_UTILS_SOURCES
     stringlist.c
     stringhashset.c
     dict.c
+    xdg.c
+    fs.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -31,6 +33,8 @@ set(FCITX_UTILS_HEADERS
     stringlist.h
     stringhashset.h
     dict.h
+    xdg.h
+    fs.h
     )
 
 if(LIBKVM_FOUND)

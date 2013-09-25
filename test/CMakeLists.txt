@@ -8,7 +8,9 @@ set(FCITX_UTILS_TEST
     teststring
     testdict
     testmemorypool
-    testutf8)
+    testfs
+    testutf8
+    testxdg)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})
     add_executable(${TESTCASE} ${TESTCASE}.c)

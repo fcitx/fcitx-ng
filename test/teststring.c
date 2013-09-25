@@ -12,11 +12,17 @@ void test_string()
 
     FcitxStringList* list = fcitx_utils_string_split(test, ",");
     assert(utarray_len(list) == 4);
+    assert(fcitx_utils_string_list_contains(list, "a"));
+    assert(fcitx_utils_string_list_contains(list, "b"));
+    assert(fcitx_utils_string_list_contains(list, "c"));
+    assert(fcitx_utils_string_list_contains(list, "d"));
+    assert(!fcitx_utils_string_list_contains(list, "e"));
     char* join = fcitx_utils_string_list_join(list, ',');
     assert(strcmp(join, test) == 0);
     fcitx_utils_string_list_append_split(list, TEST_STR, "\n");
+    fcitx_utils_string_list_printf_append(list, "%s", TEST_STR);
     char *join2 = fcitx_utils_string_list_join(list, ',');
-    assert(strcmp(join2, TEST_STR","TEST_STR) == 0);
+    assert(strcmp(join2, TEST_STR","TEST_STR","TEST_STR) == 0);
 
     char* cat = NULL;
     fcitx_utils_alloc_cat_str(cat, join, ",e");

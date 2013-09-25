@@ -37,6 +37,17 @@
 
 #include "xdg.h"
 #include "stringutils.h"
+#include "utils.h"
+#include "fs.h"
+
+static FILE *FcitxXDGGetFile(const char *fileName, char **path, const char *mode,
+                             size_t len, char **retFile);
+
+
+static char**
+FcitxXDGGetPath(size_t *len, const char* homeEnv, const char* homeDefault,
+                const char* suffixHome, const char* dirsDefault,
+                const char* suffixGlobal);
 
 static inline void
 combine_path_with_len(char *dest, const char *str1, size_t len1,
@@ -46,37 +57,6 @@ combine_path_with_len(char *dest, const char *str1, size_t len1,
     size_t size_list[] = {len1, 1, len2};
     fcitx_utils_cat_str(dest, 3, str_list, size_list);
 }
-
-static void
-make_path(const char *path)
-{
-    char *p;
-    if (fcitx_utils_isdir(path))
-        return;
-    size_t len = strlen(path);
-    char opath[len + 1];
-    memcpy(opath, path, len + 1);
-
-    while (opath[len - 1] == '/') {
-        opath[len - 1] = '\0';
-        len --;
-    }
-
-    for (p = opath; *p; p++) {
-        if (*p == '/') {
-            *p = '\0';
-
-            if (access(opath, F_OK))
-                mkdir(opath, S_IRWXU);
-
-            *p = '/';
-        }
-    }
-
-    if (access(opath, F_OK))        /* if path is not terminated with / */
-        mkdir(opath, S_IRWXU);
-}
-
 
 FCITX_EXPORT_API
 FILE *FcitxXDGGetFileWithPrefix(const char *prefix, const char *fileName,
@@ -97,7 +77,7 @@ FILE *FcitxXDGGetLibFile(const char *filename, const char *mode, char **retFile)
     char **path;
     char *libdir = fcitx_utils_get_fcitx_path("libdir");
     path = FcitxXDGGetPath(&len, "XDG_CONFIG_HOME", ".config",
-                           PACKAGE "/lib" , libdir, PACKAGE);
+                           "fcitx/lib" , libdir, "fcitx");
     free(libdir);
 
     FILE* fp = FcitxXDGGetFile(filename, path, mode, len, retFile);
@@ -119,14 +99,16 @@ FILE *FcitxXDGGetFileUserWithPrefix(const char* prefix, const char *fileName, co
 }
 
 FCITX_EXPORT_API
-void FcitxXDGMakeDirUser(const char* prefix)
+boolean FcitxXDGMakeDirUser(const char* prefix)
 {
     size_t len;
     char ** path = FcitxXDGGetPathUserWithPrefix(&len, prefix);
 
-    make_path(path[0]);
+    boolean result = fcitx_utils_make_path(path[0]);
 
     FcitxXDGFreePath(path);
+
+    return result;
 }
 
 FILE *FcitxXDGGetFile(const char *fileName, char **path, const char *mode,
@@ -170,7 +152,7 @@ FILE *FcitxXDGGetFile(const char *fileName, char **path, const char *mode,
             *retFile = strdup(path[0]);
         }
         if (strchr(mode, 'w') || strchr(mode, 'a')) {
-            make_path(path[0]);
+            fcitx_utils_make_path(path[0]);
         }
         return NULL;
     }
@@ -192,7 +174,7 @@ FILE *FcitxXDGGetFile(const char *fileName, char **path, const char *mode,
             fcitx_utils_alloc_cat_str(buf, path[0], "/", fileName);
             char *dirc = strdup(buf);
             char *dir = dirname(dirc);
-            make_path(dir);
+            fcitx_utils_make_path(dir);
             free(dirc);
             fp = fopen(buf, mode);
         } else {
@@ -278,7 +260,7 @@ char** FcitxXDGGetPathUserWithPrefix(size_t* len, const char* prefix)
 {
     char *prefixpath;
     char **result;
-    fcitx_utils_alloc_cat_str(prefixpath, PACKAGE, "/", prefix);
+    fcitx_utils_alloc_cat_str(prefixpath, "fcitx", "/", prefix);
     result = FcitxXDGGetPath(len, "XDG_CONFIG_HOME", ".config",
                              prefixpath, NULL, NULL);
     free(prefixpath);
@@ -291,7 +273,7 @@ char** FcitxXDGGetLibPath(size_t* len)
     char **path;
     char *libdir = fcitx_utils_get_fcitx_path("libdir");
     path = FcitxXDGGetPath(len, "XDG_CONFIG_HOME", ".config",
-                           PACKAGE "/lib" , libdir, PACKAGE);
+                           "fcitx/lib" , libdir, "fcitx");
     free(libdir);
     return path;
 }
@@ -301,7 +283,7 @@ FCITX_EXPORT_API
 char** FcitxXDGGetPathWithPrefix(size_t* len, const char* prefix)
 {
     char *prefixpath;
-    fcitx_utils_alloc_cat_str(prefixpath, PACKAGE, "/", prefix);
+    fcitx_utils_alloc_cat_str(prefixpath, "fcitx/", prefix);
     char *datadir = fcitx_utils_get_fcitx_path("datadir");
     char **xdgPath = FcitxXDGGetPath(len, "XDG_CONFIG_HOME", ".config",
                                      prefixpath, datadir, prefixpath);
@@ -362,9 +344,9 @@ FcitxStringHashSet* FcitxXDGGetFiles(const char *path, const char *prefix, const
                 if (!string) {
                     char *bStr = strdup(drt->d_name);
                     string = fcitx_utils_new(FcitxStringHashSet);
-                    string->name = bStr;
-                    HASH_ADD_KEYPTR(hh, sset, string->name,
-                                    strlen(string->name), string);
+                    string->str = bStr;
+                    HASH_ADD_KEYPTR(hh, sset, string->str,
+                                    strlen(string->str), string);
                 }
             }
         }

@@ -34,138 +34,129 @@
 #define _FCITX_XDG_H_
 
 #include <stdio.h>
-#include <fcitx-utils/utils.h>
-#include "stringhashset.h"
+#include <fcitx-utils/macro.h>
+#include <fcitx-utils/stringhashset.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+FCITX_DECL_BEGIN
 
-    /**
-     * Get library file
-     *
-     * @param filename filename
-     * @param mode file open mode
-     * @param retFile return file name
-     * @return FILE*
-     **/
-    FILE *FcitxXDGGetLibFile(const char *filename, const char *mode, char **retFile);
+/**
+ * Get library file
+ *
+ * @param filename filename
+ * @param mode file open mode
+ * @param retFile return file name
+ * @return FILE*
+ **/
+FILE *FcitxXDGGetLibFile(const char *filename, const char *mode, char **retFile);
 
-    /**
-     * Get library path
-     *
-     * @param len length
-     * @return char**
-     **/
-    char** FcitxXDGGetLibPath(size_t* len);
+/**
+ * Get library path
+ *
+ * @param len length
+ * @return char**
+ **/
+char** FcitxXDGGetLibPath(size_t* len);
 
-    /**
-     * get xdg path with prefix
-     *
-     * @param len return array size
-     * @param prefix prefix
-     *
-     * @return char**
-     *
-     * @since 4.2.1
-     **/
-    char **FcitxXDGGetPathWithPrefix(
-        size_t *len,
-        const char* prefix);
+/**
+ * get xdg path with prefix
+ *
+ * @param len return array size
+ * @param prefix prefix
+ *
+ * @return char**
+ *
+ * @since 4.2.1
+ **/
+char **FcitxXDGGetPathWithPrefix(size_t *len, const char* prefix);
 
-    /**
-     * get xdg user path with prefix
-     *
-     * @param len return array size
-     * @param prefix prefix
-     *
-     * @return char**
-     *
-     * @since 4.2.6
-     **/
-    char **FcitxXDGGetPathUserWithPrefix(
-        size_t *len,
-        const char* prefix);
+/**
+ * get xdg user path with prefix
+ *
+ * @param len return array size
+ * @param prefix prefix
+ *
+ * @return char**
+ *
+ * @since 4.2.6
+ **/
+char **FcitxXDGGetPathUserWithPrefix(size_t *len, const char* prefix);
 
-    /**
-     * get xdg file with prefix string, usually [install_prefix]/fcitx/prefix/filename and ~/.config/fcitx/prefix/filename
-     * for "mode", if mode contains "w", "a" (which means writing), all parent directory will be created automatically.
-     *
-     * if mode is null, retFile will always be allocated, but to make it more concrete, please use FcitxXDGGetFileUserWithPrefix
-     * if mode contains no "w" / "a", retFile will be NULL if fp is NULL.
-     * if mode contains "w"/"a", retFile will be the first file being tried.
-     *
-     * for former condition:
-     * if xdg path is empty, fileName will be returned if ret file
-     *
-     * @param prefix prefix
-     * @param fileName filename
-     * @param mode file open mode
-     * @param retFile file name to return
-     * @return FILE*
-     *
-     **/
-    FILE *FcitxXDGGetFileWithPrefix(const char* prefix, const char *fileName, const char *mode, char**retFile);
-    /**
-     * get xdg file with prefix string, usually ~/.config/fcitx/prefix/filename
-     *
-     * @param prefix prefix
-     * @param fileName filename
-     * @param mode file open mode
-     * @param retFile file name to return
-     * @return FILE*
-     *
-     * @see FcitxXDGGetFileWithPrefix
-     *
-     **/
-    FILE *FcitxXDGGetFileUserWithPrefix(const char* prefix, const char *fileName, const char *mode, char **retFile);
+/**
+ * get xdg file with prefix string, usually [install_prefix]/fcitx/prefix/filename and ~/.config/fcitx/prefix/filename
+ * for "mode", if mode contains "w", "a" (which means writing), all parent directory will be created automatically.
+ *
+ * if mode is null, retFile will always be allocated, but to make it more concrete, please use FcitxXDGGetFileUserWithPrefix
+ * if mode contains no "w" / "a", retFile will be NULL if fp is NULL.
+ * if mode contains "w"/"a", retFile will be the first file being tried.
+ *
+ * for former condition:
+ * if xdg path is empty, fileName will be returned if ret file
+ *
+ * @param prefix prefix
+ * @param fileName filename
+ * @param mode file open mode
+ * @param retFile file name to return
+ * @return FILE*
+ *
+ **/
+FILE *FcitxXDGGetFileWithPrefix(const char* prefix, const char *fileName, const char *mode, char**retFile);
+
+/**
+ * get xdg file with prefix string, usually ~/.config/fcitx/prefix/filename
+ *
+ * @param prefix prefix
+ * @param fileName filename
+ * @param mode file open mode
+ * @param retFile file name to return
+ * @return FILE*
+ *
+ * @see FcitxXDGGetFileWithPrefix
+ *
+ **/
+FILE *FcitxXDGGetFileUserWithPrefix(const char* prefix, const char *fileName, const char *mode, char **retFile);
 
 
-    /**
-     * make a dir with prefix under user, no return value indicates it's successful created or not.
-     *
-     * @param prefix
-     * @return void
-     *
-     * @since 4.2.7
-     **/
-    void FcitxXDGMakeDirUser(const char* prefix);
+/**
+ * make a dir with prefix under user, no return value indicates it's successful created or not.
+ *
+ * @param prefix
+ * @return void
+ *
+ * @since 4.2.7
+ **/
+boolean FcitxXDGMakeDirUser(const char* prefix);
 
-    /**
-     * free xdg path return by FcitxXDGGetPath, FcitxXDGGetLibPath, FcitxXDGGetPathUserWithPrefix,
-     * and FcitxXDGGetPathWithPrefix
-     *
-     * @param path path array
-     * @return void
-     **/
-    void FcitxXDGFreePath(char **path);
+/**
+ * free xdg path return by FcitxXDGGetPath, FcitxXDGGetLibPath, FcitxXDGGetPathUserWithPrefix,
+ * and FcitxXDGGetPathWithPrefix
+ *
+ * @param path path array
+ * @return void
+ **/
+void FcitxXDGFreePath(char **path);
 
-    /**
-     * Get All files under directory with a suffix, the path usually be
-     * ~/.config/fcitx/path/prefix*suffix and
-     * [prefix]/share/fcitx/path/prefix*suffix
-     *
-     * It will only return the file name in form of path/prefix*suffix,
-     * since for file in fcitx, if user file and system file both exists,
-     * user file will override system file. This will make life easier when
-     * you want to load a bunch of sub-configuration, and want to have a
-     * unique set of file names.
-     *
-     * @param path xdg subpath
-     * @param prefix filename prefix
-     * @param suffix filename suffix
-     * @return StringHashSet*
-     *
-     * @since 4.2.0
-     **/
-    FcitxStringHashSet *FcitxXDGGetFiles(const char *path, const char *prefix,
-                                         const char *suffix);
+/**
+ * Get All files under directory with a suffix, the path usually be
+ * ~/.config/fcitx/path/prefix*suffix and
+ * [prefix]/share/fcitx/path/prefix*suffix
+ *
+ * It will only return the file name in form of path/prefix*suffix,
+ * since for file in fcitx, if user file and system file both exists,
+ * user file will override system file. This will make life easier when
+ * you want to load a bunch of sub-configuration, and want to have a
+ * unique set of file names.
+ *
+ * @param path xdg subpath
+ * @param prefix filename prefix
+ * @param suffix filename suffix
+ * @return StringHashSet*
+ *
+ * @since 4.2.0
+ **/
+FcitxStringHashSet *FcitxXDGGetFiles(const char *path, const char *prefix,
+ const char *suffix);
 
-#ifdef __cplusplus
-}
-
-#endif
+FCITX_DECL_END
 
 #endif
 
