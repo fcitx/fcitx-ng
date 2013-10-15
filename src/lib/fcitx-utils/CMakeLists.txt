@@ -14,6 +14,7 @@ set(FCITX_UTILS_SOURCES
     dict.c
     xdg.c
     fs.c
+    library.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -35,7 +36,10 @@ set(FCITX_UTILS_HEADERS
     dict.h
     xdg.h
     fs.h
+    library.h
     )
+
+include_directories(${DL_INCLUDE_DIR})
 
 if(LIBKVM_FOUND)
   include_directories(LIBKVM_INCLUDE_DIR)
@@ -48,7 +52,7 @@ set_target_properties(fcitx-utils
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined"
   )
-target_link_libraries(fcitx-utils ${LIBINTL_LIBRARIES}
+target_link_libraries(fcitx-utils ${LIBINTL_LIBRARIES} ${DL_LIBRARIES}
   ${LIBICONV_LIBRARIES} ${LIBEXECINFO_LIBRARIES})
 
 if(LIBKVM_FOUND)

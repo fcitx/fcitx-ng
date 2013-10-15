@@ -2,6 +2,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <limits.h>
 
 FCITX_EXPORT_API char*
 fcitx_utils_set_str_with_len(char *res, const char *str, size_t len)
@@ -198,4 +199,59 @@ char* fcitx_utils_trim(const char* s)
     memcpy(result, s, len);
     result[len] = '\0';
     return result;
+}
+
+#define REHASH(a) \
+    if (ol_minus_1 < sizeof(uint) * CHAR_BIT) \
+        hashHaystack -= (a) << ol_minus_1; \
+    hashHaystack <<= 1
+
+FCITX_EXPORT_API
+char* fcitx_utils_backward_search(const char* haystack, size_t l, const char* needle, size_t ol, size_t from)
+{
+    if (ol > l) {
+        return NULL;
+    }
+    size_t delta = l - ol;
+    if (from > l)
+        return NULL;
+    if (from > delta)
+        from = delta;
+
+    const char *end = haystack;
+    haystack += from;
+    const uint ol_minus_1 = ol - 1;
+    const char *n = needle + ol_minus_1;
+    const char *h = haystack + ol_minus_1;
+    uint hashNeedle = 0, hashHaystack = 0;
+    size_t idx;
+    for (idx = 0; idx < ol; ++idx) {
+        hashNeedle = ((hashNeedle<<1) + *(n-idx));
+        hashHaystack = ((hashHaystack<<1) + *(h-idx));
+    }
+    hashHaystack -= *haystack;
+    while (haystack >= end) {
+        hashHaystack += *haystack;
+        if (hashHaystack == hashNeedle && memcmp(needle, haystack, ol) == 0)
+            return (char*) haystack;
+        --haystack;
+        REHASH(*(haystack + ol));
+    }
+    return NULL;
+}
+
+FCITX_EXPORT_API
+char* fcitx_utils_strrstr(const char* haystack, const char* needle)
+{
+    if (needle[0] == '\0') {
+        return NULL;
+    }
+
+    if (needle[1] == '\0') {
+        return strrchr(haystack, needle[0]);
+    }
+
+    int l = strlen(haystack);
+    int ol = strlen(needle);
+    return fcitx_utils_backward_search(haystack, l, needle, ol, 0);
 }

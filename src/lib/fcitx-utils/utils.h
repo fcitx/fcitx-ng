@@ -48,6 +48,19 @@ void fcitx_utils_free(void*);
 char* fcitx_utils_get_fcitx_path(const char* type);
 char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* filename);
 
+
+/**
+ * if obj is null, free it, after that, if str is NULL set it with NULL,
+ * if str is not NULL, set it with strdup(str)
+ *
+ * @param obj object string
+ * @param str source string
+ * @return void
+ **/
+void fcitx_utils_string_swap(char** obj, const char* str);
+void fcitx_utils_string_swap_with_len(char** obj,
+                                      const char* str, size_t len);
+
 static _FCITX_INLINE_ uintptr_t
 fcitx_utils_align_to(uintptr_t len, uintptr_t align)
 {

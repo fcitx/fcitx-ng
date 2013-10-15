@@ -90,6 +90,9 @@ void fcitx_utils_cat_str_with_len(char *out, size_t len, size_t n,
  **/
 char* fcitx_utils_trim(const char *s);
 
+char* fcitx_utils_backward_search(const char *haystack, size_t l, const char *needle, size_t ol, size_t from);
+char* fcitx_utils_strrstr(const char* haystack, const char* needle);
+
 FCITX_DECL_END
 
 #endif

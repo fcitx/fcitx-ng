@@ -76,3 +76,25 @@ char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* fil
     free(path);
     return result;
 }
+
+FCITX_EXPORT_API
+void fcitx_utils_string_swap(char** obj, const char* str)
+{
+    if (str) {
+        *obj = fcitx_utils_set_str(*obj, str);
+    } else if (*obj) {
+        free(*obj);
+        *obj = NULL;
+    }
+}
+
+FCITX_EXPORT_API
+void fcitx_utils_string_swap_with_len(char** obj, const char* str, size_t len)
+{
+    if (str) {
+        *obj = fcitx_utils_set_str_with_len(*obj, str, len);
+    } else if (*obj) {
+        free(*obj);
+        *obj = NULL;
+    }
+}

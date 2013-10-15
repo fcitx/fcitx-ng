@@ -34,11 +34,13 @@ typedef struct _FcitxAddonInstance FcitxAddonInstance;
 
 typedef struct _FcitxAddonMananger FcitxAddonManager;
 
+#define FCITX_ABI_VERSION 6
+
 typedef boolean (*FcitxAddonResolveFunctionFunc)(const char* name, void* data);
 typedef boolean (*FcitxAddonListFunc)(void* data);
 typedef boolean (*FcitxAddonLoadMetaData)(const char* name, void* data);
 
-typedef struct _FcitxAddonResolver {
+typedef struct _FcitxAddonFactory {
     FcitxAddonResolveFunctionFunc resolveFunction;
     FcitxAddonListFunc list;
     FcitxDestroyNotify destroyNotify;

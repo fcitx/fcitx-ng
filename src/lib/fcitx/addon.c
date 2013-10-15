@@ -3,6 +3,7 @@
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/stringhashset.h"
 #include "fcitx-utils/dict.h"
+#include <fcitx-utils/xdg.h>
 
 FcitxAddonResolver sharedLibraryResolver = {
     NULL,
@@ -56,5 +57,6 @@ void FcitxAddonManagerLoad(FcitxAddonManager* manager)
 
 void FcitxSharedLibraryResolverList(void* data)
 {
-    FcitxAddonResolver* resolver = data;
+    FcitxAddonResolver* resolver = data; 
+    FcitxXDGGetLibFile();
 }

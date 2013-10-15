@@ -10,6 +10,7 @@ set(FCITX_UTILS_TEST
     testmemorypool
     testfs
     testutf8
+    testlibrary
     testxdg)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})

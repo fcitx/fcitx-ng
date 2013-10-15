@@ -46,10 +46,10 @@
 #define _FCITX_MEMORY_H_
 
 #include <stdlib.h>
+#include <fcitx-utils/macro.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+FCITX_DECL_BEGIN
+
 
 /** memory pool private struct */
 typedef struct _FcitxMemoryPool FcitxMemoryPool;
@@ -96,9 +96,7 @@ void fcitx_memory_pool_destroy(FcitxMemoryPool* pool);
  **/
 void fcitx_memory_pool_clear(FcitxMemoryPool* pool);
 
-#ifdef __cplusplus
-}
-#endif
+FCITX_DECL_END
 
 #endif
 
