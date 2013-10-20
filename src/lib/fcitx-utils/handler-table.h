@@ -27,9 +27,6 @@
 
 FCITX_DECL_BEGIN
 
-typedef void (*FcitxFreeKeyFunc)(void *data, const void* key, size_t len, void *owner);
-typedef void (*FcitxInitKeyFunc)(void *data, const void* key, size_t len, void *owner);
-
 /**
  * FcitxHandlerTable is a multi hash table specialized for handler.
  *
@@ -46,6 +43,10 @@ typedef void (*FcitxInitKeyFunc)(void *data, const void* key, size_t len, void *
  */
 typedef struct _FcitxHandlerTable FcitxHandlerTable;
 typedef struct _FcitxHandlerKey FcitxHandlerKey;
+
+typedef void (*FcitxFreeKeyFunc)(void *data, const void* key, size_t len, void *owner);
+typedef void (*FcitxInitKeyFunc)(void *data, const void* key, size_t len, void *owner);
+typedef void (*FcitxHandlerTableForeachKeyCallback)(FcitxHandlerTable* table, FcitxHandlerKey* key, void* data);
 
 typedef struct {
     size_t size;
@@ -129,6 +130,9 @@ void fcitx_handler_table_remove_key(FcitxHandlerTable *table,
 void fcitx_handler_table_remove_by_id(FcitxHandlerTable *table, int id);
 void fcitx_handler_table_remove_by_id_full(FcitxHandlerTable *table, int id);
 void fcitx_handler_table_free(FcitxHandlerTable *table);
+
+void fcitx_handler_table_foreach_key(FcitxHandlerTable* table, FcitxHandlerTableForeachKeyCallback callback, void* userdata);
+int fcitx_handler_table_n_key(FcitxHandlerTable* table);
 
 static _FCITX_INLINE_ int
 fcitx_handler_table_append_strkey(FcitxHandlerTable *table,

@@ -11,7 +11,9 @@ set(FCITX_UTILS_TEST
     testfs
     testutf8
     testlibrary
-    testxdg)
+    testxdg
+    testmainloop
+    testlist)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})
     add_executable(${TESTCASE} ${TESTCASE}.c)

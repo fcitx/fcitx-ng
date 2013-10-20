@@ -15,6 +15,7 @@ set(FCITX_UTILS_SOURCES
     xdg.c
     fs.c
     library.c
+    mainloop.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -37,6 +38,8 @@ set(FCITX_UTILS_HEADERS
     xdg.h
     fs.h
     library.h
+    mainloop.h
+    list.h
     )
 
 include_directories(${DL_INCLUDE_DIR})
@@ -52,7 +55,7 @@ set_target_properties(fcitx-utils
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined"
   )
-target_link_libraries(fcitx-utils ${LIBINTL_LIBRARIES} ${DL_LIBRARIES}
+target_link_libraries(fcitx-utils ${LIBINTL_LIBRARIES} ${DL_LIBRARIES} ${RT_LIBRARIES}
   ${LIBICONV_LIBRARIES} ${LIBEXECINFO_LIBRARIES})
 
 if(LIBKVM_FOUND)

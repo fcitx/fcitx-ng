@@ -42,9 +42,6 @@ make_install_path_absolute(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_DATADIR}/fc
 make_install_path_absolute(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
 make_install_path_absolute(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_LOCALEDIR})
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # process rpath
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_LIBDIR}" _isSystemPlatformLibDir)
 list(FIND CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${CMAKE_INSTALL_LIBDIR}" _isSystemCxxLibDir)
@@ -60,6 +57,13 @@ find_package(Libiconv REQUIRED)
 find_package(Libintl REQUIRED)
 find_package(Pthread REQUIRED)
 find_package(Libkvm)
+find_package(RT)
+
+if (RT_FOUND)
+    set(HAVE_CLOCK_GETTIME 1)
+else()
+    set(HAVE_CLOCK_GETTIME 0)
+endif()
 
 # we want some useful function like asprintf
 add_definitions(-D_GNU_SOURCE)
@@ -81,6 +85,9 @@ if (ENABLE_COVERAGE)
 endif()
 
 include_directories(src/lib)
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 add_subdirectory(src)
 
