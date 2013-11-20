@@ -332,7 +332,7 @@ void fcitx_msort_r(void *base_, size_t nmemb, size_t size,
 static _FCITX_ALWAYS_INLINE_ int utarray_eltidx(UT_array* a, void* e)
 {
     return e >= a->d ?
-           ((e - a->d) / (int) a->icd->sz) : -1;
+           (((char*) e - (char*)a->d) / (int) a->icd->sz) : -1;
 }
 
 static _FCITX_ALWAYS_INLINE_ void* utarray_front(UT_array* a) {

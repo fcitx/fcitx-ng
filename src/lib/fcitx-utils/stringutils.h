@@ -93,6 +93,11 @@ char* fcitx_utils_trim(const char *s);
 char* fcitx_utils_backward_search(const char *haystack, size_t l, const char *needle, size_t ol, size_t from);
 char* fcitx_utils_strrstr(const char* haystack, const char* needle);
 
+boolean fcitx_utils_string_starts_with(const char* s, const char* needle);
+boolean fcitx_utils_string_ends_with(const char* s, const char* needle);
+
+char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, boolean nullIfNoMatch);
+
 FCITX_DECL_END
 
 #endif

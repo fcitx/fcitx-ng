@@ -20,6 +20,15 @@ void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictForeachFunc func, void* data
 
 void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data);
 
+/**
+ * insert an item into dictionary
+ * 
+ * @param dict dict
+ * @param key string key
+ * @param value data
+ * @param replace replace existing key
+ * @return sucessfully inserted or not
+ */
 boolean fcitx_dict_insert(FcitxDict* dict, const char* key, void* value, boolean replace);
 
 #define fcitx_dict_insert_data(DICT, KEY, VALUE) \

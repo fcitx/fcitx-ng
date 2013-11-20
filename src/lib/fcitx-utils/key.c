@@ -1,17 +1,14 @@
-#include "types.h"
-#include "keydata.h"
-#include "keynametable.h"
-#include "macro.h"
-#include "keysym.h"
+
+#include <stdlib.h>
+#include <string.h>
 #include "utarray.h"
 #include "key.h"
 #include "utils.h"
-#include "keynametable-compat.h"
-#include "utf8.h"
-#include "stringutils.h"
 #include "stringlist.h"
-#include <stdlib.h>
-#include <string.h>
+#include "keynametable.h"
+#include "keynametable-compat.h"
+#include "keydata.h"
+#include "utf8.h"
 
 #define _WHITE_SPACE "\f\n\r\t\v "
 

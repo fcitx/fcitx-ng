@@ -1,3 +1,6 @@
+#ifndef _FCITX_UTILS_MAINLOOP_H_
+#define _FCITX_UTILS_MAINLOOP_H_
+
 #include <fcitx-utils/types.h>
 
 typedef struct _FcitxMainLoop FcitxMainLoop;
@@ -23,3 +26,5 @@ FcitxTimeoutEvent* fcitx_mainloop_register_timeout_event(FcitxMainLoop* mainloop
 void fcitx_mainloop_remove_io_event(FcitxMainLoop* mainloop, FcitxIOEvent* event);
 void fcitx_mainloop_remove_timeout_event(FcitxMainLoop* mainloop, FcitxTimeoutEvent* event);
 void fcitx_mainloop_free(FcitxMainLoop* mainloop);
+
+#endif

@@ -27,6 +27,7 @@
 #define _FCITX_UTILS_UTILS_H_
 
 #include <fcitx-utils/macro.h>
+#include <fcitx-utils/types.h>
 #include <stdint.h>
 #include <stddef.h>
 
@@ -47,6 +48,50 @@ void* fcitx_utils_malloc0(size_t bytes);
 void fcitx_utils_free(void*);
 char* fcitx_utils_get_fcitx_path(const char* type);
 char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* filename);
+
+/**
+ * ascii only is lower
+ * 
+ * @param c char
+ * @return boolean
+ */
+static _FCITX_INLINE_
+boolean fcitx_utils_islower(char c)
+{
+    return c >= 'a' && c <= 'z';
+}
+
+/**
+ * ascii only is upper
+ * 
+ * @param c char
+ * @return boolean
+ */
+static _FCITX_INLINE_
+boolean fcitx_utils_isupper(char c)
+{
+    return c >= 'A' && c <= 'Z';
+}
+
+static _FCITX_INLINE_
+char fcitx_utils_tolower(char c)
+{
+    return fcitx_utils_isupper(c) ? c - 'A' + 'a' : c;
+}
+
+static _FCITX_INLINE_
+char fcitx_utils_toupper(char c)
+{
+    return fcitx_utils_islower(c) ? c - 'a' + 'A' : c;
+}
+
+#define FCITX_WHITESPACE "\f\n\r\t\v "
+
+static _FCITX_INLINE_
+boolean fcitx_utils_isspace(char c)
+{
+    return c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == ' ';
+}
 
 
 /**
@@ -69,6 +114,10 @@ fcitx_utils_align_to(uintptr_t len, uintptr_t align)
         return len + align - left;
     return len;
 }
+
+void *fcitx_utils_custom_bsearch(const void *key, const void *base,
+                                 size_t nmemb, size_t size, int accurate,
+                                 int (*compar)(const void *, const void *));
 
 FCITX_DECL_END
 

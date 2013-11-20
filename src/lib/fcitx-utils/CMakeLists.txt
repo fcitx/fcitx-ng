@@ -23,7 +23,7 @@ set(FCITX_UTILS_HEADERS
     utf8.h
     keydata.h
     keysym.h
-    keysymdef.h
+    keysymgen.h
     uthash.h
     utarray.h
     utils.h
@@ -40,6 +40,10 @@ set(FCITX_UTILS_HEADERS
     library.h
     mainloop.h
     list.h
+    macro.h
+    bitset.h
+    types.h
+    atomic.h
     )
 
 include_directories(${DL_INCLUDE_DIR})

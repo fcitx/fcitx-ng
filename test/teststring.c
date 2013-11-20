@@ -36,6 +36,10 @@ void test_string()
     free(join);
     free(join2);
     fcitx_utils_string_list_free(list);
+    
+    list = fcitx_utils_string_split_full("a   b", " ", false);
+    assert(utarray_len(list) == 2);
+    fcitx_utils_string_list_free(list);
 
     char localcat[20];
     const char *array[] = {"a", ",b", ",c", ",d"};
@@ -62,6 +66,43 @@ void test_string()
     assert(strcmp(orig, escape) == 0);
     free(escape);
     free(back);
+    
+    
+    char* replace_result = fcitx_utils_string_replace("abcabc", "a", "b", true);
+    assert(strcmp(replace_result, "bbcbbc") == 0);
+    free(replace_result);
+    
+#define REPEAT 2049
+    char largeReplace[3 * REPEAT + 1];
+    char largeReplaceCorrect[REPEAT + 1];
+    char largeReplaceCorrect2[4 * REPEAT + 1];
+    int i = 0, j = 0, k = 0;
+    for (int n = 0; n < REPEAT; n ++) {
+        largeReplace[i++] = 'a';
+        largeReplace[i++] = 'b';
+        largeReplace[i++] = 'c';
+        
+        largeReplaceCorrect[j++] = 'e';
+        
+        largeReplaceCorrect2[k++] = 'a';
+        largeReplaceCorrect2[k++] = 'b';
+        largeReplaceCorrect2[k++] = 'c';
+        largeReplaceCorrect2[k++] = 'd';
+    }
+    
+    largeReplace[i] = '\0';
+    largeReplaceCorrect[j] = '\0';
+    largeReplaceCorrect2[k] = '\0';
+    
+    replace_result = fcitx_utils_string_replace(largeReplace, "abc", "e", true);
+    assert(strcmp(replace_result, largeReplaceCorrect) == 0);
+    char* replace_result2 = fcitx_utils_string_replace(replace_result, "e", "abcd", true);
+    free(replace_result);
+    assert(strcmp(replace_result2, largeReplaceCorrect2) == 0);
+    free(replace_result2);
+    
+    assert(fcitx_utils_string_replace(largeReplace, "de", "bcd", true) == NULL);
+    
 }
 
 void test_string_hash_set()

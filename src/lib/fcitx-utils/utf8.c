@@ -23,7 +23,7 @@
 #include "macro.h"
 #include "utf8.h"
 
-#define CONT(i)   ISUTF8_CB(in[i])
+#define CONT(i)   FCITX_ISUTF8_CB(in[i])
 #define VAL(i, s) ((in[i]&0x3f) << s)
 
 #define UTF8_LENGTH(Char)                       \
@@ -43,7 +43,7 @@ FCITX_EXPORT_API
 size_t
 fcitx_utf8_strlen(const char *s)
 {
-    unsigned int l = 0;
+    size_t l = 0;
 
     while (*s) {
         uint32_t chr;
@@ -228,7 +228,7 @@ int fcitx_utf8_strncmp(const char *s1, const char *s2, int n)
 FCITX_EXPORT_API
 char* fcitx_utf8_get_nth_char(const char* s, uint32_t n)
 {
-    unsigned int l = 0;
+    size_t l = 0;
 
     while (*s && l < n) {
         uint32_t chr;
@@ -241,18 +241,18 @@ char* fcitx_utf8_get_nth_char(const char* s, uint32_t n)
 }
 
 FCITX_EXPORT_API
-int
+uint32_t
 fcitx_utf8_get_char_extended(const char *s,
                              int max_len)
 {
     const unsigned char*p = (const unsigned char*)s;
     int i, len;
-    unsigned int wc = (unsigned char) * p;
+    uint32_t wc = (unsigned char) * p;
 
     if (wc < 0x80) {
         return wc;
     } else if (wc < 0xc0) {
-        return (unsigned int) - 1;
+        return (uint32_t) - 1;
     } else if (wc < 0xe0) {
         len = 2;
         wc &= 0x1f;
@@ -269,26 +269,26 @@ fcitx_utf8_get_char_extended(const char *s,
         len = 6;
         wc &= 0x01;
     } else {
-        return (unsigned int) - 1;
+        return (uint32_t) - 1;
     }
 
     if (max_len >= 0 && len > max_len) {
         for (i = 1; i < max_len; i++) {
             if ((((unsigned char *)p)[i] & 0xc0) != 0x80)
-                return (unsigned int) - 1;
+                return (uint32_t) - 1;
         }
 
-        return (unsigned int) - 2;
+        return (uint32_t) - 2;
     }
 
     for (i = 1; i < len; ++i) {
-        unsigned int ch = ((unsigned char *)p)[i];
+        uint32_t ch = ((unsigned char *)p)[i];
 
         if ((ch & 0xc0) != 0x80) {
             if (ch)
-                return (unsigned int) - 1;
+                return (uint32_t) - 1;
             else
-                return (unsigned int) - 2;
+                return (uint32_t) - 2;
         }
 
         wc <<= 6;
@@ -297,16 +297,16 @@ fcitx_utf8_get_char_extended(const char *s,
     }
 
     if (UTF8_LENGTH(wc) != len)
-        return (unsigned int) - 1;
+        return (uint32_t) - 1;
 
     return wc;
 }
 
 FCITX_EXPORT_API
-int fcitx_utf8_get_char_validated(const char *p,
+uint32_t fcitx_utf8_get_char_validated(const char *p,
                                   int max_len)
 {
-    int result;
+    uint32_t result;
 
     if (max_len == 0)
         return -2;
@@ -322,12 +322,13 @@ int fcitx_utf8_get_char_validated(const char *p,
 }
 
 FCITX_EXPORT_API
-int fcitx_utf8_check_string(const char *s)
+boolean fcitx_utf8_check_string(const char *s)
 {
     while (*s) {
         uint32_t chr;
 
-        if (fcitx_utf8_get_char_validated(s, 6) < 0)
+        chr = fcitx_utf8_get_char_validated(s, 6);
+        if (chr == (uint32_t) -1 || chr == (uint32_t) -2)
             return 0;
 
         s = fcitx_utf8_get_char(s, &chr);

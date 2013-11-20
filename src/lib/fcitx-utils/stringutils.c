@@ -1,4 +1,5 @@
 #include "stringutils.h"
+#include "utils.h"
 #include <stdarg.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -188,7 +189,7 @@ char* fcitx_utils_trim(const char* s)
 
     s += strspn(s, "\f\n\r\t\v ");
     end = s + (strlen(s) - 1);
-    while (end >= s && isspace(*end))               /* skip trailing space */
+    while (end >= s && fcitx_utils_isspace(*end))               /* skip trailing space */
         --end;
 
     end++;
@@ -254,4 +255,110 @@ char* fcitx_utils_strrstr(const char* haystack, const char* needle)
     int l = strlen(haystack);
     int ol = strlen(needle);
     return fcitx_utils_backward_search(haystack, l, needle, ol, 0);
+}
+
+FCITX_EXPORT_API
+boolean fcitx_utils_string_starts_with(const char* s, const char* needle)
+{
+    return strncmp(s, needle, strlen(needle)) == 0;
+}
+
+FCITX_EXPORT_API
+boolean fcitx_utils_string_ends_with(const char* s, const char* needle)
+{
+    size_t len = strlen(s);
+    size_t needleLen = strlen(needle);
+    if (len < needleLen) {
+        return false;
+    }
+    
+    return strncmp(s + len - needleLen, needle, needleLen) == 0;
+}
+
+#define MAX_REPLACE_INDICES_NUM 128
+
+FCITX_EXPORT_API
+char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, boolean nullIfNoMatch)
+{
+    int beforeLen = strlen(before);
+    int afterLen = strlen(after);
+    int len = strlen(s);
+    if (beforeLen == 0) {
+        if (nullIfNoMatch) {
+            return NULL;
+        } else {
+            return strdup(s);
+        }
+    }
+    
+    
+    const char* pivot = s;
+    char* newString = NULL;
+    size_t lastLen = 0;
+    int indices[MAX_REPLACE_INDICES_NUM];
+    
+    int newStringPos = 0;
+    int oldStringPos = 0;
+    
+    do {
+        int nIndices = 0;
+        while (nIndices < MAX_REPLACE_INDICES_NUM) {
+            pivot = strstr(pivot, before);
+            if (!pivot) {
+                break;
+            }
+            
+            indices[nIndices++] = pivot - s;
+            pivot += beforeLen;
+        }
+        
+        if (nIndices) {
+            if (!newString) {
+                lastLen = len + nIndices * (afterLen - beforeLen) + 1;
+                newString = malloc(lastLen * sizeof(char));
+            } else {
+                size_t newLen = lastLen + nIndices * (afterLen - beforeLen);
+                if (newLen > lastLen) {
+                    newString = realloc(newString, newLen);
+                    lastLen = newLen;
+                }
+            }
+            
+#define _COPY_AND_MOVE_ON(pos, len) \
+    do { \
+        int diffLen = len; \
+        if (len == 0) { \
+            break; \
+        } \
+        memcpy(newString + newStringPos, pos, diffLen); \
+        newStringPos += diffLen; \
+    } while(0)
+            
+            // string s is split as
+            // oldStringPos, indices[0], indices[0] + beforeLen, indices[1], indices[1] + beforeLen
+            // .... indices[nIndices - 1], indices[nIndices - 1] + beforeLen
+            _COPY_AND_MOVE_ON(s + oldStringPos, indices[0] - oldStringPos);
+            _COPY_AND_MOVE_ON(after, afterLen);
+            
+            for (int i = 1; i < nIndices; i ++) {
+                _COPY_AND_MOVE_ON(s + indices[i] + beforeLen, indices[i] - (indices[i - 1] + beforeLen));
+                _COPY_AND_MOVE_ON(after, afterLen);
+            }
+
+            oldStringPos = indices[nIndices - 1] + beforeLen;
+        }
+    } while(pivot);
+    
+    if (!newString) {
+        if (nullIfNoMatch) {
+            return NULL;
+        } else {
+            return strdup(s);
+        }
+    } else {
+        _COPY_AND_MOVE_ON(s + oldStringPos, len - oldStringPos);
+        newString[newStringPos] = '\0';
+    }
+    
+    return newString;
 }

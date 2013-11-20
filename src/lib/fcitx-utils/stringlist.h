@@ -5,6 +5,8 @@
 #include <fcitx-utils/macro.h>
 #include <fcitx-utils/utarray.h>
 
+FCITX_DECL_BEGIN
+
 typedef UT_array FcitxStringList;
 
 /**
@@ -21,7 +23,9 @@ FcitxStringList* fcitx_utils_string_list_new(void);
  * @param delm character as delimiter
  * @return FcitxStringList* a new utarray for store the split string
  **/
-FcitxStringList* fcitx_utils_string_split(const char *str, const char* delm);
+FcitxStringList* fcitx_utils_string_split_full(const char *str, const char* delm, boolean keepEmpty);
+
+#define fcitx_utils_string_split(_str, _delm) fcitx_utils_string_split_full(_str, _delm, true)
 
 /**
  * append a string with printf format
@@ -65,8 +69,10 @@ void fcitx_utils_string_list_free(FcitxStringList *list);
 FcitxStringList *fcitx_utils_string_list_append_no_copy(FcitxStringList *list, char *str);
 FcitxStringList *fcitx_utils_string_list_append_len(FcitxStringList *list,
                                                     const char *str, size_t len);
-FcitxStringList *fcitx_utils_string_list_append_split(FcitxStringList *list, const char* str,
-                                                      const char *delm);
+FcitxStringList *fcitx_utils_string_list_append_split_full(FcitxStringList *list, const char* str,
+                                                           const char *delm, boolean keepEmpty);
+#define fcitx_utils_string_list_append_split(_list, _str, _delm) \
+    fcitx_utils_string_list_append_split_full(_list, _str, _delm, true)
 
 #define fcitx_utils_string_list_append_lines(list, str) fcitx_utils_string_list_append_split(list, str, "\n")
 

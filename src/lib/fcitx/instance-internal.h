@@ -25,9 +25,11 @@
 #ifndef _FCITX_INSTANCE_INTERNAL_H_
 #define _FCITX_INSTANCE_INTERNAL_H_
 #include "inputcontext.h"
+#include "fcitx-utils/dict.h"
 
 struct _FcitxInstance {
-    FcitxInputContext* currentIC;
+    FcitxDict* inputContexts;
+    FcitxInputDevice
 };
 
 #endif

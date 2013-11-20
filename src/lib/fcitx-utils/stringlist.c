@@ -30,14 +30,16 @@ fcitx_utils_string_list_new()
 }
 
 FCITX_EXPORT_API FcitxStringList*
-fcitx_utils_string_list_append_split(FcitxStringList *list,
-                                const char* str, const char *delm)
+fcitx_utils_string_list_append_split_full(FcitxStringList *list,
+                                const char* str, const char *delm, boolean keepEmpty)
 {
     const char *src = str;
     const char *pos;
     size_t len;
     while ((len = strcspn(src, delm)), *(pos = src + len)) {
-        fcitx_utils_string_list_append_len(list, src, len);
+        if (keepEmpty || len) {
+            fcitx_utils_string_list_append_len(list, src, len);
+        }
         src = pos + 1;
     }
     if (len)
@@ -46,10 +48,10 @@ fcitx_utils_string_list_append_split(FcitxStringList *list,
 }
 
 FCITX_EXPORT_API
-FcitxStringList* fcitx_utils_string_split(const char* str, const char* delm)
+FcitxStringList* fcitx_utils_string_split_full(const char* str, const char* delm, boolean keepEmpty)
 {
     FcitxStringList* array = utarray_new(fcitx_str_icd);
-    return fcitx_utils_string_list_append_split(array, str, delm);
+    return fcitx_utils_string_list_append_split_full(array, str, delm, keepEmpty);
 }
 
 FCITX_EXPORT_API

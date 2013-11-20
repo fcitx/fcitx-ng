@@ -35,8 +35,10 @@ void io_callback(FcitxIOEvent* event, int fd, int revents, void* data)
 int main()
 {
     FcitxMainLoop* mainloop = fcitx_mainloop_new();
-    int r = pipe2(p, O_NONBLOCK);
+    int r = pipe(p);
     assert(r == 0);
+    assert(fcntl(p[0], F_SETFL, O_NONBLOCK) != -1);
+    assert(fcntl(p[1], F_SETFL, O_NONBLOCK) != -1);
     fcitx_mainloop_register_timeout_event(mainloop, 0, false, timeout_callback, NULL, mainloop);
     fcitx_mainloop_register_io_event(mainloop, p[0], FIOEF_IN, io_callback, NULL, mainloop);
     fcitx_mainloop_run(mainloop);

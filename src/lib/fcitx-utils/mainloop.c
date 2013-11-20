@@ -116,9 +116,15 @@ FcitxMainLoop* fcitx_mainloop_new(void )
         return NULL;
     }
 
-    if (pipe2(mainloop->wakeupPipe, O_NONBLOCK | O_CLOEXEC) < 0) {
-        free(mainloop);
-        return NULL;
+    if (pipe(mainloop->wakeupPipe) < 0) {
+        goto fcitx_mainloop_new_error_end;
+    }
+
+    if (fcntl(mainloop->wakeupPipe[0], F_SETFD, FD_CLOEXEC) == -1
+     || fcntl(mainloop->wakeupPipe[0], F_SETFL, O_NONBLOCK) == -1
+     || fcntl(mainloop->wakeupPipe[1], F_SETFD, FD_CLOEXEC) == -1
+     || fcntl(mainloop->wakeupPipe[1], F_SETFL, O_NONBLOCK) == -1) {
+        goto fcitx_mainloop_new_error_end;
     }
 
     utarray_init(&mainloop->pollfds, &pollfd_icd);
@@ -133,6 +139,10 @@ FcitxMainLoop* fcitx_mainloop_new(void )
     mainloop->rebuildPollfds = true;
 
     return mainloop;
+
+fcitx_mainloop_new_error_end:
+    free(mainloop);
+    return NULL;
 }
 
 void fcitx_mainloop_wakeup(FcitxMainLoop* mainloop)

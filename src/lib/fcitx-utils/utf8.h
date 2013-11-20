@@ -37,14 +37,15 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <fcitx-utils/macro.h>
+#include <fcitx-utils/types.h>
 
 FCITX_DECL_BEGIN
 
 /** max length of a utf8 character */
-#define UTF8_MAX_LENGTH 6
+#define FCITX_UTF8_MAX_LENGTH 6
 
 /** check utf8 character */
-#define ISUTF8_CB(c)  (((c)&0xc0) == 0x80)
+#define FCITX_ISUTF8_CB(c)  (((c)&0xc0) == 0x80)
 
 static _FCITX_INLINE_ int
 fcitx_utf8_type(char c)
@@ -130,7 +131,7 @@ char*  fcitx_utf8_get_nth_char(const char* s, uint32_t n);
  * @param s string
  * @return valid or not
  **/
-int    fcitx_utf8_check_string(const char *s);
+boolean fcitx_utf8_check_string(const char *s);
 
 /**
  * get extened character
@@ -139,7 +140,7 @@ int    fcitx_utf8_check_string(const char *s);
  * @param max_len max length
  * @return int
  **/
-int    fcitx_utf8_get_char_extended(const char *p, int max_len);
+uint32_t fcitx_utf8_get_char_extended(const char *p, int max_len);
 
 /**
  * get validated character
@@ -148,7 +149,7 @@ int    fcitx_utf8_get_char_extended(const char *p, int max_len);
  * @param max_len max length
  * @return int
  **/
-int    fcitx_utf8_get_char_validated(const char *p, int max_len);
+uint32_t fcitx_utf8_get_char_validated(const char *p, int max_len);
 
 
 /**

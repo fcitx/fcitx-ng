@@ -21,3 +21,6 @@ foreach(TESTCASE ${FCITX_UTILS_TEST})
     add_test(NAME ${TESTCASE}
              COMMAND ${TESTCASE})
 endforeach()
+
+add_executable(testcomposetable testcomposetable.c)
+target_link_libraries(testcomposetable fcitx-composetable)
