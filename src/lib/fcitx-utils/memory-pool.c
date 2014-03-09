@@ -51,7 +51,7 @@ void fcitx_memory_chunk_free(void* c) {
 }
 
 FCITX_EXPORT_API
-FcitxMemoryPool* fcitx_memory_pool_create()
+FcitxMemoryPool* fcitx_memory_pool_new()
 {
     FcitxMemoryPool* pool = fcitx_utils_malloc0(sizeof(FcitxMemoryPool));
     pool->fullchunks = utarray_new(&chunk_icd);
@@ -108,7 +108,7 @@ void* fcitx_memory_pool_alloc(FcitxMemoryPool* pool, size_t size)
 }
 
 FCITX_EXPORT_API
-void fcitx_memory_pool_destroy(FcitxMemoryPool* pool)
+void fcitx_memory_pool_free(FcitxMemoryPool* pool)
 {
     utarray_free(pool->fullchunks);
     utarray_free(pool->chunks);

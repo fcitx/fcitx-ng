@@ -59,7 +59,7 @@ typedef struct _FcitxMemoryPool FcitxMemoryPool;
  *
  * @return FcitxMemoryPool*
  **/
-FcitxMemoryPool* fcitx_memory_pool_create();
+FcitxMemoryPool* fcitx_memory_pool_new();
 
 /**
  * allocate piece of memory from pool
@@ -85,7 +85,7 @@ void *fcitx_memory_pool_alloc_align(FcitxMemoryPool* pool,
  * @param pool memory ppol
  * @return void
  **/
-void fcitx_memory_pool_destroy(FcitxMemoryPool* pool);
+void fcitx_memory_pool_free(FcitxMemoryPool* pool);
 
 /**
  * free all the memory inside the pool but keep the pool itself

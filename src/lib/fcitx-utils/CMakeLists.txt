@@ -16,6 +16,10 @@ set(FCITX_UTILS_SOURCES
     fs.c
     library.c
     mainloop.c
+    list.c
+    radix.c
+    multiradix.c
+    array.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -44,6 +48,9 @@ set(FCITX_UTILS_HEADERS
     bitset.h
     types.h
     atomic.h
+    radix.h
+    multiradix.h
+    array.h
     )
 
 include_directories(${DL_INCLUDE_DIR})

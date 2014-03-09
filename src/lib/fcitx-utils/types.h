@@ -3,6 +3,7 @@
 
 #include <fcitx-utils/macro.h>
 #include <stdint.h>
+#include <stddef.h>
 
 FCITX_DECL_BEGIN
 
@@ -33,6 +34,9 @@ typedef enum _FcitxTriState
  **/
 typedef void (*FcitxDestroyNotify)(void *p);
 typedef void (*FcitxClosureFunc)(void*, void*);
+typedef int (*FcitxCompareFunc)(const void*, const void*);
+typedef int (*FcitxCompareClosureFunc)(const void*, const void*, void*);
+
 /**
  * Function used to free the content of a structure,
  * DO NOT free the pointer itself

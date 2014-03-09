@@ -29,6 +29,7 @@
 #include <fcitx-utils/macro.h>
 #include <fcitx-utils/types.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stddef.h>
 
 FCITX_DECL_BEGIN
@@ -44,8 +45,12 @@ void* fcitx_utils_malloc0(size_t bytes);
 
 #define fcitx_utils_new(TYPE) ((TYPE*) fcitx_utils_malloc0(sizeof(TYPE)))
 #define fcitx_utils_newv(TYPE, _N) ((TYPE*) fcitx_utils_malloc0(_N*sizeof(TYPE)))
+#define fcitx_utils_new_with_private(TYPE) ((TYPE*) fcitx_utils_malloc0(sizeof(TYPE) + sizeof(TYPE##Private)))
+
+#define FCITX_GET_PRIVATE(p, TYPE) ((TYPE##Private*) (((char*) p) + sizeof(TYPE)))
 
 void fcitx_utils_free(void*);
+void fcitx_utils_closure_free(void* data, void* userData);
 char* fcitx_utils_get_fcitx_path(const char* type);
 char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* filename);
 
@@ -95,7 +100,7 @@ boolean fcitx_utils_isspace(char c)
 
 
 /**
- * if obj is null, free it, after that, if str is NULL set it with NULL,
+ * if obj is not null, free it, after that, if str is NULL set it with NULL,
  * if str is not NULL, set it with strdup(str)
  *
  * @param obj object string
@@ -118,6 +123,154 @@ fcitx_utils_align_to(uintptr_t len, uintptr_t align)
 void *fcitx_utils_custom_bsearch(const void *key, const void *base,
                                  size_t nmemb, size_t size, int accurate,
                                  int (*compar)(const void *, const void *));
+
+
+
+/**
+ * read a little endian 32bit unsigned int from a file
+ *
+ * @param fp FILE* to read from
+ * @param p return the integer read
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+size_t fcitx_utils_read_uint32(FILE *fp, uint32_t *p);
+
+/**
+ * read a little endian 32bit int from a file
+ *
+ * @param fp FILE* to read from
+ * @param p return the integer read
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+static inline size_t
+fcitx_utils_read_int32(FILE *fp, int32_t *p)
+{
+return fcitx_utils_read_uint32(fp, (uint32_t*)p);
+}
+
+/**
+ * write a little endian 32bit int to a file
+ *
+ * @param fp FILE* to write to
+ * @param i int to write in host endian
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+size_t fcitx_utils_write_uint32(FILE *fp, uint32_t i);
+
+/**
+ * write a little endian 32bit unsigned int to a file
+ *
+ * @param fp FILE* to write to
+ * @param i int to write in host endian
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+static inline size_t
+fcitx_utils_write_int32(FILE *fp, int32_t i)
+{
+return fcitx_utils_write_uint32(fp, (uint32_t)i);
+}
+
+
+/**
+ * read a little endian 64bit unsigned int from a file
+ *
+ * @param fp FILE* to read from
+ * @param p return the integer read
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+size_t fcitx_utils_read_uint64(FILE *fp, uint64_t *p);
+
+/**
+ * read a little endian 64bit int from a file
+ *
+ * @param fp FILE* to read from
+ * @param p return the integer read
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+static inline size_t
+fcitx_utils_read_int64(FILE *fp, int64_t *p)
+{
+return fcitx_utils_read_uint64(fp, (uint64_t*)p);
+}
+
+/**
+ * write a little endian 64bit int to a file
+ *
+ * @param fp FILE* to write
+ * @param i int to write in host endian
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+size_t fcitx_utils_write_uint64(FILE *fp, uint64_t i);
+
+/**
+ * write a little endian 64bit unsigned int to a file
+ *
+ * @param fp FILE* to write to
+ * @param i int to write in host endian
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+static inline size_t
+fcitx_utils_write_int64(FILE *fp, int64_t i)
+{
+return fcitx_utils_write_uint64(fp, (uint64_t)i);
+}
+
+
+/**
+ * read a little endian 16bit unsigned int from a file
+ *
+ * @param fp FILE* to read from
+ * @param p return the integer read
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+size_t fcitx_utils_read_uint16(FILE *fp, uint16_t *p);
+
+/**
+ * read a little endian 16bit int from a file
+ *
+ * @param fp FILE* to read from
+ * @param p return the integer read
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+static inline size_t
+fcitx_utils_read_int16(FILE *fp, int16_t *p)
+{
+return fcitx_utils_read_uint16(fp, (uint16_t*)p);
+}
+
+/**
+ * write a little endian 16bit int to a file
+ *
+ * @param fp FILE* to write to
+ * @param i int to write in host endian
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+size_t fcitx_utils_write_uint16(FILE *fp, uint16_t i);
+
+/**
+ * write a little endian 16bit unsigned int to a file
+ *
+ * @param fp FILE* to write to
+ * @param i int to write in host endian
+ * @return 1 on success, 0 on error
+ * @since 4.2.6
+ **/
+static inline size_t
+fcitx_utils_write_int16(FILE *fp, int16_t i)
+{
+return fcitx_utils_write_uint16(fp, (uint16_t)i);
+}
 
 FCITX_DECL_END
 

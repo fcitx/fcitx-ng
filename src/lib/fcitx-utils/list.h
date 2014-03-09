@@ -57,6 +57,9 @@ static _FCITX_ALWAYS_INLINE_ void fcitx_list_remove(FcitxListHead* pos)
     pos->prev = NULL;
 }
 
+void fcitx_list_sort(FcitxListHead* list, size_t offset, FcitxCompareFunc compare);
+void fcitx_list_sort_r(FcitxListHead* list, size_t offset, FcitxCompareClosureFunc compare, void* data);
+
 #define fcitx_list_foreach(key, head) \
     for (FcitxListHead *key = (head)->next; key != (head); \
          key = key->next)

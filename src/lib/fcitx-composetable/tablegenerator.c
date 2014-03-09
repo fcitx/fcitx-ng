@@ -322,7 +322,7 @@ FcitxComposeTable* _fcitx_compose_table_alloc(const char* locale)
         p++;
     }
     
-    fcitx_utils_atomic_add(&table->refcount, 1);
+    fcitx_compose_table_ref(table);
     
     return table;
 }
@@ -362,7 +362,7 @@ FcitxComposeTable* fcitx_compose_table_new_from_file(const char* systemComposeDi
     int nPossibleLocation = 1;
     const char* possibleLocation[1] = {systemComposeDir};
     _fcitx_compose_table_find_system_compose_dir(table, nPossibleLocation, possibleLocation);
-    
+
     boolean found = _fcitx_compose_table_process_file(table, composeFile);
     if (found && utarray_len(table->composeTable) == 0) {
         table->state = FCTS_EmptyTable;
@@ -411,7 +411,7 @@ fcitx_compose_table_print(FcitxComposeTable* table)
             printf("<%s> ", key);
             i ++;
         }
-        
+
         char utf8[FCITX_UTF8_MAX_LENGTH + 1];
         fcitx_ucs4_to_utf8(element->value, utf8);
         printf(": \"%s\"\n", utf8);

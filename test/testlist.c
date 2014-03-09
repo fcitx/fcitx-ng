@@ -1,5 +1,6 @@
 #include "fcitx-utils/list.h"
 #include <assert.h>
+#include <stdio.h>
 #include <stddef.h>
 
 struct Data
@@ -7,6 +8,12 @@ struct Data
     int a;
     FcitxListHead list;
 };
+
+int cmp(const void* a, const void* b)
+{
+    const struct Data* da = a, *db = b;
+    return db->a - da->a;
+}
 
 int main()
 {
@@ -72,11 +79,19 @@ int main()
         j ++;
     }
     assert(j == N_DATA);
+    
+    fcitx_list_sort(&head, offsetof(struct Data, list), cmp);
+    j = 0;
+    fcitx_list_entry_foreach_nl(d2, struct Data, &head, list) {
+        assert(d2->a == N_DATA - j - 1);
+        j ++;
+    }
+    assert(j == N_DATA);
 
     j = 0;
     fcitx_list_entry_foreach_safe_nl(d2, tmpd, struct Data, &head, list) {
         fcitx_list_remove(&d2->list);
-        assert(d2->a == j);
+        assert(d2->a == N_DATA - j - 1);
         j ++;
     }
     assert(j == N_DATA);

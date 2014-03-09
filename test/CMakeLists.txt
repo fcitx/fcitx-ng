@@ -13,6 +13,7 @@ set(FCITX_UTILS_TEST
     testlibrary
     testxdg
     testmainloop
+    testradix
     testlist)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})
@@ -24,3 +25,7 @@ endforeach()
 
 add_executable(testcomposetable testcomposetable.c)
 target_link_libraries(testcomposetable fcitx-composetable)
+
+
+add_executable(testtable testtable.c)
+target_link_libraries(testtable fcitx-im)
