@@ -11,6 +11,9 @@ typedef struct _FcitxTableDict FcitxTableDict;
 
 FcitxTableDict* fcitx_tabledict_new();
 
+boolean fcitx_tabledict_load_text(FcitxTableDict* tableDict, FILE* fp);
+boolean fcitx_tabledict_save_text(FcitxTableDict* tableDict, FILE* fp);
+
 boolean fcitx_tabledict_load(FcitxTableDict* tableDict, FILE* fp);
 boolean fcitx_tabledict_load_symbol(FcitxTableDict* tableDict, const char* file);
 boolean fcitx_tabledict_load_auto_phrase_file(FcitxTableDict* tableDict, const char* filename);
