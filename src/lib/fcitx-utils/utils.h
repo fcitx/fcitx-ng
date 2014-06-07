@@ -30,6 +30,7 @@
 #include <fcitx-utils/types.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <stddef.h>
 
 FCITX_DECL_BEGIN
@@ -96,6 +97,18 @@ static _FCITX_INLINE_
 boolean fcitx_utils_isspace(char c)
 {
     return c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == ' ';
+}
+
+static _FCITX_INLINE_
+boolean fcitx_utils_isdigit(char c)
+{
+    return c >= '0' && c <= '9';
+}
+
+static _FCITX_ALWAYS_INLINE_
+char* fcitx_utils_strchr0(const char* s, int c)
+{
+    return (char*)( s ? strchr(s, c) : NULL);
 }
 
 

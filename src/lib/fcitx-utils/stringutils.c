@@ -2,7 +2,6 @@
 #include "utils.h"
 #include <stdarg.h>
 #include <stdio.h>
-#include <ctype.h>
 #include <limits.h>
 
 FCITX_EXPORT_API char*
@@ -181,9 +180,7 @@ fcitx_utils_unescape_str_inplace(char *str)
     return str;
 }
 
-
-FCITX_EXPORT_API
-char* fcitx_utils_trim(const char* s)
+static _FCITX_ALWAYS_INLINE_ void fcitx_utils_trim_helper(const char* s, char** pStart, char** pEnd)
 {
     register const char *end;
 
@@ -194,12 +191,32 @@ char* fcitx_utils_trim(const char* s)
 
     end++;
 
+    *pStart = (char*) s;
+    *pEnd = (char*) end;
+}
+
+FCITX_EXPORT_API
+char* fcitx_utils_trim(const char* s)
+{
+    char *start, *end;
+    fcitx_utils_trim_helper(s, &start, &end);
+
     size_t len = end - s;
 
     char* result = malloc(len + 1);
     memcpy(result, s, len);
     result[len] = '\0';
     return result;
+}
+
+FCITX_EXPORT_API
+char* fcitx_utils_inplace_trim(char* s)
+{
+    char *start, *end;
+    fcitx_utils_trim_helper(s, &start, &end);
+
+    *end = '\0';
+    return start;
 }
 
 #define REHASH(a) \

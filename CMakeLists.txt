@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(fcitx)
 
-set(FCITX_VERSION "4.2.8.1")
+set(FCITX_VERSION "4.2.99")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
@@ -12,11 +12,14 @@ option(ENABLE_COVERAGE "Enable coverage" Off)
 set_property(GLOBAL PROPERTY "__FCITX_INTERNAL_BUILD" On)
 
 include(CheckCCompilerFlag)
+include(CheckFunctionExists)
 
 check_c_compiler_flag("-std=c99" C99_SUPPORTED)
 if (NOT C99_SUPPORTED)
     message(FATAL_ERROR "C99 is required to compile Fcitx.")
 endif()
+check_function_exists(open_memstream HAVE_OPEN_MEMSTREAM)
+check_function_exists(strtok_r HAVE_STRTOK_R)
 
 include(GNUInstallDirs)
 
@@ -95,3 +98,5 @@ if (ENABLE_TEST)
     enable_testing()
     add_subdirectory(test)
 endif ()
+
+add_subdirectory(tools)

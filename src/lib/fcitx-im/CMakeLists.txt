@@ -1,5 +1,5 @@
 set(FCITX_IM_SOURCES
-    #table/table.c
+    pinyin/pinyinbasedict.c
     table/tabledict.c
     )
 

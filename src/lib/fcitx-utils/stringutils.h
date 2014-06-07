@@ -85,10 +85,19 @@ void fcitx_utils_cat_str_with_len(char *out, size_t len, size_t n,
 /**
  * Trim the input string's white space
  *
- * @param s input string
+ * @param s NUL-terminated string
  * @return char* new malloced string, need to free'd by caller
  **/
 char* fcitx_utils_trim(const char *s);
+
+/**
+ * this function will directly modify the string and return the non space start point
+ * and will automatically remove trailling space in-place by null terminator.
+ *
+ * @param s NUL-terminated string
+ * @return start pointer of n
+ */
+char* fcitx_utils_inplace_trim(char* s);
 
 char* fcitx_utils_backward_search(const char *haystack, size_t l, const char *needle, size_t ol, size_t from);
 char* fcitx_utils_strrstr(const char* haystack, const char* needle);

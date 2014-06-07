@@ -1,8 +1,6 @@
 
 #include <locale.h>
 #include <stdio.h>
-#include <ctype.h>
-
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/types.h"
 #include "fcitx-utils/dict.h"
@@ -58,7 +56,7 @@ void _fcitx_compose_table_parse_sequence(FcitxComposeTable* table, const char* l
     if (!(quote = strchr(colon, '"'))) {
         return;
     }
-    if (quote[1] == '\\' && isdigit(quote[2])) {
+    if (quote[1] == '\\' && fcitx_utils_isdigit(quote[2])) {
         int base = 8;
         const char* start = quote + 2;
         if (quote[3] == 'x') {
@@ -229,7 +227,7 @@ void _fcitx_compose_table_read_locale_mappings(FcitxComposeTable* table)
                         p++;
                     }
                     
-                    fcitx_dict_insert(table->localeToTable, locale, item, true);
+                    fcitx_dict_insert_by_str(table->localeToTable, locale, item, true);
                 }
                 fcitx_utils_string_list_free(list);
             }
@@ -270,7 +268,7 @@ void _fcitx_compose_table_find_compose_file(FcitxComposeTable* table)
         _fcitx_compose_table_read_locale_mappings(table);
         if (table->state == FCTS_NoErrors) {
             char* item;
-            if (!fcitx_dict_lookup(table->localeToTable, table->locale, (void**) &item)) {
+            if (!fcitx_dict_lookup_by_str(table->localeToTable, table->locale, (void**) &item)) {
                 table->state = FCTS_UnsupportedLocale;
             } else {
                 char* composeFile;

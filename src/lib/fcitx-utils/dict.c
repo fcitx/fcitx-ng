@@ -29,10 +29,10 @@ FcitxDict* fcitx_dict_new(FcitxDestroyNotify freeFunc)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_dict_insert(FcitxDict* dict, const char* key, void* value, boolean replace)
+boolean fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* value, boolean replace)
 {
     FcitxDictItem* item = NULL;
-    HASH_FIND_STR(dict->head, key, item);
+    HASH_FIND(hh, dict->head, key, keyLen, item);
     if (item) {
         if (replace) {
             if (dict->destroyNotify) {
@@ -50,17 +50,18 @@ boolean fcitx_dict_insert(FcitxDict* dict, const char* key, void* value, boolean
         return false;
     }
 
-    item->key = strdup(key);
+    item->key = malloc(keyLen);
+    memcpy(item->key, key, keyLen);
     item->data = value;
-    HASH_ADD_KEYPTR(hh, dict->head, item->key, strlen(item->key), item);
+    HASH_ADD_KEYPTR(hh, dict->head, item->key, keyLen, item);
     return true;
 }
 
 FCITX_EXPORT_API
-boolean fcitx_dict_lookup(FcitxDict* dict, const char* key, void** dataOut)
+boolean fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut)
 {
     FcitxDictItem* item = NULL;
-    HASH_FIND_STR(dict->head, key, item);
+    HASH_FIND(hh, dict->head, key, keyLen, item);
 
     if (item == NULL) {
         return false;
@@ -78,7 +79,7 @@ size_t fcitx_dict_size(FcitxDict* dict)
     return HASH_COUNT(dict->head);
 }
 
-FCITX_EXPORT_API
+// pass arg as NULL can avoid real data being free'd
 void fcitx_dict_item_free(FcitxDictItem* item, FcitxDict* arg)
 {
     if (arg && arg->destroyNotify) {
@@ -89,10 +90,20 @@ void fcitx_dict_item_free(FcitxDictItem* item, FcitxDict* arg)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_dict_remove(FcitxDict* dict, const char* key, void** dataOut)
+void fcitx_dict_remove_all(FcitxDict* dict)
+{
+    while (dict->head) {
+        FcitxDictItem* item = dict->head;
+        HASH_DEL(dict->head, item);
+        fcitx_dict_item_free(item, dict);
+    }
+}
+
+FCITX_EXPORT_API
+boolean fcitx_dict_remove(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut)
 {
     FcitxDictItem* item = NULL;
-    HASH_FIND_STR(dict->head, key, item);
+    HASH_FIND(hh, dict->head, key, keyLen, item);
 
     if (item == NULL) {
         return false;
@@ -130,11 +141,7 @@ void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data)
 FCITX_EXPORT_API
 void fcitx_dict_free(FcitxDict* dict)
 {
-    while (dict->head) {
-        FcitxDictItem* item = dict->head;
-        HASH_DEL(dict->head, item);
-        fcitx_dict_item_free(item, dict);
-    }
+    fcitx_dict_remove_all(dict);
     free(dict);
 }
 
