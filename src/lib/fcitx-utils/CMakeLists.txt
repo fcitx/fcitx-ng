@@ -3,7 +3,7 @@ set(FCITX_UTILS_SOURCES
     utf8.c
     qsort_r.c
     msort_r.c
-    utils.c
+    misc.c
     handler-table.c
     memory-pool.c
     objpool.c
@@ -12,14 +12,12 @@ set(FCITX_UTILS_SOURCES
     stringlist.c
     stringhashset.c
     dict.c
-    xdg.c
     fs.c
     library.c
     mainloop.c
     list.c
-    radix.c
-    multiradix.c
     array.c
+    standardpath.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -30,7 +28,7 @@ set(FCITX_UTILS_HEADERS
     keysymgen.h
     uthash.h
     utarray.h
-    utils.h
+    misc.h
     handler-table.h
     memory-pool.h
     objpool.h
@@ -39,7 +37,6 @@ set(FCITX_UTILS_HEADERS
     stringlist.h
     stringhashset.h
     dict.h
-    xdg.h
     fs.h
     library.h
     mainloop.h
@@ -48,9 +45,8 @@ set(FCITX_UTILS_HEADERS
     bitset.h
     types.h
     atomic.h
-    radix.h
-    multiradix.h
     array.h
+    standardpath.h
     )
 
 include_directories(${DL_INCLUDE_DIR})

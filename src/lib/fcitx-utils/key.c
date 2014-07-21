@@ -1,14 +1,9 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include "utarray.h"
-#include "key.h"
 #include "utils.h"
-#include "stringlist.h"
 #include "keynametable.h"
 #include "keynametable-compat.h"
-#include "keydata.h"
-#include "utf8.h"
 
 #define _WHITE_SPACE "\f\n\r\t\v "
 
@@ -137,14 +132,14 @@ char* FcitxKeyToString(FcitxKey hotkey)
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyCheck(FcitxKey toCheck, FcitxKey key)
+bool FcitxKeyCheck(FcitxKey toCheck, FcitxKey key)
 {
     toCheck.state &= FcitxKeyState_Ctrl_Alt_Shift | FcitxKeyState_Super;
     return (toCheck.sym == key.sym && toCheck.state == key.state);
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyIsDigit(FcitxKey key)
+bool FcitxKeyIsDigit(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -159,7 +154,7 @@ boolean FcitxKeyIsDigit(FcitxKey key)
 
 
 FCITX_EXPORT_API
-boolean FcitxKeyIsUAZ(FcitxKey key)
+bool FcitxKeyIsUAZ(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -172,7 +167,7 @@ boolean FcitxKeyIsUAZ(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyIsLAZ(FcitxKey key)
+bool FcitxKeyIsLAZ(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -186,7 +181,7 @@ boolean FcitxKeyIsLAZ(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyIsSimple(FcitxKey key)
+bool FcitxKeyIsSimple(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -200,7 +195,7 @@ boolean FcitxKeyIsSimple(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyIsModifierCombine(FcitxKey key)
+bool FcitxKeyIsModifierCombine(FcitxKey key)
 {
     if (key.sym == FcitxKey_Control_L || key.sym == FcitxKey_Control_R
      || key.sym == FcitxKey_Alt_L || key.sym == FcitxKey_Alt_R
@@ -212,7 +207,7 @@ boolean FcitxKeyIsModifierCombine(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyIsCursorMove(FcitxKey key)
+bool FcitxKeyIsCursorMove(FcitxKey key)
 {
     if ((key.sym == FcitxKey_Left
      || key.sym == FcitxKey_Right
@@ -280,7 +275,7 @@ void FcitxKeyListFree(FcitxKeyList* keyList)
 }
 
 FCITX_EXPORT_API
-boolean FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key)
+bool FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key)
 {
     utarray_foreach(curKey, &keyList->list, FcitxKey) {
         if (FcitxKeyCheck(*curKey, key)) {

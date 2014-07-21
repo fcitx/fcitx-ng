@@ -33,11 +33,14 @@
 #ifndef _FCITX_UTF8_H_
 #define _FCITX_UTF8_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/types.h>
+#include "macro.h"
+#include "types.h"
 
 FCITX_DECL_BEGIN
 
@@ -131,7 +134,7 @@ char*  fcitx_utf8_get_nth_char(const char* s, uint32_t n);
  * @param s string
  * @return valid or not
  **/
-boolean fcitx_utf8_check_string(const char *s);
+bool fcitx_utf8_check_string(const char *s);
 
 /**
  * get extened character

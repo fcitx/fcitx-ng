@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "fcitx-utils/utarray.h"
+#include "fcitx-utils/utils.h"
 
 int main()
 {

@@ -29,7 +29,10 @@
 
 struct _FcitxInstance {
     FcitxDict* inputContexts;
-    FcitxInputDevice
+    FcitxMainLoop* mainloop;
+    FcitxStringList* enableList;
+    FcitxStringList* disableList;
+    char* uiname;
 };
 
 #endif

@@ -21,8 +21,7 @@
  */
 
 #include <stdlib.h>
-#include "utarray.h"
-#include "sort_common.h"
+#include "utils.h"
 
 /* damn it, freebsd and linux don't have the same interface for qsort_r,
  * and old glibc don't have qsort_r, force it to use third party version.

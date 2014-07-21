@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
-#include "fcitx-utils/objpool.h"
+#include "fcitx-utils/utils.h"
 
 int main()
 {

@@ -115,7 +115,7 @@ int fcitx_obj_pool_alloc_id(FcitxObjPool* pool)
 }
 
 FCITX_EXPORT_API
-boolean
+bool
 fcitx_obj_pool_free_id(FcitxObjPool* pool, int i)
 {
     unsigned int offset = fcitx_obj_pool_offset(pool, i);

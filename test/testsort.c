@@ -2,7 +2,7 @@
 #include <assert.h>
 #include <time.h>
 #include <stdlib.h>
-#include "fcitx-utils/utarray.h"
+#include "fcitx-utils/utils.h"
 
 typedef struct {
     int a;

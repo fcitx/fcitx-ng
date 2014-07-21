@@ -1,10 +1,13 @@
 #ifndef _FCITX_UTILS_STRINGUTILS_H_
 #define _FCITX_UTILS_STRINGUTILS_H_
 
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/utarray.h>
-#include <fcitx-utils/uthash.h>
-#include <fcitx-utils/types.h>
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
+#include "macro.h"
+#include "utarray.h"
+#include "types.h"
 
 FCITX_DECL_BEGIN
 
@@ -102,10 +105,10 @@ char* fcitx_utils_inplace_trim(char* s);
 char* fcitx_utils_backward_search(const char *haystack, size_t l, const char *needle, size_t ol, size_t from);
 char* fcitx_utils_strrstr(const char* haystack, const char* needle);
 
-boolean fcitx_utils_string_starts_with(const char* s, const char* needle);
-boolean fcitx_utils_string_ends_with(const char* s, const char* needle);
+bool fcitx_utils_string_starts_with(const char* s, const char* needle);
+bool fcitx_utils_string_ends_with(const char* s, const char* needle);
 
-char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, boolean nullIfNoMatch);
+char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, bool nullIfNoMatch);
 
 FCITX_DECL_END
 

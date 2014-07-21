@@ -1,4 +1,3 @@
-#include "stringutils.h"
 #include "utils.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -275,13 +274,13 @@ char* fcitx_utils_strrstr(const char* haystack, const char* needle)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_utils_string_starts_with(const char* s, const char* needle)
+bool fcitx_utils_string_starts_with(const char* s, const char* needle)
 {
     return strncmp(s, needle, strlen(needle)) == 0;
 }
 
 FCITX_EXPORT_API
-boolean fcitx_utils_string_ends_with(const char* s, const char* needle)
+bool fcitx_utils_string_ends_with(const char* s, const char* needle)
 {
     size_t len = strlen(s);
     size_t needleLen = strlen(needle);
@@ -295,7 +294,7 @@ boolean fcitx_utils_string_ends_with(const char* s, const char* needle)
 #define MAX_REPLACE_INDICES_NUM 128
 
 FCITX_EXPORT_API
-char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, boolean nullIfNoMatch)
+char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, bool nullIfNoMatch)
 {
     int beforeLen = strlen(before);
     int afterLen = strlen(after);

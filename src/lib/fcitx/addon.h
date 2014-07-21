@@ -1,6 +1,7 @@
 #ifndef __FCITX_ADDON_H__
 #define __FCITX_ADDON_H__
 #include <fcitx-utils/types.h>
+#include <fcitx-utils/stringlist.h>
 
 /**
  * Addon Category Definition
@@ -36,15 +37,17 @@ typedef struct _FcitxAddonMananger FcitxAddonManager;
 
 #define FCITX_ABI_VERSION 6
 
-typedef boolean (*FcitxAddonResolveFunctionFunc)(const char* name, void* data);
-typedef boolean (*FcitxAddonListFunc)(void* data);
-typedef boolean (*FcitxAddonLoadMetaData)(const char* name, void* data);
+typedef bool (*FcitxAddonResolveFunctionFunc)(const char* name, void* data);
+typedef bool (*FcitxAddonLoadMetaData)(const char* name, void* data);
 
 typedef struct _FcitxAddonFactory {
     FcitxAddonResolveFunctionFunc resolveFunction;
-    FcitxAddonListFunc list;
     FcitxDestroyNotify destroyNotify;
     void *data;
 } FcitxAddonResolver;
+
+FCITX_EXPORT_API FcitxAddonManager* FcitxAddonManagerNew();
+FCITX_EXPORT_API FcitxAddonManager* FcitxAddonManagerFree(FcitxAddonManager* manager);
+FCITX_EXPORT_API void FcitxAddonManagerRegisterDefaultResolver(FcitxAddonManager* mananger);
 
 #endif // __FCITX_ADDON_H__

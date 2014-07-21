@@ -5,9 +5,13 @@
 #ifndef _FCITX_LINKED_LIST_H_
 #define _FCITX_LINKED_LIST_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
 #include <stdlib.h>
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/types.h>
+#include "macro.h"
+#include "types.h"
 
 FCITX_DECL_BEGIN
 
@@ -23,7 +27,7 @@ static _FCITX_ALWAYS_INLINE_ void fcitx_list_init(FcitxListHead* pos)
     pos->prev = pos;
 }
 
-static _FCITX_ALWAYS_INLINE_ boolean fcitx_list_is_empty(FcitxListHead* pos)
+static _FCITX_ALWAYS_INLINE_ bool fcitx_list_is_empty(FcitxListHead* pos)
 {
     return pos->next == pos;
 }

@@ -8,7 +8,7 @@
 
 typedef struct _FcitxGetLine
 {
-    boolean isFile;
+    bool isFile;
     union {
         const char* buf;
         FILE* fp;

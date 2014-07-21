@@ -18,10 +18,14 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef _UTILS_HANDLER_TABLE_H
-#define _UTILS_HANDLER_TABLE_H
+#ifndef _FCITX_UTILS_HANDLER_TABLE_H
+#define _FCITX_UTILS_HANDLER_TABLE_H
 
-#include <fcitx-utils/macro.h>
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
+#include "macro.h"
 #include "types.h"
 #include <string.h>
 
@@ -75,7 +79,7 @@ int fcitx_handler_key_append(FcitxHandlerTable *table,
                                 FcitxHandlerKey *key, const void *obj);
 int fcitx_handler_key_prepend(FcitxHandlerTable *table,
                                 FcitxHandlerKey *key, const void *obj);
-boolean fcitx_handler_key_is_empty(FcitxHandlerTable* table, FcitxHandlerKey* key);
+bool fcitx_handler_key_is_empty(FcitxHandlerTable* table, FcitxHandlerKey* key);
 
 void *fcitx_handler_table_get_by_id(FcitxHandlerTable *table, int id);
 
@@ -83,10 +87,10 @@ FcitxHandlerKey *fcitx_handler_table_get_key_by_id(FcitxHandlerTable *table, int
 
 FcitxHandlerKey *fcitx_handler_table_find_key(
     FcitxHandlerTable *table, size_t keysize,
-    const void *key, boolean create);
+    const void *key, bool create);
 static _FCITX_INLINE_ FcitxHandlerKey*
 fcitx_handler_table_find_strkey(FcitxHandlerTable *table, const char *key,
-                                boolean create)
+                                bool create)
 {
     return fcitx_handler_table_find_key(table, strlen(key),
                                         (const void*)key, create);

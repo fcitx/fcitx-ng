@@ -1,8 +1,11 @@
-#ifndef ARRAY_H
-#define ARRAY_H
+#ifndef _FCITX_UTILS_ARRAY_H_
+#define _FCITX_UTILS_ARRAY_H_
 
-#include <fcitx-utils/types.h>
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
 
+#include "types.h"
 
 typedef struct _FcitxPtrArray FcitxPtrArray;
 typedef size_t (*FcitxPtrArraySizeGrowFunc)(FcitxPtrArray* array, size_t oldSize, void* userData);
@@ -43,4 +46,4 @@ static _FCITX_ALWAYS_INLINE_ void fcitx_ptr_array_pop(FcitxPtrArray* array, void
     fcitx_ptr_array_remove(array, array->len - 1, steal);
 }
 
-#endif // ARRAY_H
+#endif // _FCITX_UTILS_ARRAY_H_

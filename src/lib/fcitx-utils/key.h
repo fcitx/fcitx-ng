@@ -1,8 +1,10 @@
 #ifndef _FCITX_UTILS_KEY_H_
+#define _FCITX_UTILS_KEY_H_
 
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/keysym.h>
-#include <fcitx-utils/types.h>
+
+#include "macro.h"
+#include "keysym.h"
+#include "types.h"
 
 FCITX_DECL_BEGIN
 
@@ -21,21 +23,21 @@ typedef struct _FcitxKeyList FcitxKeyList;
 
 FcitxKey FcitxKeyParse(const char* keyString);
 char* FcitxKeyToString(FcitxKey hotkey);
-boolean FcitxKeyCheck(FcitxKey toCheck, FcitxKey key);
+bool FcitxKeyCheck(FcitxKey toCheck, FcitxKey key);
 
-boolean FcitxKeyIsDigit(FcitxKey key);
-boolean FcitxKeyIsUAZ(FcitxKey key);
-boolean FcitxKeyIsLAZ(FcitxKey key);
-boolean FcitxKeyIsSimple(FcitxKey key);
-boolean FcitxKeyIsModifierCombine(FcitxKey key);
-boolean FcitxKeyIsCursorMove(FcitxKey key);
+bool FcitxKeyIsDigit(FcitxKey key);
+bool FcitxKeyIsUAZ(FcitxKey key);
+bool FcitxKeyIsLAZ(FcitxKey key);
+bool FcitxKeyIsSimple(FcitxKey key);
+bool FcitxKeyIsModifierCombine(FcitxKey key);
+bool FcitxKeyIsCursorMove(FcitxKey key);
 
 FcitxKey FcitxKeyNormalize(FcitxKey key);
 
 FcitxKeyList* FcitxKeyListNew(void);
 FcitxKeyList* FcitxKeyListParse(const char* keyString);
 void FcitxKeyListFree(FcitxKeyList* keyList);
-boolean FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key);
+bool FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key);
 void FcitxKeyListAppend(FcitxKeyList* keyList, FcitxKey key);
 void FcitxKeyListClear(FcitxKeyList* keyList);
 char* FcitxKeyListToString(FcitxKeyList* keyList);

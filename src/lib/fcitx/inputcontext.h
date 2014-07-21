@@ -50,7 +50,7 @@ typedef struct _FcitxKeyEvent
     FcitxKey key;
     FcitxKey rawKey;
     int keyCode;
-    boolean isRelease;
+    bool isRelease;
 } FcitxKeyEvent;
 
 FcitxInputContext* FcitxInputContextNew();

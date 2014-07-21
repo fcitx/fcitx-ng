@@ -20,8 +20,7 @@
 
 #include <string.h>
 #include <stdint.h>
-#include "macro.h"
-#include "utf8.h"
+#include "utils.h"
 
 #define CONT(i)   FCITX_ISUTF8_CB(in[i])
 #define VAL(i, s) ((in[i]&0x3f) << s)
@@ -322,7 +321,7 @@ uint32_t fcitx_utf8_get_char_validated(const char *p,
 }
 
 FCITX_EXPORT_API
-boolean fcitx_utf8_check_string(const char *s)
+bool fcitx_utf8_check_string(const char *s)
 {
     while (*s) {
         uint32_t chr;

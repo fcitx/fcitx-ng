@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2012~2012 by CSSlayer                                   *
+ *   Copyright (C) 2014~2014 by CSSlayer                                   *
  *   wengxt@gmail.com                                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -18,43 +18,68 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef FCITX_UTILS_KEYSYM_H
-#define FCITX_UTILS_KEYSYM_H
+#ifndef _FCITX_STANDARD_PATH_H_
+#define _FCITX_STANDARD_PATH_H_
 
 #if !defined (_FCITX_UTILS_H_INSIDE_)
 #error "Only <fcitx-utils/utils.h> can be included directly."
 #endif
 
 #include "macro.h"
-#include "keysymgen.h"
+#include "types.h"
+#include "stringlist.h"
+#include "dict.h"
 
 FCITX_DECL_BEGIN
 
-/**
- * fcitx key state (modifier keys)
- **/
-typedef enum _FcitxKeyState {
-    FcitxKeyState_None = 0,
-    FcitxKeyState_Shift = 1 << 0,
-    FcitxKeyState_CapsLock = 1 << 1,
-    FcitxKeyState_Ctrl = 1 << 2,
-    FcitxKeyState_Alt = 1 << 3,
-    FcitxKeyState_Alt_Shift = FcitxKeyState_Alt | FcitxKeyState_Shift,
-    FcitxKeyState_Ctrl_Shift = FcitxKeyState_Ctrl | FcitxKeyState_Shift,
-    FcitxKeyState_Ctrl_Alt = FcitxKeyState_Ctrl | FcitxKeyState_Alt,
-    FcitxKeyState_Ctrl_Alt_Shift = FcitxKeyState_Ctrl | FcitxKeyState_Alt | FcitxKeyState_Shift,
-    FcitxKeyState_NumLock = 1 << 4,
-    FcitxKeyState_Super = 1 << 6,
-    FcitxKeyState_ScrollLock = 1 << 7,
-    FcitxKeyState_MousePressed = 1 << 8,
-    FcitxKeyState_HandledMask = 1 << 24,
-    FcitxKeyState_IgnoredMask = 1 << 25,
-    FcitxKeyState_Super2    = 1 << 26,
-    FcitxKeyState_Hyper    = 1 << 27,
-    FcitxKeyState_Meta     = 1 << 28,
-    FcitxKeyState_UsedMask = 0x5c001fff,
-    FcitxKeyState_SimpleMask = FcitxKeyState_Ctrl_Alt_Shift | FcitxKeyState_Super | FcitxKeyState_Super2 | FcitxKeyState_Hyper | FcitxKeyState_Meta,
-} FcitxKeyState;
+typedef struct _FcitxStandardPath FcitxStandardPath;
+
+typedef struct _FcitxStandardPathFile
+{
+    FILE* fp;
+    char* path;
+} FcitxStandardPathFile;
+
+typedef enum _FcitxStandardPathType
+{
+    FSPT_Config,
+    FSPT_Data,
+    FSPT_Cache,
+    FSPT_Runtime,
+} FcitxStandardPathType;
+
+typedef enum _FcitxStandardPathFilterFlag
+{
+    FSPFT_Writable = (1 << 0),
+    FSPFT_Append = (1 << 1),
+    FSPFT_Prefix = (1 << 2),
+    FSPFT_Suffix = (1 << 3),
+    FSPFT_Callback = (1 << 4),
+    FSPFT_Sort = (1 << 5),
+    FSPFT_LocateAll = (1 << 6),
+    FSPFT_Write = FSPFT_Writable | FSPFT_Append,
+} FcitxxStandardPathFilterFlag;
+
+typedef bool (*FcitxxStandardPathFilterCallback)(const char* path, void* data);
+
+typedef struct _FcitxStandardPathFilter
+{
+    uint32_t flag;
+    FcitxxStandardPathFilterCallback callback;
+    void* userData;
+    char* suffix;
+    char* prefix;
+} FcitxStandardPathFilter;
+
+FcitxStandardPath* fcitx_standard_path_new();
+
+FcitxStandardPathFile* fcitx_standard_path_locate(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path, uint32_t flag);
+
+FcitxDict* fcitx_standard_path_match(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path, FcitxStandardPathFilter* filter);
+
+void fcitx_standard_path_free(FcitxStandardPath* sp);
+
+void fcitx_standard_path_file_close(FcitxStandardPathFile* file);
 
 FCITX_DECL_END
 

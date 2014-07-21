@@ -2,9 +2,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+#include "fcitx-utils/utils.h"
 #include "fcitx-utils/keynametable.h"
 #include "fcitx-utils/keynametable-compat.h"
-#include "fcitx-utils/key.h"
 
 #define CHECK_ARRAY_ORDER(ARRAY, COMPARE_FUNC) \
     for (size_t i = 0; i < FCITX_ARRAY_SIZE(ARRAY) - 1; i ++) { \

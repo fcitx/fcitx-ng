@@ -7,7 +7,7 @@
 
 typedef struct _FcitxStringMapItem {
     char* key;
-    boolean value;
+    bool value;
     UT_hash_handle hh;
 } FcitxStringMapItem;
 
@@ -44,7 +44,7 @@ void fcitx_string_map_from_string(FcitxStringMap* map, const char* str, char del
         if (utarray_len(item) == 2) {
             char* key = *(char**) utarray_eltptr(item, 0);
             char* value = *(char**) utarray_eltptr(item, 1);
-            boolean bvalue = strcmp(value, "true") == 0;
+            bool bvalue = strcmp(value, "true") == 0;
             fcitx_string_map_set(map, key, bvalue);
         }
         fcitx_utils_string_list_free(item);
@@ -52,8 +52,8 @@ void fcitx_string_map_from_string(FcitxStringMap* map, const char* str, char del
     fcitx_utils_string_list_free(list);
 }
 
-FCITX_EXPORT_API boolean
-fcitx_string_map_get(FcitxStringMap* map, const char* key, boolean _default)
+FCITX_EXPORT_API bool
+fcitx_string_map_get(FcitxStringMap* map, const char* key, bool _default)
 {
     FcitxStringMapItem* item = NULL;
     HASH_FIND_STR(map->items, key, item);
@@ -63,7 +63,7 @@ fcitx_string_map_get(FcitxStringMap* map, const char* key, boolean _default)
 }
 
 FCITX_EXPORT_API
-void fcitx_string_map_set(FcitxStringMap* map, const char* key, boolean value)
+void fcitx_string_map_set(FcitxStringMap* map, const char* key, bool value)
 {
     FcitxStringMapItem* item = NULL;
     HASH_FIND_STR(map->items, key, item);

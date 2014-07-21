@@ -22,7 +22,7 @@ struct _FcitxAddon {
     char *name; /**< addon name, used as a identifier */
     char *generalname; /**< addon name, translatable user visible string */
     char *comment; /**< longer desc translatable user visible string */
-    boolean enabled; /**< enabled or not*/
+    bool enabled; /**< enabled or not*/
     uint32_t category; /**< addon category */
     char *library; /**< library string */
     char *depend; /**< dependency string */
@@ -33,8 +33,8 @@ struct _FcitxAddon {
     IMRegisterMethod registerMethod; /**< the input method register method */
     char* registerArgument; /**< extra argument for register, unused for now */
     char* uifallback; /**< if's a user interface addon, the fallback UI addon name */
-    boolean advance; /**< a hint for GUI */
-    boolean loadLocal;
+    bool advance; /**< a hint for GUI */
+    bool loadLocal;
 };
 
 struct _FcitxAddonInstance

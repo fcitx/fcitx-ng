@@ -18,10 +18,8 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include "uthash.h"
-#include "handler-table.h"
-#include "objpool.h"
 #include "utils.h"
+#include "uthash.h"
 
 struct _FcitxHandlerKey {
     int first;
@@ -67,7 +65,7 @@ FCITX_EXPORT_API FcitxHandlerTable*
 
 FCITX_EXPORT_API FcitxHandlerKey*
 (fcitx_handler_table_find_key)(FcitxHandlerTable *table, size_t keysize,
-                               const void *key, boolean create)
+                               const void *key, bool create)
 {
     FcitxHandlerKey *key_struct = NULL;
     HASH_FIND(hh, table->keys, key, keysize, key_struct);
@@ -144,7 +142,7 @@ fcitx_handler_key_prepend(FcitxHandlerTable *table, FcitxHandlerKey *key_struct,
 }
 
 FCITX_EXPORT_API
-boolean fcitx_handler_key_is_empty(FcitxHandlerTable* table, FcitxHandlerKey* key)
+bool fcitx_handler_key_is_empty(FcitxHandlerTable* table, FcitxHandlerKey* key)
 {
     FCITX_UNUSED(table);
     return key->last == FCITX_OBJECT_POOL_INVALID_ID

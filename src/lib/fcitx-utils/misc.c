@@ -2,25 +2,7 @@
 #include <string.h>
 
 #include "config.h"
-#include "stringutils.h"
 #include "utils.h"
-
-FCITX_EXPORT_API
-void* fcitx_utils_malloc0(size_t bytes)
-{
-    void *p = malloc(bytes);
-    if (!p)
-        return NULL;
-
-    memset(p, 0, bytes);
-    return p;
-}
-
-FCITX_EXPORT_API
-void fcitx_utils_free(void* ptr)
-{
-    free(ptr);
-}
 
 FCITX_EXPORT_API
 void fcitx_utils_closure_free(void* data, void* userData)

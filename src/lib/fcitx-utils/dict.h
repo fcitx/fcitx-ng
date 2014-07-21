@@ -1,15 +1,17 @@
 #ifndef _FCITX_UTILS_DICT_H_
 #define _FCITX_UTILS_DICT_H_
 
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/types.h>
 #include <stddef.h>
 #include <string.h>
+
+#include "macro.h"
+#include "types.h"
 
 FCITX_DECL_BEGIN
 
 typedef struct _FcitxDict FcitxDict;
-typedef void (*FcitxDictForeachFunc)(const char* key, void* data, void* arg);
+typedef bool (*FcitxDictForeachFunc)(const char* key, size_t keyLen, void** data, void* arg);
+typedef int (*FcitxDictCompareFunc)(const char* keyA, size_t keyALen, const void* dataA, const char* keyB, size_t keyBLen, const void* dataB, void* userData);
 
 FcitxDict* fcitx_dict_new(FcitxDestroyNotify freeFunc);
 
@@ -19,7 +21,9 @@ void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictForeachFunc func, void* data
 
 void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data);
 
-boolean fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* value, boolean replace);
+void fcitx_dict_remove_if(FcitxDict* dict, FcitxDictForeachFunc func, void* data);
+
+bool fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* value, bool replace);
 
 /**
  * insert an item into dictionary
@@ -31,7 +35,7 @@ boolean fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void*
  * @param replace replace existing key
  * @return sucessfully inserted or not
  */
-static inline boolean fcitx_dict_insert_by_str(FcitxDict* dict, const char* key, void* value, boolean replace)
+static inline bool fcitx_dict_insert_by_str(FcitxDict* dict, const char* key, void* value, bool replace)
 {
     return fcitx_dict_insert(dict, key, strlen(key), value, replace);
 }
@@ -41,18 +45,20 @@ static inline boolean fcitx_dict_insert_by_str(FcitxDict* dict, const char* key,
 #define fcitx_dict_insert_data(DICT, KEY, KEYLEN, VALUE) \
     fcitx_dict_insert(DICT, KEY, KEYLEN, (void*)((intptr_t)(VALUE)), REPLACE);
 
-boolean fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
-static inline boolean fcitx_dict_lookup_by_str(FcitxDict* dict, const char* key, void** dataOut)
+bool fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
+static inline bool fcitx_dict_lookup_by_str(FcitxDict* dict, const char* key, void** dataOut)
 {
     return fcitx_dict_lookup(dict, key, strlen(key), dataOut);
 }
 
-boolean fcitx_dict_remove(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
+bool fcitx_dict_remove(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
 
-static inline boolean fcitx_dict_remove_by_str(FcitxDict* dict, const char* key, void** dataOut)
+static inline bool fcitx_dict_remove_by_str(FcitxDict* dict, const char* key, void** dataOut)
 {
     return fcitx_dict_remove(dict, key, strlen(key), dataOut);
 }
+
+void fcitx_dict_sort(FcitxDict* dict, FcitxDictCompareFunc compare, void* userData);
 
 void fcitx_dict_remove_all(FcitxDict* dict);
 

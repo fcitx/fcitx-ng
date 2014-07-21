@@ -18,8 +18,6 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include "memory-pool.h"
-#include "utarray.h"
 #include "utils.h"
 
 /* use 8k as pagesize */

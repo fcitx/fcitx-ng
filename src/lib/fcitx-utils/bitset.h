@@ -22,9 +22,14 @@
 #ifndef _FCITX_UTILS_BITSET_H_
 #define _FCITX_UTILS_BITSET_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
 #include <string.h>
 #include <stdint.h>
-#include <fcitx-utils/macro.h>
+#include "macro.h"
+#include "misc.h"
 
 FCITX_DECL_BEGIN
 

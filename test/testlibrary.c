@@ -1,6 +1,6 @@
 #include <assert.h>
 #include <string.h>
-#include "fcitx-utils/library.h"
+#include "fcitx-utils/utils.h"
 
 #define DATA "AAAAAAAAA"
 #define MAGIC "MAGIC_TEST_DATA"

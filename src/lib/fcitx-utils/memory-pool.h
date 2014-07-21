@@ -46,7 +46,7 @@
 #define _FCITX_MEMORY_H_
 
 #include <stdlib.h>
-#include <fcitx-utils/macro.h>
+#include "macro.h"
 
 FCITX_DECL_BEGIN
 

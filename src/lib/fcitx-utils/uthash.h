@@ -752,8 +752,8 @@
 /* This is an adaptation of Simon Tatham's O(n log(n)) mergesort */
 /* Note that HASH_SORT assumes the hash handle name to be hh.
  * HASH_SRT was added to allow the hash handle name to be passed in. */
-#define HASH_SORT(head, cmpfcn) HASH_SRT(hh, head, cmpfcn)
-#define HASH_SRT(hh, head, cmpfcn)                                      \
+#define HASH_SORT(head, cmpfcn, arg) HASH_SRT(hh, head, cmpfcn, arg)
+#define HASH_SRT(hh, head, cmpfcn, arg)                                 \
         do {                                                            \
             unsigned _hs_i;                                             \
             unsigned _hs_looping, _hs_nmerges,                          \
@@ -804,7 +804,7 @@
                                                           _hs_p)),      \
                                             TYPEOF(head)                \
                                             (ELMT_FROM_HH((head)->hh.tbl, \
-                                                          _hs_q)))) <= 0) { \
+                                                          _hs_q)), arg)) <= 0) { \
                                 _hs_e = _hs_p;                          \
                                 _hs_p = (UT_hash_handle*)               \
                                     ((_hs_p->next) ?                    \

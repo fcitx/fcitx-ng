@@ -2,8 +2,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include "fcitx-utils/objpool.h"
-#include "fcitx-utils/handler-table.h"
+#include "fcitx-utils/utils.h"
 
 #define KEY1 "key1"
 #define KEY2 "key-different-length2"

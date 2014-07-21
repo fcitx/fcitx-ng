@@ -47,8 +47,8 @@
 
 #include <stdint.h>
 #include <stdlib.h>
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/types.h>
+#include "macro.h"
+#include "types.h"
 
 FCITX_DECL_BEGIN
 
@@ -113,7 +113,7 @@ int fcitx_obj_pool_alloc_id(FcitxObjPool *pool);
  * @return free succeeded or failed
  * @since 4.2.7
  **/
-boolean fcitx_obj_pool_free_id(FcitxObjPool *pool, int i);
+bool fcitx_obj_pool_free_id(FcitxObjPool *pool, int i);
 
 
 static _FCITX_INLINE_ size_t

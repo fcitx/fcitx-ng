@@ -1,8 +1,5 @@
 #include <assert.h>
-#include "fcitx-utils/stringmap.h"
-#include "fcitx-utils/stringutils.h"
-#include "fcitx-utils/stringhashset.h"
-#include "fcitx-utils/stringlist.h"
+#include "fcitx-utils/utils.h"
 
 #define TEST_STR "a,b,c,d"
 
@@ -109,7 +106,7 @@ void test_string_hash_set()
 {
 
     FcitxStringHashSet* sset = fcitx_utils_string_hash_set_parse("a,b,c,d", ',');
-    assert(HASH_COUNT(sset) == 4);
+    assert(fcitx_dict_size(sset) == 4);
     assert(fcitx_utils_string_hash_set_contains(sset, "c"));
     assert(!fcitx_utils_string_hash_set_contains(sset, "e"));
     fcitx_utils_string_hash_set_remove(sset, "c");

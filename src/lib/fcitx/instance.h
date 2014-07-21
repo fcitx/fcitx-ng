@@ -33,11 +33,7 @@ FCITX_DECL_BEGIN
 
 typedef struct _FcitxInstance FcitxInstance;
 
-FcitxInputContext* FcitxInstanceCreateInputContext(FcitxInstance* instance);
-void FcitxInstanceDestroyInputContext(FcitxInstance* instance, FcitxInputContext* inputContext);
-void FcitxInstanceLookupInputContextById(FcitxInstance* instance, uint64_t id);
-void FcitxInstanceFocusIn(FcitxInstance* instance, FcitxInputContext* inputContext);
-void FcitxInstanceFocusOut(FcitxInstance* instance, FcitxInputContext* inputContext);
+FcitxInstance* FcitxInstanceCreate(int argc, char* argv[]);
 
 FCITX_DECL_END
 

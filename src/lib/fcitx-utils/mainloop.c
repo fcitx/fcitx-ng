@@ -1,4 +1,3 @@
-#include "mainloop.h"
 #include <poll.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -8,11 +7,6 @@
 #include <time.h>
 #include <stdio.h>
 #include "utils.h"
-#include "types.h"
-#include "handler-table.h"
-#include "config.h"
-#include "list.h"
-#include "utarray.h"
 
 static UT_icd pollfd_icd = {
     sizeof(struct pollfd), NULL, NULL, NULL
@@ -39,7 +33,7 @@ struct _FcitxTimeoutEvent
     FcitxTimeoutEventCallback callback;
     uint32_t timeout;
     FcitxListHead list;
-    boolean repeat;
+    bool repeat;
     int64_t time;
     void* userdata;
     FcitxDestroyNotify destroyNotify;
@@ -51,17 +45,17 @@ struct _FcitxMainLoop
     FcitxListHead timeoutHandler;
     int64_t nextTimeout;
 
-    boolean rebuildPollfds;
+    bool rebuildPollfds;
     UT_array pollfds;
     int npollfds;
 
-    boolean quit;
+    bool quit;
     int wakeupPipe[2];
     int pollRet;
 };
 
 static void fcitx_mainloop_wakeup(FcitxMainLoop* mainloop);
-static boolean get_time(int64_t* ms);
+static bool get_time(int64_t* ms);
 static int fcitx_io_event_flag_to_libc_flag(int flag)
 {
     return ((flag & FIOEF_IN) ? POLLIN : 0)
@@ -235,7 +229,7 @@ void fcitx_mainloop_dispatch_io(FcitxMainLoop* mainloop)
     }
 }
 
-boolean get_time(int64_t* ms)
+bool get_time(int64_t* ms)
 {
     int r = -1;
 #ifdef HAVE_CLOCK_GETTIME
@@ -394,7 +388,7 @@ FcitxIOEvent* fcitx_mainloop_register_io_event(FcitxMainLoop* mainloop, int fd, 
 }
 
 FCITX_EXPORT_API
-FcitxTimeoutEvent* fcitx_mainloop_register_timeout_event(FcitxMainLoop* mainloop, uint32_t timeout, boolean repeat, FcitxTimeoutEventCallback callback, FcitxDestroyNotify freeFunc, void* userdata)
+FcitxTimeoutEvent* fcitx_mainloop_register_timeout_event(FcitxMainLoop* mainloop, uint32_t timeout, bool repeat, FcitxTimeoutEventCallback callback, FcitxDestroyNotify freeFunc, void* userdata)
 {
     FcitxTimeoutEvent* event = fcitx_utils_new(FcitxTimeoutEvent);
     event->timeout = timeout;

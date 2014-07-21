@@ -1,5 +1,5 @@
 #include <assert.h>
-#include "fcitx-utils/memory-pool.h"
+#include "fcitx-utils/utils.h"
 
 int main()
 {

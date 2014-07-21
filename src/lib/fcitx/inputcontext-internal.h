@@ -14,7 +14,7 @@ struct _FcitxInputContext {
     int offsetX; /**< x offset to the window */
     int offsetY; /**< y offset to the window */
     char* imname;
-    boolean switchBySwitchKey;
+    bool switchBySwitchKey;
     UT_array* data;
     char* prgname; /**< program name */
     FcitxTriState mayUsePreedit;

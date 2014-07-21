@@ -27,12 +27,14 @@
 #ifndef _FCITX_UTILS_UTARRAY_H_
 #define _FCITX_UTILS_UTARRAY_H_
 
-#define UTARRAY_VERSION 1.9
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
 
 #include <stddef.h>  /* size_t */
 #include <string.h>  /* memset, etc */
 #include <stdlib.h>
-#include <fcitx-utils/macro.h>
+#include "macro.h"
 
 typedef void (ctor_f)(void *dst, const void *src);
 typedef void (dtor_f)(void *elt);

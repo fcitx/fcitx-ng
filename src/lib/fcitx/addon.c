@@ -3,9 +3,15 @@
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/stringhashset.h"
 #include "fcitx-utils/dict.h"
-#include <fcitx-utils/xdg.h>
 
 FcitxAddonResolver sharedLibraryResolver = {
+    NULL,
+    NULL,
+    NULL,
+    NULL
+};
+
+FcitxAddonResolver staticLibraryResolver = {
     NULL,
     NULL,
     NULL,
@@ -35,28 +41,22 @@ void FcitxAddonManagerFree(FcitxAddonManager* manager)
 
 void FcitxAddonManagerRegisterResolver(FcitxAddonManager* manager, const char* name, FcitxAddonResolver* resolver)
 {
-    fcitx_dict_insert(manager->resolvers, name, resolver, false);
+    fcitx_dict_insert_by_str(manager->resolvers, name, resolver, false);
 }
 
-void FcitxAddonManagerRegisterDefaultResolver(FcitxAddonManager* mananger, void* data)
+void FcitxAddonManagerRegisterDefaultResolver(FcitxAddonManager* mananger)
 {
-
-}
-
-void FcitxAddonManagerLoadCallback(void* value, void* data)
-{
-    FcitxAddonManager* manager = data;
-    FcitxAddonResolver* resolver = value;
-    resolver->list(resolver->data);
+    fcitx_dict_insert_by_str(mananger->resolvers, "staticlibrary", &staticLibraryResolver, false);
+    fcitx_dict_insert_by_str(mananger->resolvers, "sharedlibrary", &sharedLibraryResolver, false);
 }
 
 void FcitxAddonManagerLoad(FcitxAddonManager* manager)
 {
-    fcitx_dict_foreach(manager->resolvers, FcitxAddonManagerLoadCallback, manager);
+    FcitxStringHashSet* addonNames = FcitxXDGGetFiles("addon", NULL, ".conf");
+    HASH_FOREACH(str, sset, FcitxStringHashSet) {
+    }
 }
 
 void FcitxSharedLibraryResolverList(void* data)
 {
-    FcitxAddonResolver* resolver = data; 
-    FcitxXDGGetLibFile();
 }

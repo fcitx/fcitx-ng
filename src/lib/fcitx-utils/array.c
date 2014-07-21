@@ -1,7 +1,5 @@
-#include "array.h"
-#include "utils.h"
-#include "utarray.h"
 #include <stdlib.h>
+#include "utils.h"
 
 typedef struct _FcitxPtrArrayPrivate FcitxPtrArrayPrivate;
 struct _FcitxPtrArrayPrivate

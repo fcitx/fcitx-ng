@@ -1,7 +1,6 @@
 #include <assert.h>
 #include <string.h>
-#include "fcitx-utils/utf8.h"
-#include "fcitx-utils/macro.h"
+#include "fcitx-utils/utils.h"
 
 #define BUF_SIZE 9
 

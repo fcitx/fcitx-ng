@@ -1,20 +1,22 @@
-#include "fcitx-utils/dict.h"
+#include "fcitx-utils/utils.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
-void foreach_func(const char* key, void* a, void* b)
+bool foreach_func(const char* key, size_t keyLen, void** a, void* b)
 {
     if (strcmp(key, "B") == 0) {
-        assert(strcmp(a, "C") == 0);
+        assert(strcmp(*a, "C") == 0);
     } else if (strcmp(key, "A") == 0) {
-        assert(strcmp(a, "D") == 0);
+        assert(strcmp(*a, "D") == 0);
     }
+    return false;
 }
 
-void steal_func(const char* key, void* a, void* b)
+bool steal_func(const char* key, size_t keyLen, void** a, void* b)
 {
     free(a);
+    return false;
 }
 
 int main()

@@ -1,4 +1,4 @@
-#include "fcitx-utils/list.h"
+#include "fcitx-utils/utils.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stddef.h>

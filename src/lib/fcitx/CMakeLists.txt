@@ -1,11 +1,11 @@
 set(LIBFCITX_SOURCES
-  instance.c
   addon.c
+  instance.c
   )
 
 set(FCITX_HEADERS
-  instance.h
-  addon.h
+    addon.h
+    instance.h
   )
 
 set(FCITX_INTERNAL_HEADERS

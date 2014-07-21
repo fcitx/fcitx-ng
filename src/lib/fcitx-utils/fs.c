@@ -1,13 +1,12 @@
-#include "fs.h"
-#include "utils.h"
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include "utils.h"
 
 FCITX_EXPORT_API
-boolean fcitx_utils_isdir(const char *path)
+bool fcitx_utils_isdir(const char *path)
 {
     struct stat stats;
     return (stat(path, &stats) == 0 && S_ISDIR(stats.st_mode) &&
@@ -15,7 +14,7 @@ boolean fcitx_utils_isdir(const char *path)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_utils_isreg(const char *path)
+bool fcitx_utils_isreg(const char *path)
 {
     struct stat stats;
     return (stat(path, &stats) == 0 && S_ISREG(stats.st_mode) &&
@@ -23,7 +22,7 @@ boolean fcitx_utils_isreg(const char *path)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_utils_islnk(const char *path)
+bool fcitx_utils_islnk(const char *path)
 {
     struct stat stats;
     return stat(path, &stats) == 0 && S_ISLNK(stats.st_mode);
@@ -32,12 +31,11 @@ boolean fcitx_utils_islnk(const char *path)
 FCITX_EXPORT_API
 size_t fcitx_utils_clean_path(const char* path, char* buf)
 {
-    buf[0] = '\0';
     if (path[0] == '\0') {
         return 0;
     }
 
-    // skip first slash, for possible furture windows support
+    // skip first group of continous slash, for possible furture windows support
     size_t i = 0;
     while (path[i] == '/') {
         buf[i] = path[i];
@@ -61,7 +59,7 @@ size_t fcitx_utils_clean_path(const char* path, char* buf)
             j++;
         }
 
-        boolean eaten = false;
+        bool eaten = false;
         // everything is a dot
         if (dotcount == i - lasti) {
             if (dotcount == 1) {
@@ -100,11 +98,12 @@ size_t fcitx_utils_clean_path(const char* path, char* buf)
             j++;
         }
     }
+    buf[j] = '\0';
     return j;
 }
 
 FCITX_EXPORT_API
-boolean fcitx_utils_make_path(const char *path)
+bool fcitx_utils_make_path(const char *path)
 {
     char *p;
     if (fcitx_utils_isdir(path))
@@ -115,7 +114,7 @@ boolean fcitx_utils_make_path(const char *path)
         return false;
     }
 
-    boolean result = false;
+    bool result = false;
 
     len = fcitx_utils_clean_path(path, opath);
     // remove trailling slash

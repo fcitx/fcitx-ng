@@ -1,6 +1,10 @@
 #ifndef _FCITX_UTILS_MACRO_H_
 #define _FCITX_UTILS_MACRO_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
 /** export the symbol */
 #define FCITX_EXPORT_API __attribute__ ((visibility("default")))
 

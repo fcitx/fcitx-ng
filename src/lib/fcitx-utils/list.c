@@ -1,4 +1,4 @@
-#include "list.h"
+#include "utils.h"
 
 static int fcitx_list_cmp_helper(const void* a, const void* b, void* data)
 {

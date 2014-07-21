@@ -21,9 +21,13 @@
 #ifndef _FCITX_LIBRARY_H_
 #define _FCITX_LIBRARY_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
 #include <stdlib.h>
-#include <fcitx-utils/macro.h>
-#include <fcitx-utils/types.h>
+#include "macro.h"
+#include "types.h"
 
 typedef enum _FcitxLibraryLoadHint
 {
@@ -38,10 +42,10 @@ typedef void (*FcitxLibraryDataParser)(const char* data, void* arg);
 FcitxLibrary* fcitx_library_new(const char* path);
 void fcitx_library_free(FcitxLibrary* lib);
 
-boolean fcitx_library_load(FcitxLibrary* lib, uint32_t hint);
-boolean fcitx_library_unload(FcitxLibrary* lib);
+bool fcitx_library_load(FcitxLibrary* lib, uint32_t hint);
+bool fcitx_library_unload(FcitxLibrary* lib);
 void* fcitx_library_resolve(FcitxLibrary* lib, const char* symbol);
-boolean fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* magic, size_t lenOfMagic, FcitxLibraryDataParser parser, void* arg);
+bool fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* magic, size_t lenOfMagic, FcitxLibraryDataParser parser, void* arg);
 const char* fcitx_library_error(FcitxLibrary* lib);
 
 #endif // _FCITX_LIBRARY_H_

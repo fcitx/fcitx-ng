@@ -2,9 +2,7 @@
 #define FCITX_COMPOSE_TABLE_TABLEGENERATOR_INTERNAL_H
 
 #include "tablegenerator.h"
-#include "fcitx-utils/dict.h"
-#include "fcitx-utils/utarray.h"
-#include "fcitx-utils/keysymgen.h"
+#include "fcitx-utils/utils.h"
 
 typedef struct _FcitxComposeTableElement {
     FcitxKeySym keys[FCITX_KEYSEQUENCE_MAX_LEN];

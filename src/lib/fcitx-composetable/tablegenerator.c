@@ -18,10 +18,10 @@ char* _get_locale() {
 }
 
 
-boolean _fcitx_compose_table_process_file(FcitxComposeTable* table, const char* filename);
+bool _fcitx_compose_table_process_file(FcitxComposeTable* table, const char* filename);
     
 void _fcitx_compose_table_find_system_compose_dir(FcitxComposeTable* table, int nPossibleLocation, const char* possibleLocation[]) {
-    boolean found = false;
+    bool found = false;
     for (int i = 0; i < nPossibleLocation; ++i) {
         char* path;
         fcitx_utils_alloc_cat_str(path, possibleLocation[i], "/compose.dir");
@@ -171,7 +171,7 @@ void _fcitx_compose_table_parse_include(FcitxComposeTable* table, const char* li
     free(trimLine);
 }
 
-boolean _fcitx_compose_table_process_file(FcitxComposeTable* table, const char* filename)
+bool _fcitx_compose_table_process_file(FcitxComposeTable* table, const char* filename)
 {
     FILE* fp = fopen(filename, "r");
     if (fp) {
@@ -243,7 +243,7 @@ void _fcitx_compose_table_read_locale_mappings(FcitxComposeTable* table)
 
 void _fcitx_compose_table_find_compose_file(FcitxComposeTable* table)
 {
-    boolean found = false;
+    bool found = false;
     char* env;
     // check if XCOMPOSEFILE points to a Compose file
     if ((env = getenv("XCOMPOSEFILE")) != NULL) {
@@ -361,7 +361,7 @@ FcitxComposeTable* fcitx_compose_table_new_from_file(const char* systemComposeDi
     const char* possibleLocation[1] = {systemComposeDir};
     _fcitx_compose_table_find_system_compose_dir(table, nPossibleLocation, possibleLocation);
 
-    boolean found = _fcitx_compose_table_process_file(table, composeFile);
+    bool found = _fcitx_compose_table_process_file(table, composeFile);
     if (found && utarray_len(table->composeTable) == 0) {
         table->state = FCTS_EmptyTable;
     }

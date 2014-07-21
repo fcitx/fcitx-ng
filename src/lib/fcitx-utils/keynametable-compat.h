@@ -21,7 +21,7 @@
 #ifndef _FCITX_UTILS_KEYNAMETABLE_COMPAT_H_
 #define _FCITX_UTILS_KEYNAMETABLE_COMPAT_H_
 
-#include <fcitx-utils/keysym.h>
+#include "keysym.h"
 
 static const struct KeyNameListCompat {
     char         *name;

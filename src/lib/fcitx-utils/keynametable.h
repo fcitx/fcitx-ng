@@ -21,9 +21,8 @@
 #ifndef _FCITX_UTILS_KEYNAMETABLE_H_
 #define _FCITX_UTILS_KEYNAMETABLE_H_
 
-
-#include <fcitx-utils/types.h>
-#include <fcitx-utils/macro.h>
+#include "types.h"
+#include "macro.h"
 
 FCITX_DECL_BEGIN
 

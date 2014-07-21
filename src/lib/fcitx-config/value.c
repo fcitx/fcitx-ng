@@ -20,7 +20,7 @@ void* fcitx_value_alloc(FcitxConfigurationValueType type)
             size = sizeof(FcitxColor);
             break;
         case FCVT_Boolean:
-            size = sizeof(boolean);
+            size = sizeof(bool);
             break;
         case FCVT_Enum:
             size = sizeof(int);

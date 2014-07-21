@@ -1,9 +1,7 @@
+#include <stdlib.h>
 #include "composecontext.h"
 #include "tablegenerator-internal.h"
 #include "fcitx-utils/utils.h"
-#include "fcitx-utils/atomic.h"
-#include <fcitx-utils/utf8.h>
-#include <stdlib.h>
 
 struct _FcitxComposeContext
 {
@@ -14,7 +12,7 @@ struct _FcitxComposeContext
     char utf8Buffer[FCITX_UTF8_MAX_LENGTH];
 };
 
-boolean is_composing_key (FcitxKeySym sym) {
+bool is_composing_key (FcitxKeySym sym) {
     switch (sym) {
         case FcitxKey_Multi_key:
         case FcitxKey_dead_grave:
@@ -87,7 +85,7 @@ int compose_cmp(const void* a, const void* b)
 }
 
 
-boolean _fcitx_compose_context_check_table(FcitxComposeContext* context)
+bool _fcitx_compose_context_check_table(FcitxComposeContext* context)
 {
     FcitxComposeTableElement* elem = utarray_custom_bsearch(context, context->table->composeTable, false, compose_cmp);
 
@@ -135,7 +133,7 @@ boolean _fcitx_compose_context_check_table(FcitxComposeContext* context)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_compose_context_process_key(FcitxComposeContext* context, FcitxKey key)
+bool fcitx_compose_context_process_key(FcitxComposeContext* context, FcitxKey key)
 {
     context->unicode = 0;
     if (fcitx_compose_table_state(context->table) != FCTS_NoErrors) {

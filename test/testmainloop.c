@@ -1,4 +1,4 @@
-#include <fcitx-utils/mainloop.h>
+#include "fcitx-utils/utils.h"
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>

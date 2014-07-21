@@ -1,7 +1,6 @@
-#include "stringlist.h"
-#include "stringutils.h"
 #include <stdarg.h>
 #include <stdio.h>
+#include "utils.h"
 
 /* last we pre-define a few icd for common utarrays of ints and strings */
 static void utarray_str_cpy(void *dst, const void *src)
@@ -31,7 +30,7 @@ fcitx_utils_string_list_new()
 
 FCITX_EXPORT_API FcitxStringList*
 fcitx_utils_string_list_append_split_full(FcitxStringList *list,
-                                const char* str, const char *delm, boolean keepEmpty)
+                                const char* str, const char *delm, bool keepEmpty)
 {
     const char *src = str;
     const char *pos;
@@ -48,7 +47,7 @@ fcitx_utils_string_list_append_split_full(FcitxStringList *list,
 }
 
 FCITX_EXPORT_API
-FcitxStringList* fcitx_utils_string_split_full(const char* str, const char* delm, boolean keepEmpty)
+FcitxStringList* fcitx_utils_string_split_full(const char* str, const char* delm, bool keepEmpty)
 {
     FcitxStringList* array = utarray_new(fcitx_str_icd);
     return fcitx_utils_string_list_append_split_full(array, str, delm, keepEmpty);
@@ -117,6 +116,9 @@ int fcitx_utils_string_list_contains(FcitxStringList* list, const char* scmp)
 FCITX_EXPORT_API
 void fcitx_utils_string_list_free(FcitxStringList* list)
 {
+    if (!list) {
+        return;
+    }
     utarray_free(list);
 }
 

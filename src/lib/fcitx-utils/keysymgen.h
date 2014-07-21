@@ -22,7 +22,7 @@
 #define _FCITX_UTILS_KEYSYMGEN_H_
 
 
-#include <fcitx-utils/macro.h>
+#include "macro.h"
 
 FCITX_DECL_BEGIN
 

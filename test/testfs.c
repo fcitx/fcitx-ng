@@ -1,4 +1,4 @@
-#include <fcitx-utils/fs.h>
+#include "fcitx-utils/utils.h"
 #include <string.h>
 #include <assert.h>
 #include <stdio.h>

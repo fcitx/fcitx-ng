@@ -58,7 +58,7 @@ void fcitx_library_free(FcitxLibrary* lib)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_library_load(FcitxLibrary* lib, uint32_t hint)
+bool fcitx_library_load(FcitxLibrary* lib, uint32_t hint)
 {
     int flag = 0;
     if (hint & FLLH_ResolveAllSymbolsHint) {
@@ -85,7 +85,7 @@ boolean fcitx_library_load(FcitxLibrary* lib, uint32_t hint)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_library_unload(FcitxLibrary* lib)
+bool fcitx_library_unload(FcitxLibrary* lib)
 {
     if (!lib->handle) {
         return false;
@@ -101,7 +101,7 @@ boolean fcitx_library_unload(FcitxLibrary* lib)
 }
 
 FCITX_EXPORT_API
-boolean fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* magic, size_t lenOfMagic, FcitxLibraryDataParser parser, void* arg)
+bool fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* magic, size_t lenOfMagic, FcitxLibraryDataParser parser, void* arg)
 {
     if (lib->handle) {
         void* data = fcitx_library_resolve(lib, slug);

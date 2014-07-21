@@ -20,8 +20,7 @@
 
 #include <string.h>
 
-#include "utarray.h"
-#include "sort_common.h"
+#include "utils.h"
 
 #define MINIMUM_INSERT_SORT 10
 
