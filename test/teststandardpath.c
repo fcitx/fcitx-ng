@@ -17,12 +17,12 @@ int main(int argc, char* argv[])
     FcitxStandardPathFile* files = fcitx_standard_path_locate(sp, FSPT_Config, "fcitx/config", 0);
     fcitx_standard_path_file_close(files);
     FcitxStandardPathFilter filter;
-    filter.flag = FSPFT_Suffix;
+    filter.flag = FSPFT_Suffix | FSPFT_Sort;
     filter.suffix = ".conf";
     FcitxDict* fileDict = fcitx_standard_path_match(sp, FSPT_Data, "fcitx/addon", &filter);
     fcitx_dict_foreach(fileDict, foreach_func, NULL);
     fcitx_dict_free(fileDict);
-    fcitx_standard_path_free(sp);
+    fcitx_standard_path_unref(sp);
 
     return 0;
 }

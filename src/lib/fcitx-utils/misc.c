@@ -1,5 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "config.h"
 #include "utils.h"
@@ -175,4 +177,35 @@ fcitx_utils_write_uint64(FILE *fp, uint64_t i)
 {
     i = htole64(i);
     return fwrite(&i, sizeof(uint64_t), 1, fp);
+}
+
+typedef void (*_fcitx_sighandler_t) (int);
+
+FCITX_EXPORT_API
+void fcitx_utils_init_as_daemon()
+{
+    pid_t pid;
+    if ((pid = fork()) > 0) {
+        waitpid(pid, NULL, 0);
+        exit(0);
+    }
+    setsid();
+    _fcitx_sighandler_t oldint = signal(SIGINT, SIG_IGN);
+    _fcitx_sighandler_t oldhup  =signal(SIGHUP, SIG_IGN);
+    _fcitx_sighandler_t oldquit = signal(SIGQUIT, SIG_IGN);
+    _fcitx_sighandler_t oldpipe = signal(SIGPIPE, SIG_IGN);
+    _fcitx_sighandler_t oldttou = signal(SIGTTOU, SIG_IGN);
+    _fcitx_sighandler_t oldttin = signal(SIGTTIN, SIG_IGN);
+    _fcitx_sighandler_t oldchld = signal(SIGCHLD, SIG_IGN);
+    if (fork() > 0)
+        exit(0);
+    chdir("/");
+
+    signal(SIGINT, oldint);
+    signal(SIGHUP, oldhup);
+    signal(SIGQUIT, oldquit);
+    signal(SIGPIPE, oldpipe);
+    signal(SIGTTOU, oldttou);
+    signal(SIGTTIN, oldttin);
+    signal(SIGCHLD, oldchld);
 }

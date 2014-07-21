@@ -2,14 +2,7 @@
 #include <locale.h>
 #include <stdio.h>
 #include "fcitx-utils/utils.h"
-#include "fcitx-utils/types.h"
-#include "fcitx-utils/dict.h"
-#include "fcitx-utils/fs.h"
-#include "fcitx-utils/stringutils.h"
-#include "fcitx-utils/stringlist.h"
-#include "fcitx-utils/key.h"
-#include "fcitx-utils/utf8.h"
-#include "fcitx-utils/atomic.h"
+#include "fcitx-utils/macro-internal.h"
 #include "tablegenerator-internal.h"
 
 char* _get_locale() {
@@ -319,10 +312,8 @@ FcitxComposeTable* _fcitx_compose_table_alloc(const char* locale)
         *p = fcitx_utils_toupper(*p);
         p++;
     }
-    
-    fcitx_compose_table_ref(table);
-    
-    return table;
+
+    return fcitx_compose_table_ref(table);
 }
 
 FCITX_EXPORT_API
@@ -382,21 +373,7 @@ void fcitx_compose_table_free(FcitxComposeTable* table)
     free(table);
 }
 
-FCITX_EXPORT_API
-FcitxComposeTable* fcitx_compose_table_ref(FcitxComposeTable* table)
-{
-    fcitx_utils_atomic_add (&table->refcount, 1);
-    return table;
-}
-
-FCITX_EXPORT_API
-void fcitx_compose_table_unref(FcitxComposeTable* table)
-{
-    int32_t oldvalue = fcitx_utils_atomic_add (&table->refcount, -1);
-    if (oldvalue == 1) {
-        fcitx_compose_table_free(table);
-    }
-}
+FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxComposeTable, fcitx_compose_table)
 
 FCITX_EXPORT_API
 void

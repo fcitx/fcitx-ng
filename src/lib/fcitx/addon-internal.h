@@ -44,6 +44,8 @@ struct _FcitxAddonInstance
 
 struct _FcitxAddonMananger {
     FcitxDict* resolvers;
+    FcitxStandardPath* standardPath;
+    int32_t refcount;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

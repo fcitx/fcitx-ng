@@ -59,7 +59,7 @@ bool fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* va
 }
 
 FCITX_EXPORT_API
-bool fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut)
+bool _fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut)
 {
     FcitxDictItem* item = NULL;
     HASH_FIND(hh, dict->head, key, keyLen, item);
@@ -116,6 +116,7 @@ int fcitx_dict_item_default_compare(const char* keyA, size_t keyALen, const void
     return result;
 }
 
+FCITX_EXPORT_API
 void fcitx_dict_sort(FcitxDict* dict, FcitxDictCompareFunc compare, void* userData)
 {
     if (!compare) {

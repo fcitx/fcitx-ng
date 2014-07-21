@@ -4,105 +4,132 @@
 #include <errno.h>
 #include <assert.h>
 
-#define MIN_CHUNK 64
-
-typedef struct _FcitxGetLine
+FCITX_EXPORT_API
+FcitxConfiguration* fcitx_ini_parse(FILE* fp)
 {
-    bool isFile;
-    union {
-        const char* buf;
-        FILE* fp;
-    };
-} FcitxGetLine;
+    char* lineBuf = NULL;
+    size_t lineBufLen = 0;
 
-void getline_buf(char** lineptr, size_t* n, FcitxGetLine gl)
-{
-    if (gl.isFile) {
-        return getline(lineptr, n, gl.fp);
-    } else {
-        int nchars_avail;     /* Allocated but unused chars in *LINEPTR.  */
-        char *read_pos;       /* Where we're reading into *LINEPTR. */
-        int ret;
-        const char* p = gl.buf;
+    char* currentGroup = NULL;
+    FcitxConfiguration* config = fcitx_configuration_new(NULL);
 
-        for (;;) {
-            register char c = *p;
-            if (*n > MIN_CHUNK) {
-                *n *= 2;
-            } else {
-                *n += MIN_CHUNK;
-            }
-
-            *lineptr = realloc(*lineptr, *n);
+    while (getline(&lineBuf, &lineBufLen, fp) != -1) {
+        char* trimmedLine = fcitx_utils_inplace_trim(lineBuf);
+        if (trimmedLine[0] == '#') {
+            continue;
         }
 
-        nchars_avail = *n - offset;
-        read_pos = *lineptr + offset;
+        size_t len = strlen(trimmedLine);
+        char* equalPos = NULL;
 
-        for (;;)
-        {
-            int save_errno;
-            register int c = getc (stream);
-
-            save_errno = errno;
-
-            /* We always want at least one char left in the buffer, since we
-            always (unless we get an error while reading the first char)
-            NUL-terminate the line buffer.  */
-
-            assert((*lineptr + *n) == (read_pos + nchars_avail));
-            if (nchars_avail < 2)
-            {
-                if (*n > MIN_CHUNK)
-                    *n *= 2;
-                else
-                    *n += MIN_CHUNK;
-
-                nchars_avail = *n + *lineptr - read_pos;
-                *lineptr = realloc (*lineptr, *n);
-                if (!*lineptr)
-                {
-                    errno = ENOMEM;
-                    return -1;
+        if (trimmedLine[0] == '[' && trimmedLine[len - 1] == ']') {
+            trimmedLine[len - 1] = '\0';
+            trimmedLine ++;
+            fcitx_utils_string_swap(&currentGroup, trimmedLine);
+        } else if ((equalPos = strchr(trimmedLine, '='))) {
+            const char* name = trimmedLine;
+            *equalPos = 0;
+            char* value = equalPos + 1;
+            char* end = trimmedLine + len;
+            char* tofree = NULL;
+            // having quote at beginning and end, escape
+            if (end - value >= 2 && value[0] == '"' && end[-1] == '"') {
+                end[-1] = '\0';
+                value++;
+                char* replaced = fcitx_utils_string_replace(value, "\\\"", "\"", false);
+                if (replaced != NULL) {
+                    value = replaced;
+                    tofree = replaced;
                 }
-                read_pos = *n - nchars_avail + *lineptr;
-                assert((*lineptr + *n) == (read_pos + nchars_avail));
             }
 
-            if (ferror (stream))
-            {
-                /* Might like to return partial line, but there is no
-                   place for us to store errno.  And we don't want to just
-                   lose errno.  */
-                errno = save_errno;
-                return -1;
+            char* replaced = fcitx_utils_string_replace(value, "\\\n", "\n", true);
+            if (replaced != NULL) {
+                value = replaced;
+                free(tofree);
+                tofree = replaced;
             }
 
-            if (c == EOF)
-            {
-                /* Return partial line, if any.  */
-                if (read_pos == *lineptr)
-                    return -1;
-                else
-                    break;
+            if (currentGroup) {
+                char* path = NULL;
+                asprintf(&path, "%s/%s", currentGroup, name);
+                fcitx_configuration_set_value_by_path(config, path, value);
+                free(path);
+            } else {
+                fcitx_configuration_set_value_by_path(config, name, value);
             }
 
-            *read_pos++ = c;
-            nchars_avail--;
-
-            if (c == terminator)
-                /* Return the line.  */
-                break;
+            free(tofree);
         }
+    }
 
-        /* Done - NUL terminate and return the number of chars read.  */
-        *read_pos = '\0';
+    free(currentGroup);
+    free(lineBuf);
 
-        ret = read_pos - (*lineptr + offset);
-        return ret;
+    return config;
+}
+
+void _fcitx_ini_has_sub_value_callback(FcitxConfiguration* config, const char* path, void* userData)
+{
+    bool* hasSubValue = userData;
+
+    const char* value = fcitx_configuration_get_value(config);
+    if (value) {
+        *hasSubValue = true;
     }
 }
 
-FcitxConfiguration* _fcitx_ini_parse(Getline)
+void _fcitx_ini_foreach_option_callback(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FILE* fp = userData;
+
+    const char* value = fcitx_configuration_get_value(config);
+    if (value) {
+        const char* comment = fcitx_configuration_get_comment(config);
+        if (comment && !strchr(comment, '\n')) {
+            fprintf(fp, "# %s\n", comment);
+        }
+        char* tofree = NULL;
+        tofree = fcitx_utils_string_replace(value, "\n", "\\\n", true);
+
+        if (tofree) {
+            value = tofree;
+        }
+
+        char* quoteEsacpe = fcitx_utils_string_replace(value, "\"", "\\\"", true);
+        if (quoteEsacpe) {
+            free(tofree);
+            value = tofree = quoteEsacpe;
+        }
+
+        if (quoteEsacpe) {
+            fprintf(fp, "%s=\"%s\"\n", fcitx_configuration_get_name(config), value);
+        } else {
+            fprintf(fp, "%s=%s\n", fcitx_configuration_get_name(config), value);
+        }
+
+        free(tofree);
+    }
+}
+
+void _fcitx_ini_foreach_callback(FcitxConfiguration* config, const char* path, void* userData)
+{
+    FILE* fp = userData;
+
+    bool hasSubValue = false;
+    fcitx_configuration_foreach(config, "", false, NULL, _fcitx_ini_has_sub_value_callback, &hasSubValue);
+    if (hasSubValue) {
+        if (path[0]) {
+            fprintf(fp, "[%s]\n", path);
+        }
+        fcitx_configuration_foreach(config, "", false, NULL, _fcitx_ini_foreach_option_callback, fp);
+    }
+
+    fcitx_configuration_foreach(config, "", false, path, _fcitx_ini_foreach_callback, fp);
+}
+
+FCITX_EXPORT_API
+void fcitx_ini_print(FcitxConfiguration* config, FILE* fp)
+{
+    _fcitx_ini_foreach_callback(config, "", fp);
 }

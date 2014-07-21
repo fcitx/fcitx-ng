@@ -45,10 +45,13 @@ static inline bool fcitx_dict_insert_by_str(FcitxDict* dict, const char* key, vo
 #define fcitx_dict_insert_data(DICT, KEY, KEYLEN, VALUE) \
     fcitx_dict_insert(DICT, KEY, KEYLEN, (void*)((intptr_t)(VALUE)), REPLACE);
 
-bool fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
-static inline bool fcitx_dict_lookup_by_str(FcitxDict* dict, const char* key, void** dataOut)
+#define fcitx_dict_lookup(dict, key, keyLen, dataOut) _fcitx_dict_lookup(dict, key, keyLen, (void**) dataOut)
+#define fcitx_dict_lookup_by_str(dict, key, dataOut) _fcitx_dict_lookup_by_str(dict, key, (void**) dataOut)
+
+bool _fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
+static inline bool _fcitx_dict_lookup_by_str(FcitxDict* dict, const char* key, void** dataOut)
 {
-    return fcitx_dict_lookup(dict, key, strlen(key), dataOut);
+    return _fcitx_dict_lookup(dict, key, strlen(key), dataOut);
 }
 
 bool fcitx_dict_remove(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);

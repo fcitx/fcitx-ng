@@ -77,7 +77,9 @@ FcitxStandardPathFile* fcitx_standard_path_locate(FcitxStandardPath* sp, FcitxSt
 
 FcitxDict* fcitx_standard_path_match(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path, FcitxStandardPathFilter* filter);
 
-void fcitx_standard_path_free(FcitxStandardPath* sp);
+FcitxStandardPath* fcitx_standard_path_ref(FcitxStandardPath* sp);
+
+void fcitx_standard_path_unref(FcitxStandardPath* sp);
 
 void fcitx_standard_path_file_close(FcitxStandardPathFile* file);
 

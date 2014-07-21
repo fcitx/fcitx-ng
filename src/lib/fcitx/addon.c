@@ -1,11 +1,9 @@
 #include "addon.h"
 #include "addon-internal.h"
 #include "fcitx-utils/utils.h"
-#include "fcitx-utils/stringhashset.h"
-#include "fcitx-utils/dict.h"
+#include "fcitx-utils/macro-internal.h"
 
 FcitxAddonResolver sharedLibraryResolver = {
-    NULL,
     NULL,
     NULL,
     NULL
@@ -14,11 +12,10 @@ FcitxAddonResolver sharedLibraryResolver = {
 FcitxAddonResolver staticLibraryResolver = {
     NULL,
     NULL,
-    NULL,
     NULL
 };
 
-void FcitxAddonResolverFree(void* data)
+void fcitx_addon_resolver_free(void* data)
 {
     FcitxAddonResolver* resolver = data;
     if (resolver->destroyNotify) {
@@ -26,37 +23,46 @@ void FcitxAddonResolverFree(void* data)
     }
 }
 
-FcitxAddonManager* FcitxAddonManagerNew()
+FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath)
 {
     FcitxAddonManager* mananger = fcitx_utils_new(FcitxAddonManager);
-    mananger->resolvers = fcitx_dict_new(FcitxAddonResolverFree);
+    mananger->resolvers = fcitx_dict_new(fcitx_addon_resolver_free);
+    mananger->standardPath = fcitx_standard_path_ref(standardPath);
     return mananger;
 }
 
-void FcitxAddonManagerFree(FcitxAddonManager* manager)
+FCITX_EXPORT_API
+void fcitx_addon_manager_free(FcitxAddonManager* manager)
 {
     fcitx_dict_free(manager->resolvers);
+    fcitx_standard_path_unref(manager->standardPath);
     free(manager);
 }
 
-void FcitxAddonManagerRegisterResolver(FcitxAddonManager* manager, const char* name, FcitxAddonResolver* resolver)
+FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxAddonManager, fcitx_addon_manager);
+
+FCITX_EXPORT_API
+void fcitx_addon_manager_register_resolver(FcitxAddonManager* manager, const char* name, FcitxAddonResolver* resolver)
 {
     fcitx_dict_insert_by_str(manager->resolvers, name, resolver, false);
 }
 
-void FcitxAddonManagerRegisterDefaultResolver(FcitxAddonManager* mananger)
+void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger)
 {
     fcitx_dict_insert_by_str(mananger->resolvers, "staticlibrary", &staticLibraryResolver, false);
     fcitx_dict_insert_by_str(mananger->resolvers, "sharedlibrary", &sharedLibraryResolver, false);
 }
 
-void FcitxAddonManagerLoad(FcitxAddonManager* manager)
+bool _fcitx_addon_load(const char* key, size_t keyLen, void** data, void* userData)
 {
-    FcitxStringHashSet* addonNames = FcitxXDGGetFiles("addon", NULL, ".conf");
-    HASH_FOREACH(str, sset, FcitxStringHashSet) {
-    }
+    return false;
 }
 
-void FcitxSharedLibraryResolverList(void* data)
+void fcitx_addon_manager_load(FcitxAddonManager* manager)
 {
+    FcitxStandardPathFilter filter;
+    filter.flag = FSPFT_Suffix | FSPFT_Sort;
+    filter.suffix = ".conf";
+    FcitxDict* fileDict = fcitx_standard_path_match(manager->standardPath, FSPT_Data, "fcitx/addon", &filter);
+    fcitx_dict_foreach(fileDict, _fcitx_addon_load, userData);
 }

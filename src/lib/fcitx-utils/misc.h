@@ -286,6 +286,8 @@ fcitx_utils_write_int16(FILE *fp, int16_t i)
 return fcitx_utils_write_uint16(fp, (uint16_t)i);
 }
 
+void fcitx_utils_init_as_daemon();
+
 FCITX_DECL_END
 
 #endif

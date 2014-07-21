@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <errno.h>
 #include "utils.h"
+#include "macro-internal.h"
 
 struct _FcitxStandardPath
 {
@@ -13,6 +14,7 @@ struct _FcitxStandardPath
     FcitxStringList* dataDirs;
     char* cacheHome;
     char* runtimeDir;
+    int32_t refcount;
 };
 
 // http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -79,7 +81,7 @@ FcitxStandardPath* fcitx_standard_path_new()
     const char* tmpdir = getenv("TMPDIR");
     path->runtimeDir = fcitx_standard_default_path_construct("XDG_RUNTIME_DIR", !tmpdir || !tmpdir[0] ? "/tmp" : tmpdir);
 
-    return path;
+    return fcitx_standard_path_ref(path);
 }
 
 void fcitx_standard_path_get(FcitxStandardPath* sp, FcitxStandardPathType type, char** pFirst, FcitxStringList** pList)
@@ -314,7 +316,10 @@ FcitxDict* fcitx_standard_path_match(FcitxStandardPath* sp, FcitxStandardPathTyp
     context.type = type;
     fcitx_dict_foreach(result, fcitx_standard_path_foreach_func, &context);
     fcitx_dict_remove_if(result, fcitx_standard_path_remove_if_empty_func, NULL);
-    fcitx_dict_sort(result, NULL, NULL);
+
+    if (filter->flag & FSPFT_Sort) {
+        fcitx_dict_sort(result, NULL, NULL);
+    }
 
     return result;
 }
@@ -335,7 +340,6 @@ void fcitx_standard_path_file_close(FcitxStandardPathFile* file)
     free(file);
 }
 
-FCITX_EXPORT_API
 void fcitx_standard_path_free(FcitxStandardPath* sp)
 {
     free(sp->cacheHome);
@@ -346,3 +350,5 @@ void fcitx_standard_path_free(FcitxStandardPath* sp)
     fcitx_utils_string_list_free(sp->dataDirs);
     free(sp);
 }
+
+FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxStandardPath, fcitx_standard_path)

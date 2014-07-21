@@ -24,3 +24,6 @@ endforeach()
 
 add_executable(testcomposetable testcomposetable.c)
 target_link_libraries(testcomposetable fcitx-composetable)
+
+add_executable(testconfiguration testconfiguration.c)
+target_link_libraries(testconfiguration fcitx-config)

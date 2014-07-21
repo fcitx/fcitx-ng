@@ -1,7 +1,6 @@
 #ifndef __FCITX_ADDON_H__
 #define __FCITX_ADDON_H__
-#include <fcitx-utils/types.h>
-#include <fcitx-utils/stringlist.h>
+#include <fcitx-utils/utils.h>
 
 /**
  * Addon Category Definition
@@ -46,8 +45,10 @@ typedef struct _FcitxAddonFactory {
     void *data;
 } FcitxAddonResolver;
 
-FCITX_EXPORT_API FcitxAddonManager* FcitxAddonManagerNew();
-FCITX_EXPORT_API FcitxAddonManager* FcitxAddonManagerFree(FcitxAddonManager* manager);
-FCITX_EXPORT_API void FcitxAddonManagerRegisterDefaultResolver(FcitxAddonManager* mananger);
+FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath);
+FcitxAddonManager* fcitx_addon_manager_ref(FcitxAddonManager* manager);
+void fcitx_addon_manager_unref(FcitxAddonManager* manager);
+void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger);
+void fcitx_addon_manager_load(FcitxAddonManager* manager);
 
 #endif // __FCITX_ADDON_H__
