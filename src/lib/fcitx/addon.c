@@ -2,6 +2,8 @@
 #include "addon-internal.h"
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/macro-internal.h"
+#include <fcitx-config/configuration.h>
+#include <fcitx-config/iniparser.h>
 
 FcitxAddonResolver sharedLibraryResolver = {
     NULL,
@@ -55,6 +57,20 @@ void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger)
 
 bool _fcitx_addon_load(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FcitxStandardPathFile* files = *data;
+    size_t i = 0;
+    while (files[i].fp) {
+        i++;
+    }
+    i --;
+    FcitxConfiguration* config = NULL;
+    do {
+        config = fcitx_ini_parse(files[i].fp, config);
+        i --;
+    } while(i != 0);
+
+
+
     return false;
 }
 
@@ -64,5 +80,5 @@ void fcitx_addon_manager_load(FcitxAddonManager* manager)
     filter.flag = FSPFT_Suffix | FSPFT_Sort;
     filter.suffix = ".conf";
     FcitxDict* fileDict = fcitx_standard_path_match(manager->standardPath, FSPT_Data, "fcitx/addon", &filter);
-    fcitx_dict_foreach(fileDict, _fcitx_addon_load, userData);
+    fcitx_dict_foreach(fileDict, _fcitx_addon_load, manager);
 }

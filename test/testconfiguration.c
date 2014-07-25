@@ -49,7 +49,7 @@ int main()
     fcitx_configuration_unref(config);
 
     FILE* fp = fmemopen((void*) configText, sizeof(configText), "r");
-    config = fcitx_ini_parse(fp);
+    config = fcitx_ini_parse(fp, NULL);
     fclose(fp);
 
     fcitx_ini_print(config, stdout);

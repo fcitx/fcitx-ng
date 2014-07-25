@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <assert.h>
 
-FcitxConfiguration* fcitx_ini_parse(FILE* fp);
+FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config);
 
 void fcitx_ini_print(FcitxConfiguration* config, FILE* fp);
 

@@ -33,6 +33,7 @@
 #include <malloc.h>
 #include "macro.h"
 #include "types.h"
+#include "utarray.h"
 
 FCITX_DECL_BEGIN
 

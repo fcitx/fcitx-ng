@@ -1,6 +1,10 @@
 #ifndef _FCITX_UTILS_STRING_LIST_H_
 #define _FCITX_UTILS_STRING_LIST_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
 #include "types.h"
 #include "macro.h"
 #include "utarray.h"

@@ -100,3 +100,5 @@ if (ENABLE_TEST)
 endif ()
 
 add_subdirectory(tools)
+
+add_subdirectory(data)

@@ -9,6 +9,7 @@
 #include "dict.h"
 #include "fs.h"
 #include "handler-table.h"
+#include "i18nstring.h"
 #include "keydata.h"
 #include "key.h"
 #include "keysym.h"

@@ -13,7 +13,8 @@ set(FCITX_UTILS_TEST
     testlibrary
     teststandardpath
     testmainloop
-    testlist)
+    testlist
+    testi18nstring)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})
     add_executable(${TESTCASE} ${TESTCASE}.c)

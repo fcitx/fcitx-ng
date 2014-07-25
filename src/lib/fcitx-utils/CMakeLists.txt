@@ -18,6 +18,7 @@ set(FCITX_UTILS_SOURCES
     list.c
     array.c
     standardpath.c
+    i18nstring.c
     )
 
 set(FCITX_UTILS_HEADERS
@@ -47,6 +48,7 @@ set(FCITX_UTILS_HEADERS
     atomic.h
     array.h
     standardpath.h
+    i18nstring.h
     )
 
 include_directories(${DL_INCLUDE_DIR})

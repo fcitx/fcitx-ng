@@ -5,13 +5,15 @@
 #include <assert.h>
 
 FCITX_EXPORT_API
-FcitxConfiguration* fcitx_ini_parse(FILE* fp)
+FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
 {
     char* lineBuf = NULL;
     size_t lineBufLen = 0;
 
     char* currentGroup = NULL;
-    FcitxConfiguration* config = fcitx_configuration_new(NULL);
+    if (!config) {
+        config = fcitx_configuration_new(NULL);
+    }
 
     while (getline(&lineBuf, &lineBufLen, fp) != -1) {
         char* trimmedLine = fcitx_utils_inplace_trim(lineBuf);
