@@ -241,13 +241,13 @@ void print_struct_load_attribute(FcitxConfiguration* config, const char* path, v
     } else if (strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
         printf("    fcitx_utils_string_swap(&data->%s, str);\n", name);
     } else if (strcmp(type, "Boolean") == 0) {
-        printf("    data->%s = strcmp(str, \"True\") == 0;\n", name);
+        printf("    data->%s = (strcmp(str, \"True\") == 0);\n", name);
     } else if (strcmp(type, "Char") == 0) {
         printf("    data->%s = str[0];\n", name);
     } else if (strcmp(type, "Enum") == 0) {
     } else if (strcmp(type, "I18NString") == 0) {
     } else if (strcmp(type, "Hotkey") == 0) {
-        printf("    
+        printf("    if (!data->%1$s) { data->%1$s = fcitx_key_list_new(); }\n", name);
     } else if (strcmp(type, "Color") == 0) {
     } else if (strcmp(type, "Array") == 0) {
     }
