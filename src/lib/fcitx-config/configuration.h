@@ -1,7 +1,6 @@
 #ifndef FCITX_CONFIG_CONFIGURATION_H
 #define FCITX_CONFIG_CONFIGURATION_H
 
-#include "configurationbackend.h"
 #include <fcitx-utils/utils.h>
 
 typedef struct _FcitxConfiguration FcitxConfiguration;

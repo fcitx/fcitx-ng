@@ -1,6 +1,10 @@
 #ifndef _FCITX_UTILS_DICT_H_
 #define _FCITX_UTILS_DICT_H_
 
+#if !defined (_FCITX_UTILS_H_INSIDE_)
+#error "Only <fcitx-utils/utils.h> can be included directly."
+#endif
+
 #include <stddef.h>
 #include <string.h>
 

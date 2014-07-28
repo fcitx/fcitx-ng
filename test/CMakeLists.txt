@@ -14,7 +14,8 @@ set(FCITX_UTILS_TEST
     teststandardpath
     testmainloop
     testlist
-    testi18nstring)
+    testi18nstring
+    testcolor)
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})
     add_executable(${TESTCASE} ${TESTCASE}.c)

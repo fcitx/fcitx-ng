@@ -1,6 +1,0 @@
-#ifndef FCITX_CONFIG_CONFIGURATIONBACKEND_H
-#define FCITX_CONFIG_CONFIGURATIONBACKEND_H
-
-typedef struct _FcitxConfigurationBackend FcitxConfigurationBackend;
-
-#endif // FCITX_CONFIG_CONFIGURATIONBACKEND_H

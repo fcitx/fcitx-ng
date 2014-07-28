@@ -6,6 +6,7 @@
 #include "array.h"
 #include "atomic.h"
 #include "bitset.h"
+#include "color.h"
 #include "dict.h"
 #include "fs.h"
 #include "handler-table.h"

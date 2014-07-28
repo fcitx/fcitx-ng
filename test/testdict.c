@@ -15,7 +15,7 @@ bool foreach_func(const char* key, size_t keyLen, void** a, void* b)
 
 bool steal_func(const char* key, size_t keyLen, void** a, void* b)
 {
-    free(a);
+    free(*a);
     return false;
 }
 
