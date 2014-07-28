@@ -247,6 +247,7 @@ void print_struct_load_attribute(FcitxConfiguration* config, const char* path, v
     } else if (strcmp(type, "Enum") == 0) {
     } else if (strcmp(type, "I18NString") == 0) {
     } else if (strcmp(type, "Hotkey") == 0) {
+        printf("    
     } else if (strcmp(type, "Color") == 0) {
     } else if (strcmp(type, "Array") == 0) {
     }

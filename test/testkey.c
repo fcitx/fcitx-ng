@@ -24,33 +24,33 @@ int main(int argc, char* argv[])
 
     // Test convert
     for (size_t i = 0; i < FCITX_ARRAY_SIZE(keyValueByNameOffset); i++) {
-        assert(FcitxKeySymToString(keyValueByNameOffset[i]));
-        assert(FcitxKeySymFromString(keyNameList[i]) == keyValueByNameOffset[i]);
+        assert(fcitx_keysym_to_string(keyValueByNameOffset[i]));
+        assert(fcitx_keysym_from_string(keyNameList[i]) == keyValueByNameOffset[i]);
     }
 
-    assert(FcitxUnicodeToKeySym(' ') == FcitxKey_space);
-    assert(FcitxKeyIsDigit(FcitxKeyParse("1")));
-    assert(!FcitxKeyIsDigit(FcitxKeyParse("Ctrl+1")));
-    assert(!FcitxKeyIsDigit(FcitxKeyParse("a")));
-    assert(FcitxKeyIsLAZ(FcitxKeyParse("a")));
-    assert(!FcitxKeyIsLAZ(FcitxKeyParse("Shift_L")));
-    assert(FcitxKeyIsUAZ(FcitxKeyParse("A")));
-    assert(!FcitxKeyIsUAZ(FcitxKeyParse("BackSpace")));
-    assert(FcitxKeyIsSimple(FcitxKeyParse("space")));
-    assert(!FcitxKeyIsSimple(FcitxKeyParse("EuroSign")));
-    assert(FcitxKeyIsModifierCombine(FcitxKeyParse("Control+Alt_L")));
-    assert(!FcitxKeyIsModifierCombine(FcitxKeyParse("a")));
-    assert(FcitxKeyIsCursorMove(FcitxKeyParse("Left")));
-    assert(!FcitxKeyIsCursorMove(FcitxKeyParse("Cancel")));
-    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Shift+S")), FcitxKeyParse("S")));
-    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Shift+F4")), FcitxKeyParse("Shift+F4")));
-    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Ctrl+a")), FcitxKeyParse("Ctrl+A")));
-    assert(FcitxKeyCheck(FcitxKeyNormalize(FcitxKeyParse("Alt+Shift+exclam")), FcitxKeyParse("Alt+exclam")));
-    assert(FcitxKeyParse("").sym == FcitxKey_None);
-    assert(FcitxKeyParse("-").sym == FcitxKey_minus);
+    assert(fcitx_keysym_from_unicode(' ') == FcitxKey_space);
+    assert(fcitx_key_is_digit(fcitx_key_parse("1")));
+    assert(!fcitx_key_is_digit(fcitx_key_parse("Ctrl+1")));
+    assert(!fcitx_key_is_digit(fcitx_key_parse("a")));
+    assert(fcitx_key_is_laz(fcitx_key_parse("a")));
+    assert(!fcitx_key_is_laz(fcitx_key_parse("Shift_L")));
+    assert(fcitx_key_is_uaz(fcitx_key_parse("A")));
+    assert(!fcitx_key_is_uaz(fcitx_key_parse("BackSpace")));
+    assert(fcitx_key_is_simple(fcitx_key_parse("space")));
+    assert(!fcitx_key_is_simple(fcitx_key_parse("EuroSign")));
+    assert(fcitx_key_is_modifier(fcitx_key_parse("Control+Alt_L")));
+    assert(!fcitx_key_is_modifier(fcitx_key_parse("a")));
+    assert(fcitx_key_is_cursor_move(fcitx_key_parse("Left")));
+    assert(!fcitx_key_is_cursor_move(fcitx_key_parse("Cancel")));
+    assert(fcitx_key_check(fcitx_key_normalize(fcitx_key_parse("Shift+S")), fcitx_key_parse("S")));
+    assert(fcitx_key_check(fcitx_key_normalize(fcitx_key_parse("Shift+F4")), fcitx_key_parse("Shift+F4")));
+    assert(fcitx_key_check(fcitx_key_normalize(fcitx_key_parse("Ctrl+a")), fcitx_key_parse("Ctrl+A")));
+    assert(fcitx_key_check(fcitx_key_normalize(fcitx_key_parse("Alt+Shift+exclam")), fcitx_key_parse("Alt+exclam")));
+    assert(fcitx_key_parse("").sym == FcitxKey_None);
+    assert(fcitx_key_parse("-").sym == FcitxKey_minus);
 
     // Test complex parse
-    FcitxKeyList* keyList = FcitxKeyListParse("CTRL_A Control+B Control+Alt+c Control+Alt+Shift+d Control+Alt+Shift+Super+E Super+Alt+=");
+    FcitxKeyList* keyList = fcitx_key_list_new_from_string("CTRL_A Control+B Control+Alt+c Control+Alt+Shift+d Control+Alt+Shift+Super+E Super+Alt+=");
 
     FcitxKey hotkey[] = {
         FCITX_KEY(FcitxKey_A, FcitxKeyState_Ctrl),
@@ -62,22 +62,22 @@ int main(int argc, char* argv[])
     };
 
     for(size_t i = 0; i < FCITX_ARRAY_SIZE(hotkey); i++) {
-        assert (FcitxKeyListCheck(keyList, hotkey[i]));
+        assert (fcitx_key_list_check(keyList, hotkey[i]));
     }
 
-    FcitxKeyListAppend(keyList, FCITX_KEY(FcitxKey_A, 0));
+    fcitx_key_list_append(keyList, FCITX_KEY(FcitxKey_A, 0));
 
     char* keyString;
-    keyString = FcitxKeyListToString(keyList);
+    keyString = fcitx_key_list_to_string(keyList);
     assert(strcmp(keyString, "Control+A Control+B Control+Alt+c Control+Alt+Shift+d Control+Alt+Shift+Super+E Alt+Super+equal A") == 0);
     free(keyString);
 
-    FcitxKeyListClear(keyList);
-    keyString = FcitxKeyListToString(keyList);
+    fcitx_key_list_clear(keyList);
+    keyString = fcitx_key_list_to_string(keyList);
     assert(strcmp(keyString, "") == 0);
     free(keyString);
 
-    FcitxKeyListFree(keyList);
+    fcitx_key_list_free(keyList);
 
     return 0;
 }

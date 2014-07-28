@@ -21,30 +21,31 @@ typedef struct _FcitxKeyList FcitxKeyList;
 #define FCITX_KEY(SYM, STATE) ((FcitxKey) {SYM, STATE})
 
 
-FcitxKey FcitxKeyParse(const char* keyString);
-char* FcitxKeyToString(FcitxKey hotkey);
-bool FcitxKeyCheck(FcitxKey toCheck, FcitxKey key);
+FcitxKey fcitx_key_parse(const char* keyString);
+char* fcitx_key_to_string(FcitxKey hotkey);
+bool fcitx_key_check(FcitxKey toCheck, FcitxKey key);
 
-bool FcitxKeyIsDigit(FcitxKey key);
-bool FcitxKeyIsUAZ(FcitxKey key);
-bool FcitxKeyIsLAZ(FcitxKey key);
-bool FcitxKeyIsSimple(FcitxKey key);
-bool FcitxKeyIsModifierCombine(FcitxKey key);
-bool FcitxKeyIsCursorMove(FcitxKey key);
+bool fcitx_key_is_digit(FcitxKey key);
+bool fcitx_key_is_uaz(FcitxKey key);
+bool fcitx_key_is_laz(FcitxKey key);
+bool fcitx_key_is_simple(FcitxKey key);
+bool fcitx_key_is_modifier(FcitxKey key);
+bool fcitx_key_is_cursor_move(FcitxKey key);
 
-FcitxKey FcitxKeyNormalize(FcitxKey key);
+FcitxKey fcitx_key_normalize(FcitxKey key);
 
-FcitxKeyList* FcitxKeyListNew(void);
-FcitxKeyList* FcitxKeyListParse(const char* keyString);
-void FcitxKeyListFree(FcitxKeyList* keyList);
-bool FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key);
-void FcitxKeyListAppend(FcitxKeyList* keyList, FcitxKey key);
-void FcitxKeyListClear(FcitxKeyList* keyList);
-char* FcitxKeyListToString(FcitxKeyList* keyList);
+FcitxKeyList* fcitx_key_list_new(void);
+FcitxKeyList* fcitx_key_list_new_from_string(const char* keyString);
+void fcitx_key_list_parse(FcitxKeyList* keyList, const char* keyString);
+void fcitx_key_list_free(FcitxKeyList* keyList);
+bool fcitx_key_list_check(FcitxKeyList* keyList, FcitxKey key);
+void fcitx_key_list_append(FcitxKeyList* keyList, FcitxKey key);
+void fcitx_key_list_clear(FcitxKeyList* keyList);
+char* fcitx_key_list_to_string(FcitxKeyList* keyList);
 
 
-const char* FcitxKeySymToString (FcitxKeySym keysym);
-FcitxKeySym FcitxKeySymFromString(const char* str);
+const char* fcitx_keysym_to_string (FcitxKeySym keysym);
+FcitxKeySym fcitx_keysym_from_string(const char* str);
 
 /**
  * convert unicode character to keyval
@@ -55,7 +56,7 @@ FcitxKeySym FcitxKeySymFromString(const char* str);
  * @param wc unicode
  * @return FcitxKeySym
  **/
-FcitxKeySym FcitxUnicodeToKeySym (uint32_t wc);
+FcitxKeySym fcitx_keysym_from_unicode (uint32_t wc);
 
 /**
  * convert keyval to unicode character
@@ -63,7 +64,7 @@ FcitxKeySym FcitxUnicodeToKeySym (uint32_t wc);
  * @param keyval keyval
  * @return unicode
  **/
-uint32_t FcitxKeySymToUnicode (FcitxKeySym keyval);
+uint32_t fcitx_keysym_to_unicode (FcitxKeySym keyval);
 
 FCITX_DECL_END
 

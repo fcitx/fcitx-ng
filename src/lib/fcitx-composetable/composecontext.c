@@ -140,14 +140,14 @@ bool fcitx_compose_context_process_key(FcitxComposeContext* context, FcitxKey ke
         return false;
     }
 
-    if (FcitxKeyIsModifierCombine(key))
+    if (fcitx_key_is_modifier(key))
         return false;
     
     if (key.state & FcitxKeyState_SimpleMask) {
         return false;
     }
 
-    if (!is_composing_key(key.sym) && FcitxKeySymToUnicode(key.sym) == 0)
+    if (!is_composing_key(key.sym) && fcitx_keysym_to_unicode(key.sym) == 0)
         return false;
 
     int nCompose = 0;

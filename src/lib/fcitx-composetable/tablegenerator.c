@@ -68,7 +68,7 @@ void _fcitx_compose_table_parse_sequence(FcitxComposeTable* table, const char* l
         long unsigned int num = strtoul(strDigit, NULL, base);
         free(strDigit);
         
-        unicode = FcitxKeySymToUnicode((FcitxKeySym) num);
+        unicode = fcitx_keysym_to_unicode((FcitxKeySym) num);
     } else {
         unicode = fcitx_utf8_get_char_validated(quote + 1, FCITX_UTF8_MAX_LENGTH);
     }
@@ -118,7 +118,7 @@ void _fcitx_compose_table_parse_sequence(FcitxComposeTable* table, const char* l
                 keystr = "dead_doublegrave";
             }
             
-            element.keys[i] = FcitxKeySymFromString(keystr);
+            element.keys[i] = fcitx_keysym_from_string(keystr);
         } else {
             element.keys[i] = FcitxKey_None;
         }
@@ -382,7 +382,7 @@ fcitx_compose_table_print(FcitxComposeTable* table)
     utarray_foreach(element, table->composeTable, FcitxComposeTableElement) {
         int i = 0;
         while(element->keys[i] != FcitxKey_None) {
-            const char* key = FcitxKeySymToString(element->keys[i]);
+            const char* key = fcitx_keysym_to_string(element->keys[i]);
             printf("<%s> ", key);
             i ++;
         }

@@ -14,7 +14,7 @@ struct _FcitxKeyList {
 FCITX_DEFINE_SIMPLE_UT_ICD(FcitxKey, hotkey)
 
 FCITX_EXPORT_API
-FcitxKey FcitxKeyParse(const char* keyString)
+FcitxKey fcitx_key_parse(const char* keyString)
 {
     FcitxKeyStates state = 0;
     /* old compatible code */
@@ -41,7 +41,7 @@ FcitxKey FcitxKeyParse(const char* keyString)
 
 #undef _CHECK_MODIFIER
 
-    FcitxKeySym sym = FcitxKeySymFromString(lastModifier);
+    FcitxKeySym sym = fcitx_keysym_from_string(lastModifier);
 
     return FCITX_KEY(sym, state);
 }
@@ -50,11 +50,11 @@ FcitxKey FcitxKeyParse(const char* keyString)
  * Do some custom process
  */
 FCITX_EXPORT_API
-FcitxKey FcitxKeyNormalize(FcitxKey key)
+FcitxKey fcitx_key_normalize(FcitxKey key)
 {
     /* key state != 0 */
     if (key.state) {
-        if (key.state != FcitxKeyState_Shift && FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0))) {
+        if (key.state != FcitxKeyState_Shift && fcitx_key_is_laz(FCITX_KEY(key.sym, 0))) {
             key.sym = key.sym + FcitxKey_A - FcitxKey_a;
         }
         /*
@@ -62,13 +62,13 @@ FcitxKey FcitxKeyNormalize(FcitxKey key)
          * shift+s should be S
          */
 
-        if (FcitxKeyIsLAZ(FCITX_KEY(key.sym, 0)) || FcitxKeyIsUAZ(FCITX_KEY(key.sym, 0))) {
+        if (fcitx_key_is_laz(FCITX_KEY(key.sym, 0)) || fcitx_key_is_uaz(FCITX_KEY(key.sym, 0))) {
             if (key.state == FcitxKeyState_Shift) {
                 key.state &= ~FcitxKeyState_Shift;
             }
         } else {
             if ((key.state & FcitxKeyState_Shift)
-                && (((FcitxKeyIsSimple(FCITX_KEY(key.sym, 0)) || FcitxKeySymToUnicode(key.sym) != 0)
+                && (((fcitx_key_is_simple(FCITX_KEY(key.sym, 0)) || fcitx_keysym_to_unicode(key.sym) != 0)
                     && key.sym != FcitxKey_space && key.sym != FcitxKey_Return)
                     || (key.sym >= FcitxKey_KP_0 && key.sym <= FcitxKey_KP_9))) {
                 key.state &= ~FcitxKeyState_Shift;
@@ -84,7 +84,7 @@ FcitxKey FcitxKeyNormalize(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-char* FcitxKeyToString(FcitxKey hotkey)
+char* fcitx_key_to_string(FcitxKey hotkey)
 {
     if (hotkey.sym == FcitxKey_None) {
         return NULL;
@@ -106,7 +106,7 @@ char* FcitxKeyToString(FcitxKey hotkey)
     if (hotkey.sym == FcitxKey_ISO_Left_Tab)
         hotkey.sym = FcitxKey_Tab;
 
-    const char *key = FcitxKeySymToString(hotkey.sym);
+    const char *key = fcitx_keysym_to_string(hotkey.sym);
 
     if (!key)
         return NULL;
@@ -132,14 +132,14 @@ char* FcitxKeyToString(FcitxKey hotkey)
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyCheck(FcitxKey toCheck, FcitxKey key)
+bool fcitx_key_check(FcitxKey toCheck, FcitxKey key)
 {
     toCheck.state &= FcitxKeyState_Ctrl_Alt_Shift | FcitxKeyState_Super;
     return (toCheck.sym == key.sym && toCheck.state == key.state);
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyIsDigit(FcitxKey key)
+bool fcitx_key_is_digit(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -154,7 +154,7 @@ bool FcitxKeyIsDigit(FcitxKey key)
 
 
 FCITX_EXPORT_API
-bool FcitxKeyIsUAZ(FcitxKey key)
+bool fcitx_key_is_uaz(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -167,7 +167,7 @@ bool FcitxKeyIsUAZ(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyIsLAZ(FcitxKey key)
+bool fcitx_key_is_laz(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -181,7 +181,7 @@ bool FcitxKeyIsLAZ(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyIsSimple(FcitxKey key)
+bool fcitx_key_is_simple(FcitxKey key)
 {
     if (key.state) {
         return false;
@@ -195,7 +195,7 @@ bool FcitxKeyIsSimple(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyIsModifierCombine(FcitxKey key)
+bool fcitx_key_is_modifier(FcitxKey key)
 {
     if (key.sym == FcitxKey_Control_L || key.sym == FcitxKey_Control_R
      || key.sym == FcitxKey_Alt_L || key.sym == FcitxKey_Alt_R
@@ -207,7 +207,7 @@ bool FcitxKeyIsModifierCombine(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyIsCursorMove(FcitxKey key)
+bool fcitx_key_is_cursor_move(FcitxKey key)
 {
     if ((key.sym == FcitxKey_Left
      || key.sym == FcitxKey_Right
@@ -227,7 +227,7 @@ bool FcitxKeyIsCursorMove(FcitxKey key)
 }
 
 FCITX_EXPORT_API
-FcitxKeyList* FcitxKeyListNew(void)
+FcitxKeyList* fcitx_key_list_new(void)
 {
     FcitxKeyList* keyList = fcitx_utils_new(FcitxKeyList);
     if (keyList) {
@@ -237,13 +237,20 @@ FcitxKeyList* FcitxKeyListNew(void)
 }
 
 FCITX_EXPORT_API
-FcitxKeyList* FcitxKeyListParse(const char* keyString)
+FcitxKeyList* fcitx_key_list_new_from_string(const char* keyString)
 {
-    FcitxKeyList* keyList = FcitxKeyListNew();
+    FcitxKeyList* keyList = fcitx_key_list_new();
     if (!keyList) {
         return NULL;
     }
+    fcitx_key_list_parse(keyList, keyString);
+    return keyList;
+}
 
+
+FCITX_EXPORT_API
+void fcitx_key_list_parse(FcitxKeyList* keyList, const char* keyString)
+{
     char* buf = strdup(keyString);
     char* str;
     char* savePtr;
@@ -253,32 +260,33 @@ FcitxKeyList* FcitxKeyListParse(const char* keyString)
             break;
         }
 
-        FcitxKey key = FcitxKeyParse(token);
+        FcitxKey key = fcitx_key_parse(token);
 
         if (key.sym == FcitxKey_None) {
             continue;
         }
 
-        utarray_push_back(&keyList->list, &key);
+        fcitx_key_list_append(keyList, key);
     }
 
     free(buf);
-
-    return keyList;
 }
 
 FCITX_EXPORT_API
-void FcitxKeyListFree(FcitxKeyList* keyList)
+void fcitx_key_list_free(FcitxKeyList* keyList)
 {
+    if (!keyList) {
+        return;
+    }
     utarray_done(&keyList->list);
     free(keyList);
 }
 
 FCITX_EXPORT_API
-bool FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key)
+bool fcitx_key_list_check(FcitxKeyList* keyList, FcitxKey key)
 {
     utarray_foreach(curKey, &keyList->list, FcitxKey) {
-        if (FcitxKeyCheck(*curKey, key)) {
+        if (fcitx_key_check(*curKey, key)) {
             return true;
         }
     }
@@ -286,23 +294,23 @@ bool FcitxKeyListCheck(FcitxKeyList* keyList, FcitxKey key)
 }
 
 FCITX_EXPORT_API
-void FcitxKeyListAppend(FcitxKeyList* keyList, FcitxKey key)
+void fcitx_key_list_append(FcitxKeyList* keyList, FcitxKey key)
 {
     utarray_push_back(&keyList->list, &key);
 }
 
 FCITX_EXPORT_API
-void FcitxKeyListClear(FcitxKeyList* keyList)
+void fcitx_key_list_clear(FcitxKeyList* keyList)
 {
     utarray_clear(&keyList->list);
 }
 
 FCITX_EXPORT_API
-char* FcitxKeyListToString(FcitxKeyList* keyList)
+char* fcitx_key_list_to_string(FcitxKeyList* keyList)
 {
     FcitxStringList* list = fcitx_utils_string_list_new();
     utarray_foreach(curKey, &keyList->list, FcitxKey) {
-        char* keyString = FcitxKeyToString(*curKey);
+        char* keyString = fcitx_key_to_string(*curKey);
         if (keyString) {
             fcitx_utils_string_list_append_no_copy(list, keyString);
         }
@@ -320,7 +328,7 @@ keysymCompare (const void *pkey, const void *pbase)
 
 FCITX_EXPORT_API
 const char*
-FcitxKeySymToString (FcitxKeySym keysym)
+fcitx_keysym_to_string (FcitxKeySym keysym)
 {
     int32_t key = (int32_t) keysym;
     struct KeyNameOffsetByValue* result = bsearch(&key, keyNameOffsetByValue, FCITX_ARRAY_SIZE(keyNameOffsetByValue), sizeof(keyNameOffsetByValue[0]), keysymCompare);
@@ -344,7 +352,7 @@ keynameCompatCompare (const void *pkey, const void *pbase)
 
 FCITX_EXPORT_API
 FcitxKeySym
-FcitxKeySymFromString(const char* str)
+fcitx_keysym_from_string(const char* str)
 {
      int32_t* value = bsearch(str, keyValueByNameOffset, FCITX_ARRAY_SIZE(keyValueByNameOffset), sizeof(keyValueByNameOffset[0]), keynameCompare);
      if (value) {
@@ -362,7 +370,7 @@ FcitxKeySymFromString(const char* str)
              if (fcitx_utf8_char_len(str) == 1) {
                  return str[0];
              } else {
-                return FcitxUnicodeToKeySym(chr);
+                return fcitx_keysym_from_unicode(chr);
              }
          }
      }
@@ -373,7 +381,7 @@ FcitxKeySymFromString(const char* str)
 
 FCITX_EXPORT_API
 uint32_t
-FcitxKeySymToUnicode (FcitxKeySym keyval)
+fcitx_keysym_to_unicode (FcitxKeySym keyval)
 {
     int min = 0;
     int max = sizeof (gdk_keysym_to_unicode_tab) / sizeof(gdk_keysym_to_unicode_tab[0]) - 1;
@@ -408,7 +416,7 @@ FcitxKeySymToUnicode (FcitxKeySym keyval)
 
 FCITX_EXPORT_API
 FcitxKeySym
-FcitxUnicodeToKeySym (uint32_t wc)
+fcitx_keysym_from_unicode (uint32_t wc)
 {
     int min = 0;
     int max = sizeof(gdk_unicode_to_keysym_tab) / sizeof(gdk_unicode_to_keysym_tab[0]) - 1;
