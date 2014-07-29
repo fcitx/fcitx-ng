@@ -4,6 +4,7 @@
 #include "fcitx-utils/macro-internal.h"
 #include <fcitx-config/configuration.h>
 #include <fcitx-config/iniparser.h>
+#include "addon-config.h"
 
 FcitxAddonResolver sharedLibraryResolver = {
     NULL,
@@ -68,7 +69,6 @@ bool _fcitx_addon_load(const char* key, size_t keyLen, void** data, void* userDa
         config = fcitx_ini_parse(files[i].fp, config);
         i --;
     } while(i != 0);
-
 
 
     return false;

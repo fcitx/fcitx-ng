@@ -87,7 +87,7 @@ bool fcitx_color_parse(FcitxColor* color, const char* str)
 }
 
 FCITX_EXPORT_API
-void fcitx_color_to_string(FcitxColor* color, char* str)
+void fcitx_color_to_string(const FcitxColor* color, char* str)
 {
     str[0] = '#';
     str++;

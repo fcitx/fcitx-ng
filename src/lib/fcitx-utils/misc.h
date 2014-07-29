@@ -63,7 +63,7 @@ char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* fil
  * @param c char
  * @return bool
  */
-static _FCITX_INLINE_
+static inline
 bool fcitx_utils_islower(char c)
 {
     return c >= 'a' && c <= 'z';
@@ -75,19 +75,19 @@ bool fcitx_utils_islower(char c)
  * @param c char
  * @return bool
  */
-static _FCITX_INLINE_
+static inline
 bool fcitx_utils_isupper(char c)
 {
     return c >= 'A' && c <= 'Z';
 }
 
-static _FCITX_INLINE_
+static inline
 char fcitx_utils_tolower(char c)
 {
     return fcitx_utils_isupper(c) ? c - 'A' + 'a' : c;
 }
 
-static _FCITX_INLINE_
+static inline
 char fcitx_utils_toupper(char c)
 {
     return fcitx_utils_islower(c) ? c - 'a' + 'A' : c;
@@ -95,13 +95,13 @@ char fcitx_utils_toupper(char c)
 
 #define FCITX_WHITESPACE "\f\n\r\t\v "
 
-static _FCITX_INLINE_
+static inline
 bool fcitx_utils_isspace(char c)
 {
     return c == '\f' || c == '\n' || c == '\r' || c == '\t' || c == '\v' || c == ' ';
 }
 
-static _FCITX_INLINE_
+static inline
 bool fcitx_utils_isdigit(char c)
 {
     return c >= '0' && c <= '9';
@@ -126,7 +126,7 @@ void fcitx_utils_string_swap(char** obj, const char* str);
 void fcitx_utils_string_swap_with_len(char** obj,
                                       const char* str, size_t len);
 
-static _FCITX_INLINE_ uintptr_t
+static inline uintptr_t
 fcitx_utils_align_to(uintptr_t len, uintptr_t align)
 {
     uintptr_t left;

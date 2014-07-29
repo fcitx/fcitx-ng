@@ -105,22 +105,22 @@ void test_string()
 void test_string_hash_set()
 {
 
-    FcitxStringHashSet* sset = fcitx_utils_string_hash_set_parse("a,b,c,d", ',');
+    FcitxStringHashSet* sset = fcitx_string_hashset_parse("a,b,c,d", ',');
     assert(fcitx_dict_size(sset) == 4);
-    assert(fcitx_utils_string_hash_set_contains(sset, "c"));
-    assert(!fcitx_utils_string_hash_set_contains(sset, "e"));
-    fcitx_utils_string_hash_set_remove(sset, "c");
-    assert(!fcitx_utils_string_hash_set_contains(sset, "c"));
-    fcitx_utils_string_hash_set_insert(sset, "e");
-    assert(fcitx_utils_string_hash_set_contains(sset, "e"));
+    assert(fcitx_string_hashset_contains(sset, "c"));
+    assert(!fcitx_string_hashset_contains(sset, "e"));
+    fcitx_string_hashset_remove(sset, "c");
+    assert(!fcitx_string_hashset_contains(sset, "c"));
+    fcitx_string_hashset_insert(sset, "e");
+    assert(fcitx_string_hashset_contains(sset, "e"));
 
     /* uthash guarantee order, so we can sure about this */
-    char* joined = fcitx_utils_string_hash_set_join(sset, ',');
+    char* joined = fcitx_string_hashset_join(sset, ',');
     assert(strcmp(joined, "a,b,d,e") == 0);
 
     free(joined);
 
-    fcitx_utils_string_hash_set_free(sset);
+    fcitx_string_hashset_free(sset);
 }
 
 void test_string_map()

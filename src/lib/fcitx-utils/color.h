@@ -15,6 +15,6 @@ typedef struct _FcitxColor
 #define FCITX_COLOR_STRING_LENGTH 10
 
 bool fcitx_color_parse(FcitxColor* color, const char* str);
-void fcitx_color_to_string(FcitxColor* color, char* str);
+void fcitx_color_to_string(const FcitxColor* color, char* str);
 
 #endif // _FCITX_UTILS_COLOR_H_

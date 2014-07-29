@@ -88,7 +88,7 @@ FcitxHandlerKey *fcitx_handler_table_get_key_by_id(FcitxHandlerTable *table, int
 FcitxHandlerKey *fcitx_handler_table_find_key(
     FcitxHandlerTable *table, size_t keysize,
     const void *key, bool create);
-static _FCITX_INLINE_ FcitxHandlerKey*
+static inline FcitxHandlerKey*
 fcitx_handler_table_find_strkey(FcitxHandlerTable *table, const char *key,
                                 bool create)
 {
@@ -138,49 +138,49 @@ void fcitx_handler_table_free(FcitxHandlerTable *table);
 void fcitx_handler_table_foreach_key(FcitxHandlerTable* table, FcitxHandlerTableForeachKeyCallback callback, void* userdata);
 int fcitx_handler_table_n_key(FcitxHandlerTable* table);
 
-static _FCITX_INLINE_ int
+static inline int
 fcitx_handler_table_append_strkey(FcitxHandlerTable *table,
                                     const char *keystr, const void *obj)
 {
     return fcitx_handler_table_append(table, strlen(keystr),
                                         (const void*)keystr, obj);
 }
-static _FCITX_INLINE_ int
+static inline int
 fcitx_handler_table_prepend_strkey(FcitxHandlerTable *table,
                                     const char *keystr, const void *obj)
 {
     return fcitx_handler_table_prepend(table, strlen(keystr),
                                         (const void*)keystr, obj);
 }
-static _FCITX_INLINE_ void*
+static inline void*
 fcitx_handler_table_first_strkey(FcitxHandlerTable *table,
                                     const char *keystr)
 {
     return fcitx_handler_table_first(table, strlen(keystr),
                                         (const void*)keystr);
 }
-static _FCITX_INLINE_ void*
+static inline void*
 fcitx_handler_table_last_strkey(FcitxHandlerTable *table,
                                 const char *keystr)
 {
     return fcitx_handler_table_last(table, strlen(keystr),
                                     (const void*)keystr);
 }
-static _FCITX_INLINE_ int
+static inline int
 fcitx_handler_table_first_id_strkey(FcitxHandlerTable *table,
                                     const char *keystr)
 {
     return fcitx_handler_table_first_id(table, strlen(keystr),
                                         (const void*)keystr);
 }
-static _FCITX_INLINE_ int
+static inline int
 fcitx_handler_table_last_id_strkey(FcitxHandlerTable *table,
                                     const char *keystr)
 {
     return fcitx_handler_table_last_id(table, strlen(keystr),
                                         (const void*)keystr);
 }
-static _FCITX_INLINE_ void
+static inline void
 fcitx_handler_table_remove_key_strkey(FcitxHandlerTable *table,
                                         const char *keystr)
 {

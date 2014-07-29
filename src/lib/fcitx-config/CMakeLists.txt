@@ -1,11 +1,13 @@
 set(FCITX_CONFIG_SOURCES
     configuration.c
     iniparser.c
+    helper.c
     )
 
 set(FCITX_CONFIG_HEADERS
     configuration.h
     iniparser.h
+    helper.h
     )
 
 

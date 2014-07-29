@@ -23,10 +23,8 @@
 #define _FCITX_UNUSED_
 #endif
 
-#define _FCITX_INLINE_ inline _FCITX_UNUSED_
-
 #ifdef __GNUC__
-#define _FCITX_ALWAYS_INLINE_ _FCITX_INLINE_ __attribute__ ((always_inline))
+#define _FCITX_ALWAYS_INLINE_ inline __attribute__ ((always_inline))
 #else
 #define _FCITX_ALWAYS_INLINE_ inline
 #endif

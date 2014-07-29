@@ -19,6 +19,7 @@ Enum0=InputMethod
 Enum1=Frontend
 Enum2=Module
 Enum3=UI
+DefaultValue=InputMethod
 Description=Category
 
 [Addon/Enabled]
@@ -35,6 +36,7 @@ Type=Enum
 EnumCount=2
 Enum0=SharedLibrary
 Enum1=DBus
+DefaultValue=SharedLibrary
 Description=Type
 
 [Addon/Dependency]

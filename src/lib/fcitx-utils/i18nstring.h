@@ -13,6 +13,8 @@ FcitxI18NString* fcitx_i18n_string_new();
 
 const char* fcitx_i18n_string_match(FcitxI18NString* s, const char* locale);
 
-#define fcitx_i18n_string_free(S) fcitx_dict_free(S)
+static inline void fcitx_i18n_string_free(FcitxI18NString* s) {
+    fcitx_dict_free(s);
+}
 
 #endif // _FCITX_UTILS_I18NSTRING_H_

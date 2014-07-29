@@ -25,7 +25,7 @@ bool copy_string(const char* key, size_t keyLen, void** data, void* userData)
 }
 
 FCITX_EXPORT_API
-char* fcitx_utils_string_hash_set_join(FcitxStringHashSet* sset, char delim)
+char* fcitx_string_hashset_join(FcitxStringHashSet* sset, char delim)
 {
     if (!sset)
         return NULL;
@@ -47,20 +47,20 @@ char* fcitx_utils_string_hash_set_join(FcitxStringHashSet* sset, char delim)
 }
 
 FCITX_EXPORT_API
-FcitxStringHashSet* fcitx_utils_string_hash_set_parse(const char* str, char delim)
+FcitxStringHashSet* fcitx_string_hashset_parse(const char* str, char delim)
 {
-    FcitxStringHashSet* sset = fcitx_utils_string_hash_set_new();
+    FcitxStringHashSet* sset = fcitx_string_hashset_new();
     const char *src = str;
     const char *pos;
     size_t len;
 
     char delim_s[2] = {delim, '\0'};
     while ((len = strcspn(src, delim_s)), *(pos = src + len)) {
-        fcitx_utils_string_hash_set_insert_len(sset, src, len);
+        fcitx_string_hashset_insert_len(sset, src, len);
         src = pos + 1;
     }
     if (len) {
-        fcitx_utils_string_hash_set_insert_len(sset, src, len);
+        fcitx_string_hashset_insert_len(sset, src, len);
     }
     return sset;
 }

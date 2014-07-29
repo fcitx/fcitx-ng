@@ -40,12 +40,12 @@ struct _FcitxBitSet {
     uint8_t data[1];
 };
 
-static _FCITX_INLINE_ size_t fcitx_bitset_datasize(size_t bits)
+static inline size_t fcitx_bitset_datasize(size_t bits)
 {
     return (bits + 7) / 8;
 }
 
-static _FCITX_INLINE_ size_t fcitx_bitset_size(size_t bits)
+static inline size_t fcitx_bitset_size(size_t bits)
 {
     return (sizeof(size_t) + fcitx_bitset_datasize(bits));
 }
@@ -57,7 +57,7 @@ static _FCITX_INLINE_ size_t fcitx_bitset_size(size_t bits)
  *
  * @return bitset
  */
-static _FCITX_INLINE_ FcitxBitSet* fcitx_bitset_new(size_t bits)
+static inline FcitxBitSet* fcitx_bitset_new(size_t bits)
 {
     /* round up */
     FcitxBitSet* bitset = fcitx_utils_malloc0(fcitx_bitset_size(bits));
@@ -65,7 +65,7 @@ static _FCITX_INLINE_ FcitxBitSet* fcitx_bitset_new(size_t bits)
     return bitset;
 }
 
-static _FCITX_INLINE_ void fcitx_bitset_copy(FcitxBitSet* dst, FcitxBitSet* src)
+static inline void fcitx_bitset_copy(FcitxBitSet* dst, FcitxBitSet* src)
 {
     if (dst->size != src->size)
         return;
@@ -78,7 +78,7 @@ static _FCITX_INLINE_ void fcitx_bitset_copy(FcitxBitSet* dst, FcitxBitSet* src)
  * @param bitset bitset
  * @return void
  */
-static _FCITX_INLINE_ void fcitx_bitset_clear(FcitxBitSet* bitset)
+static inline void fcitx_bitset_clear(FcitxBitSet* bitset)
 {
     memset(bitset->data, 0, fcitx_bitset_datasize(bitset->size));
 }
@@ -90,7 +90,7 @@ static _FCITX_INLINE_ void fcitx_bitset_clear(FcitxBitSet* bitset)
  * @param offset bit offset
  * @return non-zero for is set
  */
-static _FCITX_INLINE_ uint8_t fcitx_bitset_isset(FcitxBitSet* bitset, size_t offset)
+static inline uint8_t fcitx_bitset_isset(FcitxBitSet* bitset, size_t offset)
 {
     size_t byte = offset / 8;
     size_t byteoffset = offset % 8;
@@ -104,7 +104,7 @@ static _FCITX_INLINE_ uint8_t fcitx_bitset_isset(FcitxBitSet* bitset, size_t off
  * @param offset bit offset
  * @return void
  */
-static _FCITX_INLINE_ void fcitx_bitset_set(FcitxBitSet* bitset, size_t offset)
+static inline void fcitx_bitset_set(FcitxBitSet* bitset, size_t offset)
 {
     size_t byte = offset / 8;
     size_t byteoffset = offset % 8;
@@ -118,7 +118,7 @@ static _FCITX_INLINE_ void fcitx_bitset_set(FcitxBitSet* bitset, size_t offset)
  * @param offset bit offset
  * @return void
  */
-static _FCITX_INLINE_ void fcitx_bitset_unset(FcitxBitSet* bitset, size_t offset)
+static inline void fcitx_bitset_unset(FcitxBitSet* bitset, size_t offset)
 {
     size_t byte = offset / 8;
     size_t byteoffset = offset % 8;
@@ -133,7 +133,7 @@ static _FCITX_INLINE_ void fcitx_bitset_unset(FcitxBitSet* bitset, size_t offset
  * @param bitset bitset
  * @return void
  */
-#define fcitx_bitset_free(bitset) free(bitset)
+static inline void fcitx_bitset_free(FcitxBitSet* bitset) { free(bitset); }
 
 FCITX_DECL_END
 

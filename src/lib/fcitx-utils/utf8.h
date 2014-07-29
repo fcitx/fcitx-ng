@@ -50,7 +50,7 @@ FCITX_DECL_BEGIN
 /** check utf8 character */
 #define FCITX_ISUTF8_CB(c)  (((c)&0xc0) == 0x80)
 
-static _FCITX_INLINE_ int
+static inline int
 fcitx_utf8_type(char c)
 {
     if (!(c & 0x80))
@@ -70,7 +70,7 @@ fcitx_utf8_type(char c)
     return -1;
 }
 
-static _FCITX_INLINE_ int
+static inline int
 fcitx_utf8_valid_start(char c)
 {
     unsigned char uc = (unsigned char)c;

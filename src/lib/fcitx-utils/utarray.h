@@ -103,6 +103,9 @@ static _FCITX_ALWAYS_INLINE_ UT_array* utarray_new (const UT_icd* icd)
 
 static _FCITX_ALWAYS_INLINE_ void utarray_free(UT_array* a)
 {
+    if (!a) {
+        return;
+    }
     utarray_done(a);
     free(a);
 }
