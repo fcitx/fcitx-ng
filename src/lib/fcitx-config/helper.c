@@ -231,7 +231,9 @@ void fcitx_configuration_set_enum(FcitxConfiguration* config, const char* path, 
 void _fcitx_configuration_list_free(void* data, void* userData)
 {
     FcitxDestroyNotify freeFunc = userData;
-    freeFunc(data);
+    if (freeFunc) {
+        freeFunc(data);
+    }
     free(data);
 }
 

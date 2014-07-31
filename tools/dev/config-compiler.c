@@ -415,6 +415,9 @@ void print_struct_load_attribute(FcitxConfiguration* config, const char* path, v
             freeFunc = get_free_func(subType);
             loadFunc = get_load_func(subType);
         }
+
+        freeFunc = freeFunc ? freeFunc : "NULL";
+
         fprintf(fout, "    fcitx_configuration_get_list(config, \"%s\", &data->%s, sizeof(%s), (FcitxConfigurationGetFunc) %s, (FcitxDestroyNotify) %s);\n", originName, name, typeName, loadFunc, freeFunc);
         free(structLoadFunc);
         free(structFreeFunc);
@@ -475,7 +478,7 @@ void print_struct_store_attribute(FcitxConfiguration* config, const char* path, 
             typeName = structName;
             storeFunc = structStoreFunc;
         } else {
-            storeFunc = get_load_func(subType);
+            storeFunc = get_store_func(subType);
         }
         fprintf(fout, "    fcitx_configuration_set_list(config, \"%s\", data->%s, (FcitxConfigurationSetFunc) %s);\n", originName, name, storeFunc);
         free(structStoreFunc);

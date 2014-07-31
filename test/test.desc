@@ -38,6 +38,11 @@ Type=Color
 Description=Color
 DefaultValue=#34567890
 
+[Test/ListInteger]
+Type=List
+Description=Test Integer
+SubType=Integer
+
 [Element/A]
 Type=String
 Description=M

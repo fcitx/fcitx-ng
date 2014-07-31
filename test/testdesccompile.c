@@ -19,6 +19,7 @@ int main()
 
     FcitxConfiguration* config = fcitx_configuration_new(NULL);
     fcitx_configuration_set_value_by_path(config, "Test/Name", "Name");
+    fcitx_configuration_set_value_by_path(config, "Test/Name[ja]", "JA");
     fcitx_configuration_set_value_by_path(config, "Test/Hotkey", "CTRL_B");
     fcitx_configuration_set_value_by_path(config, "Test/String", "String");
     fcitx_configuration_set_value_by_path(config, "Test/Integer", "2");
@@ -27,6 +28,9 @@ int main()
     fcitx_configuration_set_value_by_path(config, "Test/Color", "100 200 30");
     fcitx_configuration_set_value_by_path(config, "Test/List/0/A", "Sub");
     fcitx_configuration_set_value_by_path(config, "Test/List/1/A", "Sub1");
+    fcitx_configuration_set_value_by_path(config, "Test/ListInteger/0", "5");
+    fcitx_configuration_set_value_by_path(config, "Test/ListInteger/1", "6");
+    fcitx_configuration_set_value_by_path(config, "Test/ListInteger/2", "7");
     // load something
     fcitx_test_config_load(testConfig, config);
 
@@ -42,6 +46,9 @@ int main()
     assert(memcmp(&testConfig->test.color, &color, sizeof(color)) == 0);
     assert(strcmp(fcitx_ptr_array_index(testConfig->test.list, 0, FcitxElementGroup)->a, "Sub") == 0);
     assert(strcmp(fcitx_ptr_array_index(testConfig->test.list, 1, FcitxElementGroup)->a, "Sub1") == 0);
+    assert(*fcitx_ptr_array_index(testConfig->test.listInteger, 0, int) == 5);
+    assert(*fcitx_ptr_array_index(testConfig->test.listInteger, 1, int) == 6);
+    assert(*fcitx_ptr_array_index(testConfig->test.listInteger, 2, int) == 7);
 
     FcitxConfiguration* config2 = fcitx_configuration_new(NULL);
     fcitx_test_config_store(testConfig, config2);
