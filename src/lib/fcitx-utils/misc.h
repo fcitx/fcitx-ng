@@ -37,22 +37,6 @@
 
 FCITX_DECL_BEGIN
 
-
-/**
- * Malloc and memset all memory to zero
- *
- * @param bytes malloc size
- * @return void* malloced pointer
- **/
-
-#define fcitx_utils_malloc0(SIZE) calloc(1, (SIZE))
-#define fcitx_utils_new(TYPE) ((TYPE*) calloc(1, sizeof(TYPE)))
-#define fcitx_utils_newv(TYPE, _N) ((TYPE*) calloc(_N, sizeof(TYPE)))
-#define fcitx_utils_new_with_private(TYPE) ((TYPE*) calloc(1, sizeof(TYPE) + sizeof(TYPE##Private)))
-#define fcitx_utils_free(PTR) free(PTR)
-
-#define FCITX_GET_PRIVATE(p, TYPE) ((TYPE##Private*) (((char*) p) + sizeof(TYPE)))
-
 void fcitx_utils_closure_free(void* data, void* userData);
 char* fcitx_utils_get_fcitx_path(const char* type);
 char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* filename);

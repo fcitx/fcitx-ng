@@ -66,4 +66,18 @@
     FCITX_EXPORT_API const UT_icd *const fcitx_##name##_icd = \
         &__fcitx_##name##_icd;
 
+/**
+ * Malloc and memset all memory to zero
+ *
+ * @param bytes malloc size
+ * @return void* malloced pointer
+ **/
+#define fcitx_utils_malloc0(SIZE) calloc(1, (SIZE))
+#define fcitx_utils_new(TYPE) ((TYPE*) calloc(1, sizeof(TYPE)))
+#define fcitx_utils_newv(TYPE, _N) ((TYPE*) calloc(_N, sizeof(TYPE)))
+#define fcitx_utils_new_with_private(TYPE) ((TYPE*) calloc(1, sizeof(TYPE) + sizeof(TYPE##Private)))
+#define fcitx_utils_free(PTR) free(PTR)
+
+#define FCITX_GET_PRIVATE(p, TYPE) ((TYPE##Private*) (((char*) p) + sizeof(TYPE)))
+
 #endif

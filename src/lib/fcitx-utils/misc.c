@@ -71,6 +71,10 @@ char* fcitx_utils_get_fcitx_path_with_filename(const char* type, const char* fil
 FCITX_EXPORT_API
 void fcitx_utils_string_swap(char** obj, const char* str)
 {
+    if (*obj == str) {
+        return;
+    }
+
     if (str) {
         *obj = fcitx_utils_set_str(*obj, str);
     } else if (*obj) {

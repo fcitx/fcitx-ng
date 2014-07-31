@@ -35,6 +35,10 @@ FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxConfiguration, fcitx_configuration);
 
 FcitxConfiguration* _fcitx_configuration_get(FcitxConfiguration* config, const char* path, bool createPath, FcitxConfiguration** parent, const char** lastPath)
 {
+    if (!config) {
+        return NULL;
+    }
+
     if (parent) {
         *parent = NULL;
         *lastPath = NULL;

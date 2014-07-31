@@ -35,15 +35,13 @@
 #include <string.h>  /* memset, etc */
 #include <stdlib.h>
 #include "macro.h"
+#include "types.h"
 
-typedef void (ctor_f)(void *dst, const void *src);
-typedef void (dtor_f)(void *elt);
-typedef void (init_f)(void *elt);
 typedef struct {
     size_t sz;
-    init_f *init;
-    ctor_f *copy;
-    dtor_f *dtor;
+    FcitxInitFunc init;
+    FcitxCopyFunc copy;
+    FcitxDestroyNotify dtor;
 } UT_icd;
 
 typedef struct {
@@ -97,6 +95,21 @@ static _FCITX_ALWAYS_INLINE_ void* utarray_steal(UT_array* a)
 static _FCITX_ALWAYS_INLINE_ UT_array* utarray_new (const UT_icd* icd)
 {
     UT_array* a = (UT_array*) malloc(sizeof(UT_array));
+    utarray_init(a, icd);
+    return a;
+}
+
+static _FCITX_ALWAYS_INLINE_ UT_array* utarray_new_alt (FcitxInitFunc init,
+                                                        FcitxCopyFunc copy,
+                                                        FcitxDestroyNotify destroy,
+                                                        size_t size)
+{
+    UT_array* a = malloc(sizeof(UT_array) + sizeof(UT_icd));
+    UT_icd* icd = ((void*) a) + sizeof(UT_array);
+    icd->init = init;
+    icd->copy = copy;
+    icd->dtor = destroy;
+    icd->sz = size;
     utarray_init(a, icd);
     return a;
 }

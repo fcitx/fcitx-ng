@@ -16,8 +16,11 @@ FCITX_DECL_BEGIN
 typedef struct _FcitxDict FcitxDict;
 typedef bool (*FcitxDictForeachFunc)(const char* key, size_t keyLen, void** data, void* arg);
 typedef int (*FcitxDictCompareFunc)(const char* keyA, size_t keyALen, const void* dataA, const char* keyB, size_t keyBLen, const void* dataB, void* userData);
+typedef void* (*FcitxDictCopyFunc)(void* data);
 
 FcitxDict* fcitx_dict_new(FcitxDestroyNotify freeFunc);
+
+FcitxDict* fcitx_dict_clone(FcitxDict* other, FcitxDictCopyFunc copyFunc);
 
 size_t fcitx_dict_size(FcitxDict* dict);
 

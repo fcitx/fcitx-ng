@@ -1,0 +1,43 @@
+[Test/Name]
+Type=I18NString
+Description=Test Name
+DefaultValue=Default
+
+[Test/Hotkey]
+Type=Hotkey
+Description=Test Hotkey
+DefaultValue=CTRL_A
+
+[Test/String]
+Type=String
+Description=Test String
+DefaultValue=CTRL_A
+
+[Test/Integer]
+Type=Integer
+Description=Test Integer
+DefaultValue=1
+
+[Test/Character]
+Type=Char
+Description=Test Char
+DefaultValue=a
+
+[Test/Boolean]
+Type=Boolean
+Description=Test Boolean
+DefaultValue=True
+
+[Test/List]
+Type=List
+Description=Test List
+SubType=Element
+
+[Test/Color]
+Type=Color
+Description=Color
+DefaultValue=#34567890
+
+[Element/A]
+Type=String
+Description=M

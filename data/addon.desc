@@ -49,10 +49,10 @@ Type=Integer
 DefaultValue=50
 Description=Priority of addon
 
-[Addon/SubConfig]
-Type=String
-DefaultValue=
-Description=Sub Configuration for Module
+[Addon/Options]
+Type=List
+SubType=AddonOption
+Description=Options
 
 [Addon/IMRegisterMethod]
 Type=Enum
@@ -82,6 +82,16 @@ Description=Use RTLD_LOCAL to load library
 Type=Boolean
 DefaultValue=False
 Description=Do not show in GUI
+
+[AddonOption/Name]
+Type=String
+DefaultValue=
+Description=
+
+[AddonOption/Value]
+Type=String
+DefaultValue=
+Description=
 
 [DescriptionFile]
 LocaleDomain=fcitx

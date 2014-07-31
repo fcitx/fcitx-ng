@@ -40,6 +40,44 @@ FcitxStringHashSet* find_structs(FcitxConfiguration* config)
     return structs;
 }
 
+typedef struct
+{
+    FcitxConfiguration* rootConfig;
+    FcitxStringHashSet* topLevelStructs;
+} find_top_level_structs_context;
+
+void struct_attribute_foreach(FcitxConfiguration* config, const char* path, void* userData)
+{
+    find_top_level_structs_context *context = userData;
+    const char* type = fcitx_configuration_get_value_by_path(config, "Type");
+    if (strcmp(type, "List") != 0) {
+        return;
+    }
+    const char* subType = fcitx_configuration_get_value_by_path(config, "SubType");
+
+    fcitx_string_hashset_remove(context->topLevelStructs, subType);
+}
+
+bool structs_foreach(const char* key, size_t keyLen, void** data, void* userData)
+{
+    find_top_level_structs_context *context = userData;
+    fcitx_configuration_foreach(context->rootConfig, key, false, "", struct_attribute_foreach, userData);
+    return false;
+}
+
+FcitxStringHashSet* find_top_level_structs(FcitxConfiguration* config, FcitxStringHashSet* structs)
+{
+    FcitxStringHashSet* topLevelStructs = fcitx_string_hashset_clone(structs);
+    fcitx_configuration_foreach(config, "", false, NULL, find_structs_callback, structs);
+
+    find_top_level_structs_context context;
+    context.rootConfig = config;
+    context.topLevelStructs = topLevelStructs;
+    fcitx_dict_foreach(structs, structs_foreach, &context);
+
+    return topLevelStructs;
+}
+
 char* format_first_lower_name(const char* name)
 {
     char* result = strdup(name);
@@ -94,6 +132,7 @@ void print_header_guard(const char* name, const char* prefix)
     fprintf(fout, "#ifndef _%s_H_\n", uName);
     fprintf(fout, "#define _%s_H_\n", uName);
     fprintf(fout, "#include <fcitx-utils/utils.h>\n");
+    fprintf(fout, "#include <fcitx-config/configuration.h>\n");
 
     free(uName);
     free(fullName);
@@ -140,9 +179,64 @@ const char* get_c_type_name(const char* type)
     } else if (strcmp(type, "Color") == 0) {
         typeName = "FcitxColor";
     } else if (strcmp(type, "List") == 0) {
-        typeName = "UT_array";
+        typeName = "FcitxPtrArray*";
     }
     return typeName;
+}
+
+const char* get_load_func(const char* type)
+{
+    if (strcmp(type, "Integer") == 0) {
+        return "fcitx_configuration_get_integer";
+    } else if (strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
+        return "fcitx_configuration_get_string";
+    } else if (strcmp(type, "Boolean") == 0) {
+        return "fcitx_configuration_get_boolean";
+    } else if (strcmp(type, "Char") == 0) {
+        return "fcitx_configuration_get_char";
+    } else if (strcmp(type, "I18NString") == 0) {
+        return "fcitx_configuration_get_i18n_string";
+    } else if (strcmp(type, "Hotkey") == 0) {
+        return "fcitx_configuration_get_key";
+    } else if (strcmp(type, "Color") == 0) {
+        return "fcitx_configuration_get_color";
+    }
+    return NULL;
+}
+
+const char* get_store_func(const char* type)
+{
+    if (strcmp(type, "Integer") == 0) {
+        return "fcitx_configuration_set_integer";
+    } else if (strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
+        return "fcitx_configuration_set_string";
+    } else if (strcmp(type, "Boolean") == 0) {
+        return "fcitx_configuration_set_boolean";
+    } else if (strcmp(type, "Char") == 0) {
+        return "fcitx_configuration_set_char";
+    } else if (strcmp(type, "I18NString") == 0) {
+        return "fcitx_configuration_set_i18n_string";
+    } else if (strcmp(type, "Hotkey") == 0) {
+        return "fcitx_configuration_set_key";
+    } else if (strcmp(type, "Color") == 0) {
+        return "fcitx_configuration_set_color";
+    }
+    return NULL;
+}
+
+const char* get_free_func(const char* type)
+{
+    if (strcmp(type, "String") == 0 ||
+        strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
+        return "free";
+    } else if (strcmp(type, "I18NString") == 0) {
+        return "fcitx_i18n_string_free";
+    } else if (strcmp(type, "Hotkey") == 0) {
+        return "fcitx_key_list_free";
+    } else if (strcmp(type, "List") == 0) {
+        return "fcitx_ptr_array_free";
+    }
+    return NULL;
 }
 
 void print_struct_attribute(FcitxConfiguration* config, const char* path, void* userData)
@@ -198,9 +292,11 @@ void compile_to_c_header(FcitxConfiguration* config, FcitxStringHashSet* structs
     context.rootConfig = config;
     fcitx_dict_foreach(structs, print_struct_definition, &context);
 
+    FcitxStringHashSet* topLevelStructs = find_top_level_structs(config, structs);
     fprintf(fout, "struct _%s {\n", fullName);
-    fcitx_dict_foreach(structs, print_struct_member, (void*) prefix);
+    fcitx_dict_foreach(topLevelStructs, print_struct_member, (void*) prefix);
     fprintf(fout, "};\n");
+    fcitx_string_hashset_free(topLevelStructs);
 
     char* underscoreFullName = format_underscore_name(fullName, false);
 
@@ -220,7 +316,20 @@ bool print_load_struct_member(const char* key, size_t keyLen, void** data, void*
     char* fullName = type_name(prefix, key);
     char* name = format_first_lower_name(key);
     char* underscoreFullName = format_underscore_name(fullName, false);
-    fprintf(fout, "    %s_load(&data->%s, config);\n", underscoreFullName, name);
+    fprintf(fout, "    %s_load(config, \"%s\", NULL, &data->%s);\n", underscoreFullName, key, name);
+    free(underscoreFullName);
+    free(name);
+    free(fullName);
+    return false;
+}
+
+bool print_store_struct_member(const char* key, size_t keyLen, void** data, void* userData)
+{
+    const char* prefix = userData;
+    char* fullName = type_name(prefix, key);
+    char* name = format_first_lower_name(key);
+    char* underscoreFullName = format_underscore_name(fullName, false);
+    fprintf(fout, "    %s_store(config, \"%s\", &data->%s);\n", underscoreFullName, key, name);
     free(underscoreFullName);
     free(name);
     free(fullName);
@@ -250,14 +359,19 @@ void print_struct_load_attribute(FcitxConfiguration* config, const char* path, v
     const char* originName = fcitx_configuration_get_name(config);
     char* name = format_first_lower_name(originName);
     const char* defaultValue = fcitx_configuration_get_value_by_path(config, "DefaultValue");
-    if (strcmp(type, "Integer") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_integer(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
-    } else if (strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_string(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
-    } else if (strcmp(type, "Boolean") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_boolean(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
-    } else if (strcmp(type, "Char") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_char(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
+    if (defaultValue) {
+        fprintf(fout, "    defaultValue = \"%s\";\n", defaultValue);
+    } else {
+        fprintf(fout, "    defaultValue = NULL;\n");
+    }
+    if (strcmp(type, "Integer") == 0 ||
+        strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0 ||
+        strcmp(type, "Char") == 0 ||
+        strcmp(type, "I18NString") == 0 ||
+        strcmp(type, "Boolean") == 0 ||
+        strcmp(type, "Hotkey") == 0 || strcmp(type, "Color") == 0) {
+        const char* loadFunc = get_load_func(type);
+        fprintf(fout, "    %s(config, \"%s\", defaultValue, &data->%s);\n", loadFunc, originName, name);
     } else if (strcmp(type, "Enum") == 0) {
         fprintf(fout, "    do {\n");
         const char* enumCountString = fcitx_configuration_get_value_by_path(config, "EnumCount");
@@ -271,20 +385,41 @@ void print_struct_load_attribute(FcitxConfiguration* config, const char* path, v
             // get Enum0, Enum1.. etc
             const char* enumString = fcitx_configuration_get_value_by_path(config, buf);
             fprintf(fout, "            \"%s\",\n", enumString);
-            if (strcmp(enumString, defaultValue) == 0) {
+            if (defaultValue && strcmp(enumString, defaultValue) == 0) {
                 enumDefault = i;
             }
         }
         fprintf(fout, "        };\n");
         fprintf(fout, "        fcitx_configuration_get_enum(config, \"%s\", enumStrings, enumCount, %d, &data->%s);\n", originName, enumDefault, name);
         fprintf(fout, "    } while(0);\n");
-    } else if (strcmp(type, "I18NString") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_i18n_string(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
-    } else if (strcmp(type, "Hotkey") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_key(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
-    } else if (strcmp(type, "Color") == 0) {
-        fprintf(fout, "    fcitx_configuration_get_color(config, \"%s\", \"%s\", &data->%s);\n", originName, defaultValue, name);
     } else if (strcmp(type, "List") == 0) {
+        const char* subType = fcitx_configuration_get_value_by_path(config, "SubType");
+        const char* typeName = get_c_type_name(subType);
+        char* structName = NULL;
+        char* underscoreName = NULL;
+        char* structLoadFunc = NULL;
+        char* structFreeFunc = NULL;
+
+        const char* prefix = userData;
+        const char* loadFunc;
+        const char* freeFunc;
+        if (!typeName) {
+            structName = type_name(prefix, subType);
+            underscoreName = format_underscore_name(structName, false);
+            asprintf(&structFreeFunc, "%s_free", underscoreName);
+            asprintf(&structLoadFunc, "%s_load", underscoreName);
+            typeName = structName;
+            freeFunc = structFreeFunc;
+            loadFunc = structLoadFunc;
+        } else {
+            freeFunc = get_free_func(subType);
+            loadFunc = get_load_func(subType);
+        }
+        fprintf(fout, "    fcitx_configuration_get_list(config, \"%s\", &data->%s, sizeof(%s), (FcitxConfigurationGetFunc) %s, (FcitxDestroyNotify) %s);\n", originName, name, typeName, loadFunc, freeFunc);
+        free(structLoadFunc);
+        free(structFreeFunc);
+        free(structName);
+        free(underscoreName);
     }
     free(name);
 }
@@ -298,14 +433,15 @@ void print_struct_store_attribute(FcitxConfiguration* config, const char* path, 
 
     const char* originName = fcitx_configuration_get_name(config);
     char* name = format_first_lower_name(originName);
-    if (strcmp(type, "Integer") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_integer(config, \"%s\", data->%s);\n", originName, name);
-    } else if (strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_string(config, \"%s\", data->%s);\n", originName, name);
-    } else if (strcmp(type, "Boolean") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_boolean(config, \"%s\", data->%s);\n", originName, name);
-    } else if (strcmp(type, "Char") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_char(config, \"%s\", data->%s);\n", originName, name);
+
+    if (strcmp(type, "Integer") == 0 ||
+        strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0 ||
+        strcmp(type, "Char") == 0 ||
+        strcmp(type, "I18NString") == 0 ||
+        strcmp(type, "Boolean") == 0 ||
+        strcmp(type, "Hotkey") == 0 || strcmp(type, "Color") == 0) {
+        const char* storeFunc = get_store_func(type);
+        fprintf(fout, "    %s(config, \"%s\", &data->%s);\n", storeFunc, originName, name);
     } else if (strcmp(type, "Enum") == 0) {
         fprintf(fout, "    do {\n");
         const char* enumCountString = fcitx_configuration_get_value_by_path(config, "EnumCount");
@@ -322,14 +458,29 @@ void print_struct_store_attribute(FcitxConfiguration* config, const char* path, 
         fprintf(fout, "        };\n");
         fprintf(fout, "        fcitx_configuration_set_enum(config, \"%s\", enumStrings, enumCount, data->%s);\n", originName, name);
         fprintf(fout, "    } while(0);\n");
-    } else if (strcmp(type, "I18NString") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_i18n_string(config, \"%s\", data->%s);\n", originName, name);
-    } else if (strcmp(type, "Hotkey") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_key(config, \"%s\", data->%s);\n", originName, name);
-    } else if (strcmp(type, "Color") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_color(config, \"%s\", data->%s);\n", originName, name);
     } else if (strcmp(type, "List") == 0) {
-        fprintf(fout, "    fcitx_configuration_set_list(config, \"%s\", data->%s);\n", originName, name);
+
+        const char* subType = fcitx_configuration_get_value_by_path(config, "SubType");
+        const char* typeName = get_c_type_name(subType);
+        char* structName = NULL;
+        char* underscoreName = NULL;
+        char* structStoreFunc = NULL;
+
+        const char* prefix = userData;
+        const char* storeFunc;
+        if (!typeName) {
+            structName = type_name(prefix, subType);
+            underscoreName = format_underscore_name(structName, false);
+            asprintf(&structStoreFunc, "%s_store", underscoreName);
+            typeName = structName;
+            storeFunc = structStoreFunc;
+        } else {
+            storeFunc = get_load_func(subType);
+        }
+        fprintf(fout, "    fcitx_configuration_set_list(config, \"%s\", data->%s, (FcitxConfigurationSetFunc) %s);\n", originName, name, storeFunc);
+        free(structStoreFunc);
+        free(structName);
+        free(underscoreName);
     }
     free(name);
 }
@@ -342,20 +493,25 @@ void print_struct_free_attribute(FcitxConfiguration* config, const char* path, v
     }
 
     char* name = format_first_lower_name(fcitx_configuration_get_name(config));
-    if (strcmp(type, "Integer") == 0 && strcmp(type, "Boolean") == 0 &&
-        strcmp(type, "Char") == 0 && strcmp(type, "Enum") == 0 &&
-        strcmp(type, "Color") == 0) {
-        return;
-    } else if (strcmp(type, "Hotkey") == 0) {
-        fprintf(fout, "    fcitx_key_list_free(data->%s);\n", name);
-    } else if (strcmp(type, "String") == 0 || strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
-        fprintf(fout, "    free(data->%s);\n", name);
-    } else if (strcmp(type, "I18NString") == 0) {
-        fprintf(fout, "    fcitx_i18n_string_free(data->%s);\n", name);
-    } else if (strcmp(type, "List") == 0) {
-        fprintf(fout, "    utarray_free(data->%s);\n", name);
+    const char* func = get_free_func(type);
+    if (func) {
+        fprintf(fout, "    %s(data->%s);\n", func, name);
     }
     free(name);
+}
+
+bool print_struct_function_forward_decl(const char* key, size_t keyLen, void** data, void* userData)
+{
+    print_struct_definition_context* context = userData;
+    const char* prefix = context->prefix;
+    char* fullName = type_name(prefix, key);
+    char* underscoreFullName = format_underscore_name(fullName, false);
+    fprintf(fout, "void %s_load(FcitxConfiguration* config, const char* path, const char* _dummy, %s* data);\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_store(FcitxConfiguration* config, const char* path, %s* data);\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_free(%s* data);\n", underscoreFullName, fullName);
+    free(underscoreFullName);
+    free(fullName);
+    return false;
 }
 
 bool print_struct_function_definition(const char* key, size_t keyLen, void** data, void* userData)
@@ -364,13 +520,16 @@ bool print_struct_function_definition(const char* key, size_t keyLen, void** dat
     const char* prefix = context->prefix;
     char* fullName = type_name(prefix, key);
     char* underscoreFullName = format_underscore_name(fullName, false);
-    fprintf(fout, "void %s_load(%s* data, FcitxConfiguration* config)\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_load(FcitxConfiguration* config, const char* path, const char* _dummy, %s* data)\n", underscoreFullName, fullName);
     fprintf(fout, "{\n");
-    fcitx_configuration_foreach(context->rootConfig, key, false, "", print_struct_load_attribute, NULL);
+    fprintf(fout, "    config = fcitx_configuration_get(config, path, false);\n");
+    fprintf(fout, "    const char* defaultValue = NULL;\n");
+    fcitx_configuration_foreach(context->rootConfig, key, false, "", print_struct_load_attribute, (void*) prefix);
     fprintf(fout, "}\n");
-    fprintf(fout, "void %s_store(%s* data, FcitxConfiguration* config)\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_store(FcitxConfiguration* config, const char* path, %s* data)\n", underscoreFullName, fullName);
     fprintf(fout, "{\n");
-    fcitx_configuration_foreach(context->rootConfig, key, false, "", print_struct_store_attribute, NULL);
+    fprintf(fout, "    config = fcitx_configuration_get(config, path, true);\n");
+    fcitx_configuration_foreach(context->rootConfig, key, false, "", print_struct_store_attribute, (void*) prefix);
     fprintf(fout, "}\n");
     fprintf(fout, "void %s_free(%s* data)\n", underscoreFullName, fullName);
     fprintf(fout, "{\n");
@@ -394,21 +553,31 @@ void compile_to_c_source(FcitxConfiguration* config, FcitxStringHashSet* structs
     print_struct_definition_context context;
     context.prefix = prefix;
     context.rootConfig = config;
+    fcitx_dict_foreach(structs, print_struct_function_forward_decl, &context);
     fcitx_dict_foreach(structs, print_struct_function_definition, &context);
+
+    FcitxStringHashSet* topLevelStructs = find_top_level_structs(config, structs);
 
     fprintf(fout, "%2$s* %1$s_new()\n"
                   "{\n"
-                  "    return fcitx_utils_new(%2$s);\n"
+                  "    %2$s* data = fcitx_utils_new(%2$s);\n"
+                  "    %1$s_load(data, NULL);\n"
+                  "    return data;\n"
                   "}\n", underscoreFullName, fullName);
     fprintf(fout, "void %s_load(%s* data, FcitxConfiguration* config)\n", underscoreFullName, fullName);
     fprintf(fout, "{\n");
-    fcitx_dict_foreach(structs, print_load_struct_member, (void*) prefix);
+    fcitx_dict_foreach(topLevelStructs, print_load_struct_member, (void*) prefix);
+    fprintf(fout, "}\n");
+    fprintf(fout, "void %s_store(%s* data, FcitxConfiguration* config)\n", underscoreFullName, fullName);
+    fprintf(fout, "{\n");
+    fcitx_dict_foreach(topLevelStructs, print_store_struct_member, (void*) prefix);
     fprintf(fout, "}\n");
     fprintf(fout, "void %s_free(%s* data)\n", underscoreFullName, fullName);
     fprintf(fout, "{\n");
-    fcitx_dict_foreach(structs, print_free_struct_member, (void*) prefix);
+    fcitx_dict_foreach(topLevelStructs, print_free_struct_member, (void*) prefix);
     fprintf(fout, "    free(data);\n");
     fprintf(fout, "}\n");
+    fcitx_string_hashset_free(topLevelStructs);
     free(underscoreFullName);
     free(fullName);
 

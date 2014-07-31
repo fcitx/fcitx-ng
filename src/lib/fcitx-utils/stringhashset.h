@@ -39,6 +39,11 @@ static inline void fcitx_string_hashset_free(FcitxStringHashSet* sset)
     fcitx_dict_free(sset);
 }
 
+static inline FcitxStringHashSet* fcitx_string_hashset_clone(FcitxStringHashSet* sset)
+{
+    return fcitx_dict_clone(sset, NULL);
+}
+
 /**
  * join a string hash set with delimiter
  *

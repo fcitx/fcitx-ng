@@ -23,8 +23,10 @@ typedef enum _FcitxTriState
  * Function used to free the pointer
  **/
 typedef void (*FcitxDestroyNotify)(void *p);
+typedef void (*FcitxInitFunc)(void *p);
 typedef void (*FcitxClosureFunc)(void*, void*);
 typedef int (*FcitxCompareFunc)(const void*, const void*);
+typedef void (*FcitxCopyFunc)(void* dst, const void* src);
 typedef int (*FcitxCompareClosureFunc)(const void*, const void*, void*);
 
 /**

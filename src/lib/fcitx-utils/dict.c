@@ -203,4 +203,23 @@ void fcitx_dict_free(FcitxDict* dict)
     free(dict);
 }
 
+FCITX_EXPORT_API
+FcitxDict* fcitx_dict_clone(FcitxDict* other, FcitxDictCopyFunc copyFunc)
+{
+    FcitxDict* dict = fcitx_dict_new(other->destroyNotify);
+
+    HASH_FOREACH(item, other->head, FcitxDictItem) {
+        void *data;
+        if (copyFunc) {
+            data = copyFunc(item->data);
+        } else {
+            data = item->data;
+        }
+        fcitx_dict_insert(dict, item->key, item->keyLen, data, false);
+    }
+
+    return dict;
+}
+
+
 
