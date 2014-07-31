@@ -1,0 +1,100 @@
+#include "main.h"
+#include "common.h"
+
+/// print header guard
+void print_header_guard(const char* name, const char* prefix)
+{
+    char* fullName = NULL;
+    asprintf(&fullName, "%s%s", prefix, name);
+    char* uName = format_underscore_name(fullName, true);
+
+    fprintf(fout, "#ifndef _%s_H_\n", uName);
+    fprintf(fout, "#define _%s_H_\n", uName);
+    fprintf(fout, "#include <fcitx-utils/utils.h>\n");
+    fprintf(fout, "#include <fcitx-config/configuration.h>\n");
+
+    free(uName);
+    free(fullName);
+}
+
+bool print_forward_decl(const char* key, size_t keyLen, void** data, void* userData)
+{
+    const char* prefix = userData;
+    char* fullName = type_name(prefix, key);
+    fprintf(fout, "typedef struct _%s %s;\n", fullName, fullName);
+    free(fullName);
+    return false;
+}
+
+void print_struct_attribute(FcitxConfiguration* config, const char* path, void* userData)
+{
+    const char* type = fcitx_configuration_get_value_by_path(config, "Type");
+    if (!type) {
+        return;
+    }
+
+    const char* typeName = get_c_type_name(type);
+
+    char* name = format_first_lower_name(fcitx_configuration_get_name(config));
+    fprintf(fout, "    %s %s;\n", typeName, name);
+    free(name);
+}
+
+bool print_struct_forward_decl(const char* key, size_t keyLen, void** data, void* userData)
+{
+    print_struct_definition_context* context = userData;
+    const char* prefix = context->prefix;
+    char* fullName = type_name(prefix, key);
+    fprintf(fout, "struct _%s {\n", fullName);
+    fcitx_configuration_foreach(context->rootConfig, key, false, "", print_struct_attribute, NULL);
+    fprintf(fout, "};\n");
+    free(fullName);
+    return false;
+}
+
+bool print_top_level_struct_attribute(const char* key, size_t keyLen, void** data, void* userData)
+{
+    const char* prefix = userData;
+    char* fullName = type_name(prefix, key);
+    char* name = format_first_lower_name(key);
+    fprintf(fout, "    %s %s;\n", fullName, name);
+    free(name);
+    free(fullName);
+    return false;
+}
+
+void compile_to_c_header(FcitxConfiguration* config, FcitxDescription* desc, const char* name, const char* prefix, const char* includes)
+{
+    // #ifndef style header guard
+    print_header_guard(name, prefix);
+
+    // print extra include files
+    print_includes(includes);
+
+    // print top level struct, forward declaration
+    char* fullName = NULL;
+    asprintf(&fullName, "%s%s", prefix, name);
+    fprintf(fout, "typedef struct _%s %s;\n", fullName, fullName);
+    fcitx_dict_foreach(desc->structs, print_forward_decl, (void*) prefix);
+
+    print_struct_definition_context context;
+    context.prefix = prefix;
+    context.rootConfig = config;
+    fcitx_dict_foreach(desc->structs, print_struct_forward_decl, &context);
+
+    // print top level struct
+    fprintf(fout, "struct _%s {\n", fullName);
+    fcitx_dict_foreach(desc->topLevelStructs, print_top_level_struct_attribute, (void*) prefix);
+    fprintf(fout, "};\n");
+
+    char* underscoreFullName = format_underscore_name(fullName, false);
+    fprintf(fout, "%2$s* %1$s_new();\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_load(%s* data, FcitxConfiguration* config);\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_store(%s* data, FcitxConfiguration* config);\n", underscoreFullName, fullName);
+    fprintf(fout, "void %s_free(%s* data);\n", underscoreFullName, fullName);
+    free(underscoreFullName);
+
+    free(fullName);
+
+    fprintf(fout, "#endif\n");
+}

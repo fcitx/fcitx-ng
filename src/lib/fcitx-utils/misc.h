@@ -97,6 +97,16 @@ char* fcitx_utils_strchr0(const char* s, int c)
     return (char*)( s ? strchr(s, c) : NULL);
 }
 
+static _FCITX_ALWAYS_INLINE_ int fcitx_utils_strcmp0(const char* a, const char* b)
+{
+    if (a == NULL && b == NULL)
+        return 0;
+    if (a == NULL && b)
+        return -1;
+    if (a && b == NULL)
+        return 1;
+    return strcmp(a, b);
+}
 
 /**
  * if obj is not null, free it, after that, if str is NULL set it with NULL,

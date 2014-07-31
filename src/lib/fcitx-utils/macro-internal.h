@@ -11,6 +11,9 @@ TYPENAME* SLUGNAME##_ref(TYPENAME* data) \
 FCITX_EXPORT_API \
 void SLUGNAME##_unref(TYPENAME* data) \
 { \
+    if (!data) { \
+        return; \
+    } \
     int32_t oldvalue = fcitx_utils_atomic_add (&data->refcount, -1); \
     if (oldvalue == 1) { \
         SLUGNAME##_free(data); \

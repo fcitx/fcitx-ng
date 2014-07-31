@@ -1,48 +1,60 @@
-[Test/Name]
+[Test Option/Name]
 Type=I18NString
 Description=Test Name
 DefaultValue=Default
 
-[Test/Hotkey]
+[Test Option/Hot Key]
 Type=Hotkey
 Description=Test Hotkey
 DefaultValue=CTRL_A
 
-[Test/String]
+[Test Option/String]
 Type=String
 Description=Test String
 DefaultValue=CTRL_A
+MaxLength=10
 
-[Test/Integer]
+[Test Option/Integer]
 Type=Integer
 Description=Test Integer
 DefaultValue=1
+Min=1
+Max=5
 
-[Test/Character]
+[Test Option/Character]
 Type=Char
 Description=Test Char
 DefaultValue=a
 
-[Test/Boolean]
+[Test Option/Boolean]
 Type=Boolean
 Description=Test Boolean
 DefaultValue=True
 
-[Test/List]
+[Test Option/List]
 Type=List
 Description=Test List
-SubType=Element
+SubType=Ele Ment
 
-[Test/Color]
+[Test Option/Color]
 Type=Color
 Description=Color
 DefaultValue=#34567890
 
-[Test/ListInteger]
+[Test Option/ListInteger]
 Type=List
 Description=Test Integer
 SubType=Integer
 
-[Element/A]
+[Test Option/ListEnum]
+Type=List
+Description=Test Integer
+SubType=Enum
+EnumCount=3
+Enum0=A
+Enum1=B
+Enum2=C
+
+[Ele Ment/A]
 Type=String
 Description=M
