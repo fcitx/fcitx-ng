@@ -1,10 +1,10 @@
 #ifndef __FCITX_ADDON_INTERNAL_H__
 #define __FCITX_ADDON_INTERNAL_H__
 
-#include "addon.h"
-#include "fcitx-utils/utarray.h"
-#include "fcitx-utils/dict.h"
 #include <stdint.h>
+#include "addon.h"
+#include "addon-config.h"
+
 
 /**
  * How addon get input method list
@@ -19,22 +19,7 @@ typedef enum _IMRegisterMethod {
  * Addon Instance in Fcitx
  **/
 struct _FcitxAddon {
-    char *name; /**< addon name, used as a identifier */
-    char *generalname; /**< addon name, translatable user visible string */
-    char *comment; /**< longer desc translatable user visible string */
-    bool enabled; /**< enabled or not*/
-    uint32_t category; /**< addon category */
-    char *library; /**< library string */
-    char *depend; /**< dependency string */
-    int priority; /**< priority */
-    char *subconfig; /**< used by ui for subconfig */
-    UT_array functionList; /**< addon exposed function */
-
-    IMRegisterMethod registerMethod; /**< the input method register method */
-    char* registerArgument; /**< extra argument for register, unused for now */
-    char* uifallback; /**< if's a user interface addon, the fallback UI addon name */
-    bool advance; /**< a hint for GUI */
-    bool loadLocal;
+    FcitxAddonConfig *config;
 };
 
 struct _FcitxAddonInstance
@@ -46,6 +31,7 @@ struct _FcitxAddonMananger {
     FcitxDict* resolvers;
     FcitxStandardPath* standardPath;
     int32_t refcount;
+    FcitxPtrArray* addons;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

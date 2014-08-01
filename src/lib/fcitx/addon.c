@@ -2,8 +2,8 @@
 #include "addon-internal.h"
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/macro-internal.h"
-#include <fcitx-config/configuration.h>
-#include <fcitx-config/iniparser.h>
+#include "fcitx-config/configuration.h"
+#include "fcitx-config/iniparser.h"
 #include "addon-config.h"
 
 FcitxAddonResolver sharedLibraryResolver = {
@@ -18,6 +18,19 @@ FcitxAddonResolver staticLibraryResolver = {
     NULL
 };
 
+FcitxAddon* fcitx_addon_new()
+{
+    FcitxAddon* addon = fcitx_utils_new(FcitxAddon);
+    addon->config = fcitx_addon_config_new();
+    return addon;
+}
+
+void fcitx_addon_free(FcitxAddon* addon)
+{
+    fcitx_addon_config_free(addon->config);
+    free(addon);
+}
+
 void fcitx_addon_resolver_free(void* data)
 {
     FcitxAddonResolver* resolver = data;
@@ -26,19 +39,21 @@ void fcitx_addon_resolver_free(void* data)
     }
 }
 
+FCITX_EXPORT_API
 FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath)
 {
     FcitxAddonManager* mananger = fcitx_utils_new(FcitxAddonManager);
     mananger->resolvers = fcitx_dict_new(fcitx_addon_resolver_free);
     mananger->standardPath = fcitx_standard_path_ref(standardPath);
-    return mananger;
+    mananger->addons = fcitx_ptr_array_new((FcitxDestroyNotify) fcitx_addon_free);
+    return fcitx_addon_manager_ref(mananger);
 }
 
-FCITX_EXPORT_API
 void fcitx_addon_manager_free(FcitxAddonManager* manager)
 {
     fcitx_dict_free(manager->resolvers);
     fcitx_standard_path_unref(manager->standardPath);
+    fcitx_ptr_array_free(manager->addons);
     free(manager);
 }
 
@@ -63,17 +78,23 @@ bool _fcitx_addon_load(const char* key, size_t keyLen, void** data, void* userDa
     while (files[i].fp) {
         i++;
     }
-    i --;
     FcitxConfiguration* config = NULL;
-    do {
-        config = fcitx_ini_parse(files[i].fp, config);
+    while (i != 0) {
         i --;
-    } while(i != 0);
+        config = fcitx_ini_parse(files[i].fp, config);
+    }
 
+    FcitxAddon* addon = fcitx_addon_new();
+    fcitx_addon_config_load(addon->config, config);
+    fcitx_configuration_unref(config);
+
+    FcitxAddonManager* manager = userData;
+    fcitx_ptr_array_append(manager->addons, addon);
 
     return false;
 }
 
+FCITX_EXPORT_API
 void fcitx_addon_manager_load(FcitxAddonManager* manager)
 {
     FcitxStandardPathFilter filter;
@@ -81,4 +102,5 @@ void fcitx_addon_manager_load(FcitxAddonManager* manager)
     filter.suffix = ".conf";
     FcitxDict* fileDict = fcitx_standard_path_match(manager->standardPath, FSPT_Data, "fcitx/addon", &filter);
     fcitx_dict_foreach(fileDict, _fcitx_addon_load, manager);
+    fcitx_dict_free(fileDict);
 }

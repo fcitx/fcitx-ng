@@ -45,3 +45,8 @@ target_link_libraries(testdesccompile fcitx-config)
 
 fcitx5_generate_config_source(${CMAKE_CURRENT_SOURCE_DIR}/test.desc test-config TestConfig Fcitx)
 add_test(NAME testdesccompile COMMAND testdesccompile)
+
+# test addon
+add_executable(testaddon testaddon.c)
+target_link_libraries(testaddon fcitx-core)
+target_include_directories(testaddon PRIVATE ${PROJECT_BINARY_DIR}/src/lib/fcitx)

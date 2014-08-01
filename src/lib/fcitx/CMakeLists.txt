@@ -1,4 +1,5 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+include_directories(..)
 
 set(LIBFCITX_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/addon-config.c
