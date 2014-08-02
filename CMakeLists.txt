@@ -46,6 +46,10 @@ make_install_path_absolute(FCITX_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR})
 make_install_path_absolute(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_DATADIR}/fcitx")
 make_install_path_absolute(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
 make_install_path_absolute(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_LOCALEDIR})
+make_install_path_absolute(FCITX_INSTALL_ADDONDIR "${CMAKE_INSTALL_LIBDIR}/fcitx")
+
+# TODO mac/win
+set(FCITX_LIBRARY_SUFFIX ".so")
 
 # process rpath
 list(FIND CMAKE_PLATFORM_IMPLICIT_LINK_DIRECTORIES "${FCITX_INSTALL_LIBDIR}" _isSystemPlatformLibDir)

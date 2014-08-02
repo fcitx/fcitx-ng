@@ -3,6 +3,7 @@
 #include <libgen.h>
 #include <dirent.h>
 #include <errno.h>
+#include "config.h"
 #include "utils.h"
 #include "macro-internal.h"
 
@@ -15,6 +16,7 @@ struct _FcitxStandardPath
     char* cacheHome;
     char* runtimeDir;
     int32_t refcount;
+    FcitxStringList* addonDirs;
 };
 
 // http://standards.freedesktop.org/basedir-spec/basedir-spec-latest.html
@@ -80,6 +82,7 @@ FcitxStandardPath* fcitx_standard_path_new()
     path->cacheHome = fcitx_standard_default_path_construct("XDG_CACHE_HOME", ".cache");
     const char* tmpdir = getenv("TMPDIR");
     path->runtimeDir = fcitx_standard_default_path_construct("XDG_RUNTIME_DIR", !tmpdir || !tmpdir[0] ? "/tmp" : tmpdir);
+    path->addonDirs = fcitx_standard_default_paths_construct("FCITX_ADDON_DIRS", FCITX_INSTALL_ADDONDIR);
 
     return fcitx_standard_path_ref(path);
 }
@@ -102,6 +105,10 @@ void fcitx_standard_path_get(FcitxStandardPath* sp, FcitxStandardPathType type, 
             break;
         case FSPT_Runtime:
             firstDir = sp->runtimeDir;
+            break;
+        case FSPT_Addon:
+            firstDir = NULL;
+            list = sp->addonDirs;
             break;
     }
 
@@ -171,6 +178,7 @@ FcitxStandardPathFile* fcitx_standard_path_locate(FcitxStandardPath* sp, FcitxSt
         return NULL;
     }
 
+    // if we don't write and there is a list
     bool checkList = (!(flag & FSPFT_Write) && list);
 
     FcitxStandardPathFile fileFirst = { NULL, NULL };

@@ -32,10 +32,7 @@ Type=String
 Description=Library
 
 [Addon/Type]
-Type=Enum
-EnumCount=2
-Enum0=SharedLibrary
-Enum1=DBus
+Type=String
 DefaultValue=SharedLibrary
 Description=Type
 
@@ -44,39 +41,10 @@ Type=String
 DefaultValue=
 Description=Dependency
 
-[Addon/Priority]
-Type=Integer
-DefaultValue=50
-Description=Priority of addon
-
 [Addon/Options]
 Type=List
 SubType=AddonOption
 Description=Options
-
-[Addon/IMRegisterMethod]
-Type=Enum
-DefaultValue=Self
-Description=Register IM
-EnumCount=3
-Enum0=Self
-Enum1=Exec
-Enum2=ConfigFile
-
-[Addon/IMRegisterArgument]
-Type=String
-DefaultValue=
-Description=Argument for InputMethod Register
-
-[Addon/UIFallback]
-Type=String
-DefaultValue=
-Description=Fallback UI Addon
-
-[Addon/LoadLocal]
-Type=Boolean
-DefaultValue=False
-Description=Use RTLD_LOCAL to load library
 
 [Addon/Advance]
 Type=Boolean

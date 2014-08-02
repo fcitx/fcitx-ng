@@ -52,6 +52,9 @@ FcitxLibrary* fcitx_library_new(const char* path)
 FCITX_EXPORT_API
 void fcitx_library_free(FcitxLibrary* lib)
 {
+    if (!lib) {
+        return;
+    }
     free(lib->errorString);
     free(lib->path);
     free(lib);

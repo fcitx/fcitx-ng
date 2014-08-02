@@ -22,16 +22,11 @@ struct _FcitxAddon {
     FcitxAddonConfig *config;
 };
 
-struct _FcitxAddonInstance
-{
-    FcitxAddon* addon;
-};
-
 struct _FcitxAddonMananger {
     FcitxDict* resolvers;
     FcitxStandardPath* standardPath;
     int32_t refcount;
-    FcitxPtrArray* addons;
+    FcitxDict* addons;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

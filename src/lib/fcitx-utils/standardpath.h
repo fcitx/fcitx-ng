@@ -46,6 +46,7 @@ typedef enum _FcitxStandardPathType
     FSPT_Data,
     FSPT_Cache,
     FSPT_Runtime,
+    FSPT_Addon
 } FcitxStandardPathType;
 
 typedef enum _FcitxStandardPathFilterFlag
@@ -58,7 +59,7 @@ typedef enum _FcitxStandardPathFilterFlag
     FSPFT_Sort = (1 << 5),
     FSPFT_LocateAll = (1 << 6),
     FSPFT_Write = FSPFT_Writable | FSPFT_Append,
-} FcitxxStandardPathFilterFlag;
+} FcitxStandardPathFilterFlag;
 
 typedef bool (*FcitxxStandardPathFilterCallback)(const char* path, void* data);
 
