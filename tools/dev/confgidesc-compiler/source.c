@@ -5,6 +5,8 @@
 
 bool print_load_struct_member(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     const char* prefix = userData;
     char* fullName = type_name(prefix, key);
     char* name = format_first_lower_name(key);
@@ -18,6 +20,8 @@ bool print_load_struct_member(const char* key, size_t keyLen, void** data, void*
 
 bool print_store_struct_member(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     const char* prefix = userData;
     char* fullName = type_name(prefix, key);
     char* name = format_first_lower_name(key);
@@ -31,6 +35,8 @@ bool print_store_struct_member(const char* key, size_t keyLen, void** data, void
 
 bool print_free_struct_member(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     const char* prefix = userData;
     char* fullName = type_name(prefix, key);
     char* name = format_first_lower_name(key);
@@ -149,6 +155,7 @@ void print_option_info(FcitxConfiguration* config, const char* type, const char*
 
 void print_struct_load_attribute(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FCITX_UNUSED(path);
     const char* type = fcitx_configuration_get_value_by_path(config, "Type");
     if (!type) {
         return;
@@ -165,6 +172,7 @@ void print_struct_load_attribute(FcitxConfiguration* config, const char* path, v
 
 void print_struct_store_attribute(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FCITX_UNUSED(path);
     const char* type = fcitx_configuration_get_value_by_path(config, "Type");
     if (!type) {
         return;
@@ -181,6 +189,8 @@ void print_struct_store_attribute(FcitxConfiguration* config, const char* path, 
 
 void print_struct_free_attribute(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FCITX_UNUSED(path);
+    FCITX_UNUSED(userData);
     const char* type = fcitx_configuration_get_value_by_path(config, "Type");
     if (!type) {
         return;
@@ -196,6 +206,8 @@ void print_struct_free_attribute(FcitxConfiguration* config, const char* path, v
 
 bool print_struct_function_forward_decl(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     print_struct_definition_context* context = userData;
     const char* prefix = context->prefix;
     char* fullName = type_name(prefix, key);
@@ -210,12 +222,15 @@ bool print_struct_function_forward_decl(const char* key, size_t keyLen, void** d
 
 bool print_struct_function_definition(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     print_struct_definition_context* context = userData;
     const char* prefix = context->prefix;
     char* fullName = type_name(prefix, key);
     char* underscoreFullName = format_underscore_name(fullName, false);
     fprintf(fout, "void %s_load(FcitxConfiguration* config, const char* path, const char* _dummy, %s* data)\n", underscoreFullName, fullName);
     fprintf(fout, "{\n");
+    fprintf(fout, "    FCITX_UNUSED(_dummy);");
     fprintf(fout, "    config = fcitx_configuration_get(config, path, false);\n");
     fprintf(fout, "    FcitxConfigurationOptionInfo info;\n");
     fcitx_configuration_foreach(context->rootConfig, key, false, "", print_struct_load_attribute, (void*) prefix);

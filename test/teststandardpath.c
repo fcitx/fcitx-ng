@@ -2,6 +2,8 @@
 
 bool foreach_func(const char* path, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(userData);
     printf("%s\n", path);
     FcitxStandardPathFile* files = *data;
     while (files->fp) {
@@ -11,7 +13,7 @@ bool foreach_func(const char* path, size_t keyLen, void** data, void* userData)
     return false;
 }
 
-int main(int argc, char* argv[])
+int main()
 {
     FcitxStandardPath* sp = fcitx_standard_path_new();
     FcitxStandardPathFile* files = fcitx_standard_path_locate(sp, FSPT_Config, "fcitx/config", 0);

@@ -1,8 +1,9 @@
-#include "configuration.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
+#include "fcitx-utils/utils.h"
+#include "configuration.h"
 
 FCITX_EXPORT_API
 FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
@@ -73,6 +74,7 @@ FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
 
 void _fcitx_ini_has_sub_value_callback(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FCITX_UNUSED(path);
     bool* hasSubValue = userData;
 
     const char* value = fcitx_configuration_get_value(config);
@@ -83,6 +85,7 @@ void _fcitx_ini_has_sub_value_callback(FcitxConfiguration* config, const char* p
 
 void _fcitx_ini_foreach_option_callback(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FCITX_UNUSED(path);
     FILE* fp = userData;
 
     const char* value = fcitx_configuration_get_value(config);

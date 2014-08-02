@@ -5,6 +5,8 @@
 
 bool foreach_func(const char* key, size_t keyLen, void** a, void* b)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(b);
     if (strcmp(key, "B") == 0) {
         assert(strcmp(*a, "C") == 0);
     } else if (strcmp(key, "A") == 0) {
@@ -15,6 +17,9 @@ bool foreach_func(const char* key, size_t keyLen, void** a, void* b)
 
 bool steal_func(const char* key, size_t keyLen, void** a, void* b)
 {
+    FCITX_UNUSED(key);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(b);
     free(*a);
     return false;
 }

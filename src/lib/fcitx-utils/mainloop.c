@@ -73,6 +73,9 @@ static int fcitx_io_event_flag_from_libc_flag(int flag)
 
 void fd_rebuild_notify(void *data, const void* key, size_t len, void *owner)
 {
+    FCITX_UNUSED(data);
+    FCITX_UNUSED(key);
+    FCITX_UNUSED(len);
     FcitxMainLoop* mainloop = owner;
     mainloop->rebuildPollfds = true;
 }
@@ -413,6 +416,7 @@ void fcitx_mainloop_remove_io_event(FcitxMainLoop* mainloop, FcitxIOEvent* event
 FCITX_EXPORT_API
 void fcitx_mainloop_remove_timeout_event(FcitxMainLoop* mainloop, FcitxTimeoutEvent* event)
 {
+    FCITX_UNUSED(mainloop);
     fcitx_list_remove(&event->list);
     if (event->destroyNotify) {
         event->destroyNotify(event->userdata);

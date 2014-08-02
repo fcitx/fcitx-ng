@@ -104,6 +104,9 @@ int fcitx_dict_item_compare(FcitxDictItem* a, FcitxDictItem* b, fcitx_dict_compa
 
 int fcitx_dict_item_default_compare(const char* keyA, size_t keyALen, const void* dataA, const char* keyB, size_t keyBLen, const void* dataB, void* userData)
 {
+    FCITX_UNUSED(dataA);
+    FCITX_UNUSED(dataB);
+    FCITX_UNUSED(userData);
     size_t size = (keyALen < keyBLen) ? keyALen : keyBLen;
     int result = memcmp(keyA, keyB, size);
     if (result == 0) {

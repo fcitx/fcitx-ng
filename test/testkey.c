@@ -12,7 +12,7 @@
         assert (COMPARE_FUNC(ARRAY[i], ARRAY[i + 1])); \
     }
 
-int main(int argc, char* argv[])
+int main()
 {
 #define _STRING_LESS(A, B) (strcmp((A), (B)) < 0)
 #define _STRING_LESS_2(A, B) (strcmp((A).name, (B).name) < 0)

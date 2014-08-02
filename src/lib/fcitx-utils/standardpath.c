@@ -227,6 +227,7 @@ typedef struct {
 
 bool fcitx_standard_path_foreach_func(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
     fcitx_standard_path_foreach_context* context = userData;
     char* fullPath = NULL;
     asprintf(&fullPath, "%s%s%s", context->path, context->path[0] ? "/" : "", key);
@@ -237,6 +238,9 @@ bool fcitx_standard_path_foreach_func(const char* key, size_t keyLen, void** dat
 
 bool fcitx_standard_path_remove_if_empty_func(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(key);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(userData);
     return (*data == NULL);
 }
 

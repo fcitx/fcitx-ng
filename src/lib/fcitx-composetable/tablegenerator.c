@@ -281,6 +281,7 @@ void _fcitx_compose_table_find_compose_file(FcitxComposeTable* table)
 
 int fcitx_compose_table_element_cmp(const void* a, const void* b, void* data)
 {
+    FCITX_UNUSED(data);
     const FcitxComposeTableElement* ea = a;
     const FcitxComposeTableElement* eb = b;
     for (size_t i = 0; i < FCITX_KEYSEQUENCE_MAX_LEN; i++) {

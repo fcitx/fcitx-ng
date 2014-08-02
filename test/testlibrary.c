@@ -18,6 +18,7 @@ int func()
 
 void parser(const char* data, void* arg)
 {
+    FCITX_UNUSED(arg);
     assert(strcmp(data, DATA) == 0);
 }
 

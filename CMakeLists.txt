@@ -72,8 +72,8 @@ endif()
 
 # we want some useful function like asprintf
 add_definitions(-D_GNU_SOURCE)
-set(CMAKE_C_FLAGS "-fPIC -std=c99 -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden ${CMAKE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS "-fPIC -Wall -Wextra -Wno-unused-parameter -fvisibility=hidden ${CMAKE_CXX_FLAGS}")
+set(CMAKE_C_FLAGS "-fPIC -std=c99 -Wall -Wextra -fvisibility=hidden ${CMAKE_C_FLAGS}")
+set(CMAKE_CXX_FLAGS "-fPIC -Wall -Wextra -fvisibility=hidden ${CMAKE_CXX_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed ${CMAKE_MODULE_LINKER_FLAGS}")
 

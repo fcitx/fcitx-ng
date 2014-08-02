@@ -73,6 +73,8 @@ void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger)
 
 bool _fcitx_addon_load(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(key);
+    FCITX_UNUSED(keyLen);
     FcitxStandardPathFile* files = *data;
     size_t i = 0;
     while (files[i].fp) {
@@ -97,10 +99,13 @@ bool _fcitx_addon_load(const char* key, size_t keyLen, void** data, void* userDa
 FCITX_EXPORT_API
 void fcitx_addon_manager_load(FcitxAddonManager* manager)
 {
+    // load the metadata
     FcitxStandardPathFilter filter;
     filter.flag = FSPFT_Suffix | FSPFT_Sort;
     filter.suffix = ".conf";
     FcitxDict* fileDict = fcitx_standard_path_match(manager->standardPath, FSPT_Data, "fcitx/addon", &filter);
     fcitx_dict_foreach(fileDict, _fcitx_addon_load, manager);
     fcitx_dict_free(fileDict);
+
+    //
 }

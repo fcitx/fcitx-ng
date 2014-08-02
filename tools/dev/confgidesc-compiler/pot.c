@@ -42,6 +42,7 @@ typedef struct {
 
 void print_pot_attribute(FcitxConfiguration* config, const char* path, void* userData)
 {
+    FCITX_UNUSED(path);
     FcitxStringHashSet* stringSet = userData;
     fcitx_string_hashset_insert(stringSet, fcitx_configuration_get_name(config));
     const char* description = fcitx_configuration_get_value_by_path(config, "Description");
@@ -69,6 +70,8 @@ void print_pot_attribute(FcitxConfiguration* config, const char* path, void* use
 
 bool print_pot_definition(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     print_pot_definition_context *context = userData;
     FcitxConfiguration* config = context->rootConfig;
     fcitx_string_hashset_insert(context->stringSet, key);
@@ -78,6 +81,9 @@ bool print_pot_definition(const char* key, size_t keyLen, void** data, void* use
 
 bool print_pot_strings_foreach(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
+    FCITX_UNUSED(userData);
     print_pot_string(key);
     return false;
 }

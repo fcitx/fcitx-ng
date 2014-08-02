@@ -1,3 +1,4 @@
+#include "fcitx-utils/utils.h"
 #include "description.h"
 
 bool is_builtin_type(const char* str)
@@ -17,6 +18,7 @@ void find_structs_callback(FcitxConfiguration* config,
                           const char* path,
                           void* userData)
 {
+    FCITX_UNUSED(config);
     if (strcmp(path, "DescriptionFile") == 0) {
         return;
     }
@@ -79,6 +81,8 @@ void struct_attribute_foreach(FcitxConfiguration* config, const char* path, void
 
 bool structs_foreach(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     FcitxDescription* desc = userData;
     fcitx_configuration_foreach(desc->rootConfig, key, false, "", struct_attribute_foreach, userData);
     return false;
@@ -86,6 +90,7 @@ bool structs_foreach(const char* key, size_t keyLen, void** data, void* userData
 
 void find_top_level_structs(FcitxConfiguration* config, FcitxDescription* desc)
 {
+    FCITX_UNUSED(config);
     desc->topLevelStructs = fcitx_string_hashset_clone(desc->structs);
 
     fcitx_dict_foreach(desc->structs, structs_foreach, desc);

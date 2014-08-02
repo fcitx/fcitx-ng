@@ -144,7 +144,7 @@ static _FCITX_ALWAYS_INLINE_ void utarray_push_back(UT_array* a, void* p) {
     };
 }
 
-static _FCITX_ALWAYS_INLINE_ void utarray_pop_back(UT_array* a, void* p) {
+static _FCITX_ALWAYS_INLINE_ void utarray_pop_back(UT_array* a) {
     if ((a)->icd->dtor) {
         (a)->icd->dtor(_utarray_eltptr(a, --((a)->i)));
     } else {

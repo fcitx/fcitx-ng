@@ -4,6 +4,8 @@
 
 bool add_length(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(key);
+    FCITX_UNUSED(data);
     size_t* len = userData;
     *len += keyLen + 1;
     return false;
@@ -16,6 +18,7 @@ typedef struct {
 
 bool copy_string(const char* key, size_t keyLen, void** data, void* userData)
 {
+    FCITX_UNUSED(data);
     copy_string_context* c = userData;
     memcpy(c->p, key, keyLen);
     c->p += keyLen;

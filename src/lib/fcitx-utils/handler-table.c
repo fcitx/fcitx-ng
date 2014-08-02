@@ -206,6 +206,7 @@ FCITX_EXPORT_API const void*
 fcitx_handler_key_get_key(FcitxHandlerTable *table, FcitxHandlerKey *key,
                           size_t *len)
 {
+    FCITX_UNUSED(table);
     if (fcitx_unlikely(!key)) {
         if (len)
             *len = 0;
@@ -219,6 +220,7 @@ fcitx_handler_key_get_key(FcitxHandlerTable *table, FcitxHandlerKey *key,
 FCITX_EXPORT_API int
 fcitx_handler_key_first_id(FcitxHandlerTable *table, FcitxHandlerKey *key)
 {
+    FCITX_UNUSED(table);
     if (fcitx_unlikely(!key))
         return FCITX_OBJECT_POOL_INVALID_ID;
     return key->first;
@@ -227,6 +229,7 @@ fcitx_handler_key_first_id(FcitxHandlerTable *table, FcitxHandlerKey *key)
 FCITX_EXPORT_API int
 fcitx_handler_key_last_id(FcitxHandlerTable *table, FcitxHandlerKey *key)
 {
+    FCITX_UNUSED(table);
     if (fcitx_unlikely(!key))
         return FCITX_OBJECT_POOL_INVALID_ID;
     return key->last;
