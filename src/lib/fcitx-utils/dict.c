@@ -3,10 +3,8 @@
 #include "uthash.h"
 
 typedef struct _FcitxDictItem {
-    char* key;
-    void* data;
+    FcitxDictData content;
     UT_hash_handle hh;
-    size_t keyLen;
 } FcitxDictItem;
 
 struct _FcitxDict {
@@ -34,9 +32,9 @@ bool fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* va
     if (item) {
         if (replace) {
             if (dict->destroyNotify) {
-                dict->destroyNotify(item->data);
+                dict->destroyNotify(item->content.data);
             }
-            item->data = value;
+            item->content.data = value;
             return true;
         } else {
             return false;
@@ -49,12 +47,12 @@ bool fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* va
     }
 
     // make all key null terminated
-    item->key = malloc(keyLen + 1);
-    item->key[keyLen] = 0;
-    item->keyLen = keyLen;
-    memcpy(item->key, key, keyLen);
-    item->data = value;
-    HASH_ADD_KEYPTR(hh, dict->head, item->key, keyLen, item);
+    item->content.key = malloc(keyLen + 1);
+    item->content.key[keyLen] = 0;
+    item->content.keyLen = keyLen;
+    memcpy(item->content.key, key, keyLen);
+    item->content.data = value;
+    HASH_ADD_KEYPTR(hh, dict->head, item->content.key, keyLen, item);
     return true;
 }
 
@@ -69,7 +67,7 @@ bool _fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** 
     }
 
     if (dataOut) {
-        *dataOut = item->data;
+        *dataOut = item->content.data;
     }
     return true;
 }
@@ -84,9 +82,9 @@ size_t fcitx_dict_size(FcitxDict* dict)
 void fcitx_dict_item_free(FcitxDictItem* item, FcitxDict* arg)
 {
     if (arg && arg->destroyNotify) {
-        arg->destroyNotify(item->data);
+        arg->destroyNotify(item->content.data);
     }
-    free(item->key);
+    free(item->content.key);
     free(item);
 }
 
@@ -99,7 +97,9 @@ int fcitx_dict_item_compare(FcitxDictItem* a, FcitxDictItem* b, fcitx_dict_compa
 {
     FcitxDictItem* itemA = a;
     FcitxDictItem* itemB = b;
-    return context->callback(itemA->key, itemA->keyLen, itemA->data, itemB->key, itemB->keyLen, itemB->data, context->userData);
+    return context->callback(itemA->content.key, itemA->content.keyLen, itemA->content.data,
+                             itemB->content.key, itemB->content.keyLen, itemB->content.data,
+                             context->userData);
 }
 
 int fcitx_dict_item_default_compare(const char* keyA, size_t keyALen, const void* dataA, const char* keyB, size_t keyBLen, const void* dataB, void* userData)
@@ -152,7 +152,7 @@ bool fcitx_dict_remove(FcitxDict* dict, const char* key, size_t keyLen, void** d
     }
 
     if (dataOut) {
-        *dataOut = item->data;
+        *dataOut = item->content.data;
         HASH_DEL(dict->head, item);
         fcitx_dict_item_free(item, NULL);
     } else {
@@ -167,7 +167,7 @@ void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictForeachFunc func, void* data
     while (dict->head) {
         FcitxDictItem* item = dict->head;
         HASH_DEL(dict->head, item);
-        func(item->key, item->keyLen, &item->data, data);
+        func(item->content.key, item->content.keyLen, &item->content.data, data);
         fcitx_dict_item_free(item, NULL);
     }
 }
@@ -176,7 +176,7 @@ FCITX_EXPORT_API
 void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data)
 {
     HASH_FOREACH(item, dict->head, FcitxDictItem) {
-        if (func(item->key, item->keyLen, &item->data, data)) {
+        if (func(item->content.key, item->content.keyLen, &item->content.data, data)) {
             break;
         }
     }
@@ -188,11 +188,26 @@ void fcitx_dict_remove_if(FcitxDict* dict, FcitxDictForeachFunc func, void* data
     FcitxDictItem* item = dict->head;
     while (item) {
         FcitxDictItem* nextItem = item->hh.next;
-        if (func(item->key, item->keyLen, &item->data, data)) {
+        if (func(item->content.key, item->content.keyLen, &item->content.data, data)) {
             HASH_DEL(dict->head, item);
             fcitx_dict_item_free(item, dict);
         }
         item = nextItem;
+    }
+}
+
+void fcitx_dict_remove_data(FcitxDict* dict, FcitxDictData* data, void** dataOut)
+{
+    FcitxDictItem* item = (FcitxDictItem*) data;
+    HASH_DEL(dict->head, item);
+
+    if (dataOut) {
+        *dataOut = item->content.data;
+        HASH_DEL(dict->head, item);
+        fcitx_dict_item_free(item, NULL);
+    } else {
+        HASH_DEL(dict->head, item);
+        fcitx_dict_item_free(item, dict);
     }
 }
 
@@ -214,15 +229,25 @@ FcitxDict* fcitx_dict_clone(FcitxDict* other, FcitxDictCopyFunc copyFunc)
     HASH_FOREACH(item, other->head, FcitxDictItem) {
         void *data;
         if (copyFunc) {
-            data = copyFunc(item->data);
+            data = copyFunc(item->content.data);
         } else {
-            data = item->data;
+            data = item->content.data;
         }
-        fcitx_dict_insert(dict, item->key, item->keyLen, data, false);
+        fcitx_dict_insert(dict, item->content.key, item->content.keyLen, data, false);
     }
 
     return dict;
 }
 
+FCITX_EXPORT_API
+FcitxDictData* fcitx_dict_first(FcitxDict* dict)
+{
+    return &dict->head->content;
+}
 
-
+FCITX_EXPORT_API
+FcitxDictData* fcitx_dict_data_next(FcitxDictData* data)
+{
+    FcitxDictItem* item = (FcitxDictItem*) data;
+    return item->hh.next;
+}

@@ -1,6 +1,7 @@
 #ifndef __FCITX_ADDON_H__
 #define __FCITX_ADDON_H__
 #include <fcitx-utils/utils.h>
+#include "addon-config.h"
 
 /**
  * Addon Category Definition
@@ -33,27 +34,36 @@ typedef struct _FcitxAddon FcitxAddon;
 typedef bool (*FcitxAddonInitFunc)();
 typedef void (*FcitxAddonDestroyFunc)();
 
-typedef struct _FcitxAddonCommon
+typedef struct _FcitxAddonAPICommon
 {
     FcitxAddonInitFunc init;
     FcitxAddonDestroyFunc destroy;
     void* padding[10];
-} FcitxAddonCommon;
+} FcitxAddonAPICommon;
 
-typedef struct _FcitxAddonInstance {
-    FcitxAddon* addon;
+typedef struct _FcitxAddonAPI
+{
+    FcitxAddonAPICommon common;
+} FcitxAddonAPI;
 
-    void* userData;
+typedef struct _FcitxAddonInstance
+{
+    // Resolver need to fill this
+    FcitxAddonAPI* api;
+    void* data;
+    void* resolverData; // add a field for convinience
 } FcitxAddonInstance;
 
 typedef struct _FcitxAddonMananger FcitxAddonManager;
 
 #define FCITX_ABI_VERSION 6
 
-typedef bool (*FcitxAddonResolveFunctionFunc)(FcitxAddon* addon, FcitxAddonManager* manager, void* data);
+typedef bool (*FcitxAddonResolveFunc)(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
+typedef void (*FcitxAddonUnloadFunc)(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
 
 typedef struct _FcitxAddonResolver {
-    FcitxAddonResolveFunctionFunc resolve;
+    FcitxAddonResolveFunc resolve;
+    FcitxAddonUnloadFunc unload;
     FcitxDestroyNotify destroyNotify;
     void *data;
 } FcitxAddonResolver;
@@ -61,8 +71,10 @@ typedef struct _FcitxAddonResolver {
 FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath);
 FcitxAddonManager* fcitx_addon_manager_ref(FcitxAddonManager* manager);
 void fcitx_addon_manager_unref(FcitxAddonManager* manager);
+void fcitx_addon_manager_set_override(FcitxAddonManager* manager, const char* enabled, const char* disabled);
 void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger);
 void fcitx_addon_manager_load(FcitxAddonManager* manager);
+void fcitx_addon_manager_unload(FcitxAddonManager* manager);
 FcitxStandardPath* fcitx_addon_manager_get_standard_path(FcitxAddonManager* manager);
 
 #endif // __FCITX_ADDON_H__

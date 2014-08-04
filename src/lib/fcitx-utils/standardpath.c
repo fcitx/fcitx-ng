@@ -360,6 +360,7 @@ void fcitx_standard_path_free(FcitxStandardPath* sp)
     free(sp->dataHome);
     fcitx_utils_string_list_free(sp->configDirs);
     fcitx_utils_string_list_free(sp->dataDirs);
+    fcitx_utils_string_list_free(sp->addonDirs);
     free(sp);
 }
 

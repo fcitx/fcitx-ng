@@ -5,21 +5,14 @@
 #include "addon.h"
 #include "addon-config.h"
 
-
-/**
- * How addon get input method list
- **/
-typedef enum _IMRegisterMethod {
-    IMRM_SELF,
-    IMRM_EXEC,
-    IMRM_CONFIGFILE
-} IMRegisterMethod;
-
 /**
  * Addon Instance in Fcitx
  **/
 struct _FcitxAddon {
     FcitxAddonConfig *config;
+    bool loaded;
+    FcitxStringHashSet* dependencies;
+    FcitxAddonInstance inst;
 };
 
 struct _FcitxAddonMananger {
@@ -27,6 +20,15 @@ struct _FcitxAddonMananger {
     FcitxStandardPath* standardPath;
     int32_t refcount;
     FcitxDict* addons;
+
+    // override data;
+    FcitxStringHashSet* enabledAddons;
+    FcitxStringHashSet* disabledAddons;
+    bool disabledAllAddons;
+
+    // load order;
+    FcitxPtrArray* loadedAddons;
+    bool loaded;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

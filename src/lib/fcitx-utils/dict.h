@@ -18,6 +18,12 @@ typedef bool (*FcitxDictForeachFunc)(const char* key, size_t keyLen, void** data
 typedef int (*FcitxDictCompareFunc)(const char* keyA, size_t keyALen, const void* dataA, const char* keyB, size_t keyBLen, const void* dataB, void* userData);
 typedef void* (*FcitxDictCopyFunc)(void* data);
 
+typedef struct _FcitxDictData {
+    char* key;
+    size_t keyLen;
+    void* data;
+} FcitxDictData;
+
 FcitxDict* fcitx_dict_new(FcitxDestroyNotify freeFunc);
 
 FcitxDict* fcitx_dict_clone(FcitxDict* other, FcitxDictCopyFunc copyFunc);
@@ -29,6 +35,8 @@ void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictForeachFunc func, void* data
 void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data);
 
 void fcitx_dict_remove_if(FcitxDict* dict, FcitxDictForeachFunc func, void* data);
+
+void fcitx_dict_remove_data(FcitxDict* dict, FcitxDictData* data, void** dataOut);
 
 bool fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* value, bool replace);
 
@@ -73,6 +81,11 @@ void fcitx_dict_sort(FcitxDict* dict, FcitxDictCompareFunc compare, void* userDa
 void fcitx_dict_remove_all(FcitxDict* dict);
 
 void fcitx_dict_free(FcitxDict* dict);
+
+FcitxDictData* fcitx_dict_first(FcitxDict* dict);
+
+FcitxDictData* fcitx_dict_data_next(FcitxDictData* data);
+
 
 FCITX_DECL_END
 

@@ -16,6 +16,7 @@ int main ()
 {
     FcitxStandardPath* standardPath = fcitx_standard_path_new();
     FcitxAddonManager* manager = fcitx_addon_manager_new(standardPath);
+    fcitx_addon_manager_register_default_resolver(manager);
 
     fcitx_addon_manager_load(manager);
     fcitx_dict_foreach(manager->addons, _fcitx_addon_dump, NULL);
