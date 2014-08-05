@@ -14,6 +14,14 @@ typedef struct {
     FcitxListHead list;
 } FcitxAddonTopoSortItem;
 
+static const char* addonType[] = {
+    "inputmethod",
+    "frontend",
+    "module",
+    "ui",
+    "addonresolver"
+};
+
 static bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
 static void fcitx_shared_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
 
@@ -64,25 +72,38 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
         return false;
     }
 
-    bool result = true;
+    bool result = false;
     FcitxLibrary* library = fcitx_library_new(file->path);
     do {
-        if (!fcitx_library_load(library, FLLH_ResolveAllSymbolsHint | FLLH_ExportExternalSymbolsHint)) {
-            result = false;
+        if (!fcitx_library_load(library, FLLH_ResolveAllSymbolsHint | FLLH_PreventUnloadHint | FLLH_ExportExternalSymbolsHint)) {
             break;
         }
 
         int* version = _fcitx_library_get_symbol(library, addonConfig->addon.name, "ABI_VERSION");
         if (*version != FCITX_ABI_VERSION) {
-            result = false;
             break;
         }
 
-        // TODO resolve addon specific symbol
+        if (addonConfig->addon.category >= FCITX_ARRAY_SIZE(addonType)) {
+            break;
+        }
 
-        addonInst->data = NULL;
+        addonInst->api = _fcitx_library_get_symbol(library, addonConfig->addon.name, addonType[addonConfig->addon.category]);
+        if (!addonInst->api) {
+            break;
+        }
+
+        FcitxAddonAPICommon* apiCommon = addonInst->api;
+        if (!apiCommon->init && !apiCommon->destroy) {
+            break;
+        }
+        addonInst->data = apiCommon->init(manager);
+        if (!addonInst->data) {
+            break;
+        }
+
         addonInst->resolverData = library;
-
+        result = true;
     } while(0);
     fcitx_standard_path_file_close(file);
     if (!result) {
@@ -97,6 +118,9 @@ void fcitx_shared_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddon
     FCITX_UNUSED(addonConfig);
     FCITX_UNUSED(manager);
     FCITX_UNUSED(data);
+    FcitxAddonAPICommon* apiCommon = addonInst->api;
+    apiCommon->destroy(addonInst->data);
+    fcitx_library_unload(addonInst->resolverData);
     fcitx_library_free(addonInst->resolverData);
 }
 
@@ -119,12 +143,13 @@ void fcitx_addon_resolver_free(void* data)
 FCITX_EXPORT_API
 FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath)
 {
-    FcitxAddonManager* mananger = fcitx_utils_new(FcitxAddonManager);
-    mananger->resolvers = fcitx_dict_new(fcitx_addon_resolver_free);
-    mananger->standardPath = fcitx_standard_path_ref(standardPath);
-    mananger->addons = fcitx_dict_new((FcitxDestroyNotify) fcitx_addon_free);
-    mananger->loadedAddons = fcitx_ptr_array_new(NULL);
-    return fcitx_addon_manager_ref(mananger);
+    FcitxAddonManager* manager = fcitx_utils_new(FcitxAddonManager);
+    manager->resolvers = fcitx_dict_new(fcitx_addon_resolver_free);
+    manager->standardPath = fcitx_standard_path_ref(standardPath);
+    manager->addons = fcitx_dict_new((FcitxDestroyNotify) fcitx_addon_free);
+    manager->loadedAddons = fcitx_ptr_array_new(NULL);
+    manager->properties = fcitx_dict_new(NULL);
+    return fcitx_addon_manager_ref(manager);
 }
 
 void fcitx_addon_manager_free(FcitxAddonManager* manager)
@@ -132,6 +157,7 @@ void fcitx_addon_manager_free(FcitxAddonManager* manager)
     if (manager->loaded) {
         fcitx_addon_manager_unload(manager);
     }
+    fcitx_dict_free(manager->properties);
     fcitx_ptr_array_free(manager->loadedAddons);
     fcitx_dict_free(manager->resolvers);
     fcitx_standard_path_unref(manager->standardPath);
@@ -149,6 +175,22 @@ void fcitx_addon_manager_register_resolver(FcitxAddonManager* manager, const cha
     fcitx_dict_insert_by_str(manager->resolvers, name, resolver, false);
 }
 
+FCITX_EXPORT_API
+void fcitx_addon_manager_set_property(FcitxAddonManager* manager, const char* name, void* data)
+{
+    fcitx_dict_insert_by_str(manager->properties, name, data, true);
+}
+
+FCITX_EXPORT_API
+void* fcitx_addon_manager_get_property(FcitxAddonManager* manager, const char* name)
+{
+    void* result = NULL;
+    fcitx_dict_lookup_by_str(manager->properties, name, &result);
+    return result;
+}
+
+
+FCITX_EXPORT_API
 void fcitx_addon_manager_set_override(FcitxAddonManager* manager, const char* enabled, const char* disabled)
 {
     fcitx_string_hashset_free(manager->enabledAddons);
@@ -187,7 +229,8 @@ bool _fcitx_addon_load_metadata(const char* key, size_t keyLen, void** data, voi
     fcitx_configuration_unref(config);
 
     do {
-        if (addonConfig->addon.name[0] == 0 || addonConfig->addon.type[0] == 0) {
+        if (addonConfig->addon.name[0] == 0 || addonConfig->addon.type[0] == 0 ||
+            addonConfig->addon.category >= FAC_Last) {
             fcitx_addon_config_free(addonConfig);
             break;
         }
@@ -246,6 +289,7 @@ void _fcitx_addon_manager_load_addon(FcitxAddonManager* manager, FcitxAddon* add
         if (!resolver->resolve(addon->config, &addon->inst, manager, resolver->data)) {
             break;
         }
+        fcitx_ptr_array_append(manager->loadedAddons, addon);
         return;
     } while(0);
 

@@ -50,3 +50,6 @@ add_test(NAME testdesccompile COMMAND testdesccompile)
 add_executable(testaddon testaddon.c)
 target_link_libraries(testaddon fcitx-core)
 target_include_directories(testaddon PRIVATE ${PROJECT_BINARY_DIR}/src/lib/fcitx)
+add_test(NAME testaddon COMMAND testaddon ${CMAKE_CURRENT_SOURCE_DIR}/addon ${CMAKE_CURRENT_BINARY_DIR}/addon)
+
+add_subdirectory(addon)

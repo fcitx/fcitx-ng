@@ -29,6 +29,7 @@ struct _FcitxAddonMananger {
     // load order;
     FcitxPtrArray* loadedAddons;
     bool loaded;
+    FcitxDict* properties;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

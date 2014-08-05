@@ -12,8 +12,15 @@ bool _fcitx_addon_dump(const char* key, size_t keyLen, void** data, void* arg)
     return false;
 }
 
-int main ()
+int main (int argc, char* argv[])
 {
+    if (argc < 3) {
+        return 1;
+    }
+
+    setenv("XDG_DATA_HOME", argv[1], true);
+    setenv("XDG_DATA_DIRS", argv[1], true);
+    setenv("FCITX_ADDON_DIRS", argv[2], true);
     FcitxStandardPath* standardPath = fcitx_standard_path_new();
     FcitxAddonManager* manager = fcitx_addon_manager_new(standardPath);
     fcitx_addon_manager_register_default_resolver(manager);
