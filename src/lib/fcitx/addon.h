@@ -37,11 +37,13 @@ typedef struct _FcitxAddon FcitxAddon;
 
 typedef void* (*FcitxAddonInitFunc)(FcitxAddonManager* manager);
 typedef void (*FcitxAddonDestroyFunc)(void* addon);
+typedef void (*FcitxAddonReloadConfig)(void* addon);
 
 typedef struct _FcitxAddonAPICommon
 {
     FcitxAddonInitFunc init;
     FcitxAddonDestroyFunc destroy;
+    FcitxAddonReloadConfig reloadConfig;
     void* padding1;
     void* padding2;
     void* padding3;

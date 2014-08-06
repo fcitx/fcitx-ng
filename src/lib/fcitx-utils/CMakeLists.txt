@@ -51,6 +51,7 @@ set(FCITX_UTILS_HEADERS
     standardpath.h
     i18nstring.h
     color.h
+    rect.h
     )
 
 include_directories(${DL_INCLUDE_DIR})

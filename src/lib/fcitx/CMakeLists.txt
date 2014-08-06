@@ -6,6 +6,8 @@ set(LIBFCITX_SOURCES
   ${CMAKE_CURRENT_BINARY_DIR}/addon-config.h
   addon.c
   instance.c
+  inputcontext.c
+  inputdevice.c
   )
 
 set(FCITX_HEADERS

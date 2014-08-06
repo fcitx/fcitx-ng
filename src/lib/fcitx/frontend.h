@@ -7,22 +7,15 @@
 typedef struct _FcitxAddonAPIFrontend
 {
     FcitxAddonAPICommon common;
-    void (*CreateIC)(void* arg, FcitxInputContext*, void* priv); /**< frontend create input context callback */
-    bool (*CheckIC)(void* arg, FcitxInputContext* arg1, void* arg2); /**< frontend check context with private value callback */
-    void (*DestroyIC)(void* arg, FcitxInputContext *context); /**< frontend destroy input context callback */
-    void (*EnableIM)(void* arg, FcitxInputContext* arg1); /**< frontend enable input method to client callback */
-    void (*CloseIM)(void* arg, FcitxInputContext* arg1); /**< frontend close input method to client callback */
-    void (*CommitString)(void* arg, FcitxInputContext* arg1, const char* arg2); /**< frontend commit string callback */
-    void (*ForwardKey)(void* arg, FcitxInputContext* arg1, FcitxKeyEvent event); /**< frontend forward key callback */
-    void (*SetWindowOffset)(void* arg, FcitxInputContext* ic, int x, int y); /**< frontend set window offset callback */
-    void (*GetWindowRect)(void* arg, FcitxInputContext* ic, int* x, int* y, int* w, int* h); /**< frontend get window position callback */
-    void (*UpdatePreedit)(void* arg, FcitxInputContext* ic); /**< frontend update preedit callback */
-    void (*UpdateClientSideUI)(void* arg, FcitxInputContext* ic); /**< frontend update client side user interface callback */
-    void (*ReloadConfig)(void* arg); /**< frontend reload config callback */
-    bool (*CheckICFromSameApplication)(void* arg, FcitxInputContext* icToCheck, FcitxInputContext* ic); /**< frontend check input context from same application callback */
-    pid_t (*GetPid)(void* arg, FcitxInputContext* arg1); /**< get pid for ic, zero for unknown */
-    void (*DeleteSurroundingText)(void* addonInstance, FcitxInputContext* ic, int offset, unsigned int size);
-    bool (*GetSurroundingPreedit)(void* addonInstance, FcitxInputContext* ic, char** str, unsigned int* cursor, unsigned int* anchor);
+    void (*createIC)(void* arg, FcitxInputContext*, void* priv); /**< frontend create input context callback */
+    void (*destroyIC)(void* arg, FcitxInputContext *context); /**< frontend destroy input context callback */
+    void (*commitString)(void* arg, FcitxInputContext* arg1, const char* arg2); /**< frontend commit string callback */
+    void (*forwardKey)(void* arg, FcitxInputContext* arg1, FcitxKeyEvent event); /**< frontend forward key callback */
+    void (*getWindowRect)(void* arg, FcitxInputContext* ic, int* x, int* y, int* w, int* h); /**< frontend get window position callback */
+    void (*updatePreedit)(void* arg, FcitxInputContext* ic); /**< frontend update preedit callback */
+    void (*updateClientSideUI)(void* arg, FcitxInputContext* ic); /**< frontend update client side user interface callback */
+    void (*deleteSurroundingText)(void* addonInstance, FcitxInputContext* ic, int offset, unsigned int size);
+    bool (*getSurroundingText)(void* addonInstance, FcitxInputContext* ic, char** str, unsigned int* cursor, unsigned int* anchor);
     void* padding1;
     void* padding2;
     void* padding3;

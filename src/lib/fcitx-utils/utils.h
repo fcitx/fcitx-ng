@@ -21,6 +21,7 @@
 #include "memory-pool.h"
 #include "misc.h"
 #include "objpool.h"
+#include "rect.h"
 #include "sort_common.h"
 #include "standardpath.h"
 #include "stringhashset.h"
