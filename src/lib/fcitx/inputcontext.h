@@ -44,12 +44,29 @@ typedef struct _FcitxKeyEvent
 } FcitxKeyEvent;
 
 typedef struct _FcitxInputContextManager FcitxInputContextManager;
+typedef void (*FcitxInputContextFillDataCallback)(FcitxInputContext* context, void* userData);
 
 FcitxInputContextManager* fcitx_input_context_manager_new();
 FcitxInputContextManager* fcitx_input_context_manager_ref(FcitxInputContextManager* manager);
 void fcitx_input_context_manager_unref(FcitxInputContextManager* manager);
-FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager);
+FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager,
+                                                         FcitxInputContextFillDataCallback callback,
+                                                         void* data);
+void fcitx_input_context_manager_focus_in(FcitxInputContextManager* manager, uint32_t id);
+void fcitx_input_context_manager_focus_out(FcitxInputContextManager* manager, uint32_t id);
 
+#define FCITX_INVALID_IC 0
+
+/**
+ * get ic
+ *
+ * @param manager
+ * @param id 0 for current ic
+ * @return FcitxInputContext*
+ */
+FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* manager, uint32_t id);
+
+uint32_t fcitx_input_context_get_id(FcitxInputContext* inputContext);
 uint32_t fcitx_input_context_get_capability_flags(FcitxInputContext* inputContext);
 void fcitx_input_context_process_event(FcitxInputContext* inputContext, FcitxKeyEvent* event);
 void fcitx_input_context_commit_string(FcitxInputContext* inputContext, const char* commitString);
