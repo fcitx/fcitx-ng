@@ -66,6 +66,7 @@ void fcitx_input_context_manager_focus_out(FcitxInputContextManager* manager, ui
  */
 FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* manager, uint32_t id);
 
+void fcitx_input_context_destroy(FcitxInputContext* inputContext);
 uint32_t fcitx_input_context_get_id(FcitxInputContext* inputContext);
 uint32_t fcitx_input_context_get_capability_flags(FcitxInputContext* inputContext);
 void fcitx_input_context_process_event(FcitxInputContext* inputContext, FcitxKeyEvent* event);

@@ -26,13 +26,14 @@
 #include "fcitx-utils/stringlist.h"
 #include "instance.h"
 #include "instance-internal.h"
+#include "addon.h"
 
 typedef struct _FcitxInstanceArguments
 {
     bool tryReplace;
     bool quietQuit;
-    FcitxStringList* enableList;
-    FcitxStringList* disableList;
+    char* enableList;
+    char* disableList;
     char* uiname;
     int overrideDelay;
     bool runasdaemon;
@@ -67,7 +68,7 @@ void Version()
     printf("fcitx version: %s\n", FCITX_VERSION);
 }
 
-void FcitxInstanceArgumentsParse(FcitxInstanceArguments* arg, int argc, char* argv[])
+void fcitx_instance_arugment_parse(FcitxInstanceArguments* arg, int argc, char* argv[])
 {
     struct option longOptions[] = {
         {"ui", 1, 0, 0},
@@ -94,16 +95,12 @@ void FcitxInstanceArgumentsParse(FcitxInstanceArguments* arg, int argc, char* ar
                 break;
             case 2:
                 {
-                    if (arg->enableList)
-                        fcitx_utils_string_list_free(arg->enableList);
-                    arg->enableList = fcitx_utils_string_split(optarg, ",");
+                    fcitx_utils_string_swap(&arg->enableList, optarg);
                 }
                 break;
             case 3:
                 {
-                    if (arg->disableList)
-                        fcitx_utils_string_list_free(arg->disableList);
-                    arg->disableList = fcitx_utils_string_split(optarg, ",");
+                    fcitx_utils_string_swap(&arg->disableList, optarg);
                 }
                 break;
             case 4:
@@ -145,19 +142,19 @@ void FcitxInstanceArgumentsParse(FcitxInstanceArguments* arg, int argc, char* ar
     }
 }
 
-void FcitxInstanceArgumentsFree(FcitxInstanceArguments* arg)
+void fcitx_instance_arguments_free(FcitxInstanceArguments* arg)
 {
-    fcitx_utils_string_list_free(arg->enableList);
-    fcitx_utils_string_list_free(arg->disableList);
+    free(arg->enableList);
+    free(arg->disableList);
     free(arg->uiname);
 }
 
-FcitxInstance* FcitxInstanceCreate(int argc, char* argv[])
+FcitxInstance* fcitx_instance_create(int argc, char* argv[])
 {
     FcitxInstanceArguments arguments;
-    FcitxInstanceArgumentsParse(&arguments, argc, argv);
+    fcitx_instance_arugment_parse(&arguments, argc, argv);
     if (arguments.quietQuit) {
-        FcitxInstanceArgumentsFree(&arguments);
+        fcitx_instance_arguments_free(&arguments);
         return NULL;
     }
 
@@ -177,16 +174,38 @@ FcitxInstance* FcitxInstanceCreate(int argc, char* argv[])
     FcitxMainLoop* mainloop = fcitx_mainloop_new();
     instance->mainloop = mainloop;
 
+    instance->standardPath = fcitx_standard_path_new();
+    instance->addonManager = fcitx_addon_manager_new(instance->standardPath);
+
     return instance;
 }
 
-int FcitxInstanceRun(FcitxInstance* instance)
+int fcitx_instance_run(FcitxInstance* instance)
 {
+    fcitx_addon_manager_register_default_resolver(instance->addonManager, NULL);
+    fcitx_addon_manager_set_override(instance->addonManager, instance->enableList, instance->disableList);
+    fcitx_addon_manager_load(instance->addonManager);
+
+    fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
+
     return fcitx_mainloop_run(instance->mainloop);
 }
 
-void FcitxInstanceDestroy(FcitxInstance* instance)
+FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance)
+{
+    return instance->mainloop;
+}
+
+void fcitx_instance_shutdown(FcitxInstance* instance)
+{
+    fcitx_mainloop_quit(instance->mainloop);
+}
+
+void fcitx_instance_destroy(FcitxInstance* instance)
 {
     fcitx_mainloop_free(instance->mainloop);
+    free(instance->enableList);
+    free(instance->disableList);
+    free(instance->uiname);
     free(instance);
 }

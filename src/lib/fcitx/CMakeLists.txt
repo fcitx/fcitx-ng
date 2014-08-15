@@ -2,10 +2,10 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 include_directories(..)
 
 set(LIBFCITX_SOURCES
+  instance.c
   ${CMAKE_CURRENT_BINARY_DIR}/addon-config.c
   ${CMAKE_CURRENT_BINARY_DIR}/addon-config.h
   addon.c
-  instance.c
   inputcontext.c
   inputdevice.c
   )

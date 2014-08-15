@@ -33,7 +33,11 @@ FCITX_DECL_BEGIN
 
 typedef struct _FcitxInstance FcitxInstance;
 
-FcitxInstance* FcitxInstanceCreate(int argc, char* argv[]);
+FcitxInstance* fcitx_instance_create(int argc, char* argv[]);
+int fcitx_instance_run(FcitxInstance* instance);
+FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance);
+void fcitx_instance_shutdown(FcitxInstance* instance);
+void fcitx_instance_destroy(FcitxInstance* instance);
 
 FCITX_DECL_END
 
@@ -41,4 +45,3 @@ FCITX_DECL_END
 /**
  * @}
  */
-// kate: indent-mode cstyle; space-indent on; indent-width 0;

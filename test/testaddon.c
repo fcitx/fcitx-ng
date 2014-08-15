@@ -1,5 +1,8 @@
 #include "fcitx/addon.h"
 #include "fcitx/addon-internal.h"
+#include "fcitx/ime.h"
+
+extern FcitxAddonAPIInputMethod testim_inputmethod;
 
 bool _fcitx_addon_dump(const char* key, size_t keyLen, void** data, void* arg)
 {
@@ -18,12 +21,17 @@ int main (int argc, char* argv[])
         return 1;
     }
 
+    FcitxStaticAddon staticAddon[] = {
+        FCITX_STATIC_ADDON("testim", &testim_inputmethod),
+        FCITX_STATIC_ADDON_END()
+    };
+
     setenv("XDG_DATA_HOME", argv[1], true);
     setenv("XDG_DATA_DIRS", argv[1], true);
     setenv("FCITX_ADDON_DIRS", argv[2], true);
     FcitxStandardPath* standardPath = fcitx_standard_path_new();
     FcitxAddonManager* manager = fcitx_addon_manager_new(standardPath);
-    fcitx_addon_manager_register_default_resolver(manager);
+    fcitx_addon_manager_register_default_resolver(manager, staticAddon);
 
     fcitx_addon_manager_load(manager);
     fcitx_dict_foreach(manager->addons, _fcitx_addon_dump, NULL);

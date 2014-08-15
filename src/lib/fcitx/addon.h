@@ -38,6 +38,13 @@ typedef struct _FcitxAddon FcitxAddon;
 typedef void* (*FcitxAddonInitFunc)(FcitxAddonManager* manager);
 typedef void (*FcitxAddonDestroyFunc)(void* addon);
 typedef void (*FcitxAddonReloadConfig)(void* addon);
+typedef struct _FcitxStaticAddon {
+    char* name;
+    void* entry;
+} FcitxStaticAddon;
+
+#define FCITX_STATIC_ADDON(NAME, ENTRY) (FcitxStaticAddon){.name = (NAME), .entry = (ENTRY)}
+#define FCITX_STATIC_ADDON_END() FCITX_STATIC_ADDON(NULL, NULL)
 
 typedef struct _FcitxAddonAPICommon
 {
@@ -74,6 +81,12 @@ typedef struct _FcitxAddonResolver {
     FcitxAddonUnloadFunc unload;
     FcitxDestroyNotify destroyNotify;
     void *data;
+    void* padding1;
+    void* padding2;
+    void* padding3;
+    void* padding4;
+    void* padding5;
+    void* padding6;
 } FcitxAddonResolver;
 
 FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath);
@@ -82,7 +95,7 @@ void fcitx_addon_manager_unref(FcitxAddonManager* manager);
 void fcitx_addon_manager_set_property(FcitxAddonManager* manager, const char* name, void* data);
 void* fcitx_addon_manager_get_property(FcitxAddonManager* manager, const char* name);
 void fcitx_addon_manager_set_override(FcitxAddonManager* manager, const char* enabled, const char* disabled);
-void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger);
+void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger, FcitxStaticAddon* staticAddon);
 void fcitx_addon_manager_load(FcitxAddonManager* manager);
 void fcitx_addon_manager_unload(FcitxAddonManager* manager);
 FcitxStandardPath* fcitx_addon_manager_get_standard_path(FcitxAddonManager* manager);

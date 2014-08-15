@@ -24,20 +24,9 @@ static const char* addonType[] = {
 
 static bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
 static void fcitx_shared_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
-
-FcitxAddonResolver sharedLibraryResolver = {
-    fcitx_shared_library_resolve,
-    fcitx_shared_library_unload,
-    NULL,
-    NULL
-};
-
-FcitxAddonResolver staticLibraryResolver = {
-    NULL,
-    NULL,
-    NULL,
-    NULL
-};
+static bool fcitx_static_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
+static void fcitx_static_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
+static void fcitx_static_library_resolver_free(void* data);
 
 void* _fcitx_library_get_symbol(FcitxLibrary* library, const char* addonName, const char* symbolName)
 {
@@ -84,10 +73,6 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
             break;
         }
 
-        if (addonConfig->addon.category >= FCITX_ARRAY_SIZE(addonType)) {
-            break;
-        }
-
         addonInst->api = _fcitx_library_get_symbol(library, addonConfig->addon.name, addonType[addonConfig->addon.category]);
         if (!addonInst->api) {
             break;
@@ -118,12 +103,50 @@ void fcitx_shared_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddon
     FCITX_UNUSED(addonConfig);
     FCITX_UNUSED(manager);
     FCITX_UNUSED(data);
-    FcitxAddonAPICommon* apiCommon = addonInst->api;
-    apiCommon->destroy(addonInst->data);
     fcitx_library_unload(addonInst->resolverData);
     fcitx_library_free(addonInst->resolverData);
 }
 
+bool fcitx_static_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data)
+{
+    FcitxDict* staticAddonDict = data;
+
+    bool result = false;
+    do {
+        fcitx_dict_lookup_by_str(staticAddonDict, addonConfig->addon.name, &addonInst->api);
+        if (!addonInst->api) {
+            break;
+        }
+
+        FcitxAddonAPICommon* apiCommon = addonInst->api;
+        if (!apiCommon->init && !apiCommon->destroy) {
+            break;
+        }
+        addonInst->data = apiCommon->init(manager);
+        if (!addonInst->data) {
+            break;
+        }
+
+        addonInst->resolverData = NULL;
+        result = true;
+    } while(0);
+
+    return result;
+}
+
+void fcitx_static_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data)
+{
+    FCITX_UNUSED(addonConfig);
+    FCITX_UNUSED(manager);
+    FCITX_UNUSED(data);
+    FCITX_UNUSED(addonInst);
+}
+
+void fcitx_static_library_resolver_free(void* data)
+{
+    FcitxDict* staticAddonDict = data;
+    fcitx_dict_free(staticAddonDict);
+}
 
 void fcitx_addon_free(FcitxAddon* addon)
 {
@@ -136,8 +159,9 @@ void fcitx_addon_resolver_free(void* data)
 {
     FcitxAddonResolver* resolver = data;
     if (resolver->destroyNotify) {
-        resolver->destroyNotify(resolver);
+        resolver->destroyNotify(resolver->data);
     }
+    free(resolver);
 }
 
 FCITX_EXPORT_API
@@ -159,9 +183,9 @@ void fcitx_addon_manager_free(FcitxAddonManager* manager)
     }
     fcitx_dict_free(manager->properties);
     fcitx_ptr_array_free(manager->loadedAddons);
-    fcitx_dict_free(manager->resolvers);
     fcitx_standard_path_unref(manager->standardPath);
     fcitx_dict_free(manager->addons);
+    fcitx_dict_free(manager->resolvers);
     fcitx_string_hashset_free(manager->enabledAddons);
     fcitx_string_hashset_free(manager->disabledAddons);
     free(manager);
@@ -172,7 +196,9 @@ FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxAddonManager, fcitx_addon_manager);
 FCITX_EXPORT_API
 void fcitx_addon_manager_register_resolver(FcitxAddonManager* manager, const char* name, FcitxAddonResolver* resolver)
 {
-    fcitx_dict_insert_by_str(manager->resolvers, name, resolver, false);
+    FcitxAddonResolver* copiedResolver = fcitx_utils_new(FcitxAddonResolver);
+    memcpy(copiedResolver, resolver, sizeof(FcitxAddonResolver));
+    fcitx_dict_insert_by_str(manager->resolvers, name, copiedResolver, false);
 }
 
 FCITX_EXPORT_API
@@ -203,10 +229,27 @@ void fcitx_addon_manager_set_override(FcitxAddonManager* manager, const char* en
 }
 
 FCITX_EXPORT_API
-void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger)
+void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger, FcitxStaticAddon* staticAddon)
 {
-    fcitx_dict_insert_by_str(mananger->resolvers, "StaticLibrary", &staticLibraryResolver, false);
-    fcitx_dict_insert_by_str(mananger->resolvers, "SharedLibrary", &sharedLibraryResolver, false);
+    FcitxDict* staticAddonDict = fcitx_dict_new(NULL);
+    while (staticAddon && staticAddon->name && staticAddon->entry) {
+        fcitx_dict_insert_by_str(staticAddonDict, staticAddon->name, staticAddon->entry, false);
+        staticAddon++;
+    }
+
+    FcitxAddonResolver staticLibraryResolver;
+    memset(&staticLibraryResolver, 0, sizeof(staticLibraryResolver));
+    staticLibraryResolver.destroyNotify = fcitx_static_library_resolver_free;
+    staticLibraryResolver.resolve = fcitx_static_library_resolve;
+    staticLibraryResolver.unload = fcitx_static_library_unload;
+    staticLibraryResolver.data = staticAddonDict;
+
+    FcitxAddonResolver sharedLibraryResolver;
+    memset(&sharedLibraryResolver, 0, sizeof(sharedLibraryResolver));
+    sharedLibraryResolver.resolve = fcitx_shared_library_resolve;
+    sharedLibraryResolver.unload = fcitx_shared_library_unload;
+    fcitx_addon_manager_register_resolver(mananger, "StaticLibrary", &staticLibraryResolver);
+    fcitx_addon_manager_register_resolver(mananger, "SharedLibrary", &sharedLibraryResolver);
 }
 
 bool _fcitx_addon_load_metadata(const char* key, size_t keyLen, void** data, void* userData)
@@ -298,6 +341,8 @@ void _fcitx_addon_manager_load_addon(FcitxAddonManager* manager, FcitxAddon* add
 
 void _fcitx_addon_manager_unload_addon(FcitxAddonManager* manager, FcitxAddon* addon)
 {
+    FcitxAddonAPICommon* apiCommon = addon->inst.api;
+    apiCommon->destroy(addon->inst.data);
     FcitxAddonResolver* resolver;
     fcitx_dict_lookup_by_str(manager->resolvers, addon->config->addon.type, &resolver);
     resolver->unload(addon->config, &addon->inst, manager, resolver->data);

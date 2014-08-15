@@ -16,6 +16,8 @@ struct _FcitxInputContext {
     char* prgname; /**< program name */
     FcitxTriState mayUsePreedit;
     UT_hash_handle hh;
+    FcitxInputContextManager* manager;
+    FcitxDestroyNotify destroyNotify;
 };
 
 #endif // _FCITX_INPUTCONTEXT_INTERNAL_H_

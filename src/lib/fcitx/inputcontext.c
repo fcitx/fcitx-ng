@@ -19,6 +19,17 @@ FcitxInputContextManager* fcitx_input_context_manager_new()
 
 void fcitx_input_context_manager_free(FcitxInputContextManager* manager)
 {
+    while (manager->ics) {
+        FcitxInputContext* ic = manager->ics;
+        HASH_DEL(manager->ics, ic);
+    }
+
+    while (manager->freeList) {
+        FcitxInputContext* ic = manager->freeList;
+        // TODO: mind need to free more?
+        manager->freeList = manager->freeList->hh.next;
+        free(ic);
+    }
     free(manager);
 }
 
@@ -41,6 +52,7 @@ FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManage
         }
         ic = fcitx_utils_new(FcitxInputContext);
         ic->id = newid;
+        ic->manager = manager;
     }
 
     if (callback) {
@@ -71,5 +83,22 @@ FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* 
     FcitxInputContext* ic = NULL;
     HASH_FIND(hh, manager->ics, &id, sizeof(uint32_t), ic);
     return ic;
+}
+
+void fcitx_input_context_destroy(FcitxInputContext* inputContext)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (inputContext != fcitx_input_context_manager_get_ic(manager, inputContext->id)) {
+        return;
+    }
+
+    if (manager->currentIC == inputContext) {
+        fcitx_input_context_manager_focus_out(manager, inputContext->id);
+    }
+
+    //inputContext->destroyNotify(inputContext->userData);
+
+    inputContext->hh.next = manager->freeList;
+    manager->freeList = inputContext;
 }
 
