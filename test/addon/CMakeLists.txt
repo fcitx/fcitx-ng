@@ -1,3 +1,5 @@
 include_directories(${PROJECT_BINARY_DIR}/src/lib/fcitx)
 add_library(testfrontend MODULE testfrontend.c)
 add_library(testim STATIC testim.c)
+target_link_libraries(testfrontend fcitx-core)
+target_link_libraries(testim fcitx-core)
