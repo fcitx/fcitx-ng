@@ -3,7 +3,8 @@ project(fcitx)
 
 set(FCITX_VERSION "4.99")
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
+find_package(ECM 0.0.11 REQUIRED NO_MODULE)
+set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
 
 include(FcitxMacros)
@@ -67,6 +68,10 @@ find_package(Libintl REQUIRED)
 find_package(Pthread REQUIRED)
 find_package(Libkvm)
 find_package(RT)
+
+# Dependences for modules
+find_package(XCB REQUIRED)
+find_package(XCBImdkit REQUIRED)
 
 if (RT_FOUND)
     set(HAVE_CLOCK_GETTIME 1)
