@@ -32,3 +32,8 @@ endmacro()
 
 macro(fcitx5_translate_set_pot_target )
 endmacro()
+
+macro(FCITX5_INSTALL_ADDON_CONFIG name)
+fcitx5_merge_config_translation("${name}.conf.in" "${name}.conf")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${name}.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/addon")
+endmacro()
