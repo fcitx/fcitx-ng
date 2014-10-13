@@ -49,7 +49,7 @@ fcitx_utils_string_list_append_split_full(FcitxStringList *list,
 FCITX_EXPORT_API
 FcitxStringList* fcitx_utils_string_split_full(const char* str, const char* delm, bool keepEmpty)
 {
-    FcitxStringList* array = utarray_new(fcitx_str_icd);
+    FcitxStringList* array = fcitx_utils_string_list_new();
     return fcitx_utils_string_list_append_split_full(array, str, delm, keepEmpty);
 }
 

@@ -153,6 +153,7 @@ FCITX_EXPORT_API
 FcitxInstance* fcitx_instance_create(int argc, char* argv[])
 {
     FcitxInstanceArguments arguments;
+    memset(&arguments, 0, sizeof(arguments));
     fcitx_instance_arugment_parse(&arguments, argc, argv);
     if (arguments.quietQuit) {
         fcitx_instance_arguments_free(&arguments);
@@ -184,11 +185,11 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
 FCITX_EXPORT_API
 int fcitx_instance_run(FcitxInstance* instance)
 {
+    fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
     fcitx_addon_manager_register_default_resolver(instance->addonManager, NULL);
     fcitx_addon_manager_set_override(instance->addonManager, instance->enableList, instance->disableList);
     fcitx_addon_manager_load(instance->addonManager);
 
-    fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
 
     return fcitx_mainloop_run(instance->mainloop);
 }

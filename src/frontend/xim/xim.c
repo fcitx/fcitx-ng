@@ -12,7 +12,7 @@ typedef struct _FcitxXIM
 static void* fcitx_xim_init(FcitxAddonManager* manager);
 static void fcitx_xim_destroy(void* data);
 
-FCITX_DEFINE_ADDON(xim, module, FcitxAddonAPICommon) = {
+FCITX_DEFINE_ADDON(fcitx_xim, module, FcitxAddonAPICommon) = {
     .init = fcitx_xim_init,
     .destroy = fcitx_xim_destroy
 };

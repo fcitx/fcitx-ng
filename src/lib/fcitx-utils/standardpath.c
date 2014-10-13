@@ -58,14 +58,21 @@ char* fcitx_standard_default_path_construct(const char* env, const char* default
     return dir;
 }
 
-FcitxStringList* fcitx_standard_default_paths_construct(const char* env, const char* defaultPath)
+FcitxStringList* fcitx_standard_default_paths_construct(const char* env, const char* defaultPath, const char* fcitxPath)
 {
+    FcitxStringList* dirs = fcitx_utils_string_list_new();
+
+    if (fcitxPath) {
+        char* path = fcitx_utils_get_fcitx_path(fcitxPath);
+        fcitx_utils_string_list_append_no_copy(dirs, path);
+    }
+
     const char* dir = getenv(env);
     if (!dir || !dir[0]) {
         dir = defaultPath;
     }
 
-    FcitxStringList* dirs = fcitx_utils_string_split_full(dir, ":", false);
+    dirs = fcitx_utils_string_list_append_split_full(dirs, dir, ":", false);
 
     return dirs;
 }
@@ -76,13 +83,13 @@ FcitxStandardPath* fcitx_standard_path_new()
     FcitxStandardPath* path = fcitx_utils_new(FcitxStandardPath);
     // initialize user directory
     path->configHome = fcitx_standard_default_path_construct("XDG_CONFIG_HOME", ".config");
-    path->configDirs = fcitx_standard_default_paths_construct("XDG_CONFIG_DIRS", "/etc/xdg");
+    path->configDirs = fcitx_standard_default_paths_construct("XDG_CONFIG_DIRS", "/etc/xdg", NULL);
     path->dataHome = fcitx_standard_default_path_construct("XDG_DATA_HOME", ".local/share");
-    path->dataDirs = fcitx_standard_default_paths_construct("XDG_DATA_DIRS", "/usr/local/share:/usr/share");
+    path->dataDirs = fcitx_standard_default_paths_construct("XDG_DATA_DIRS", "/usr/local/share:/usr/share", "datadir");
     path->cacheHome = fcitx_standard_default_path_construct("XDG_CACHE_HOME", ".cache");
     const char* tmpdir = getenv("TMPDIR");
     path->runtimeDir = fcitx_standard_default_path_construct("XDG_RUNTIME_DIR", !tmpdir || !tmpdir[0] ? "/tmp" : tmpdir);
-    path->addonDirs = fcitx_standard_default_paths_construct("FCITX_ADDON_DIRS", FCITX_INSTALL_ADDONDIR);
+    path->addonDirs = fcitx_standard_default_paths_construct("FCITX_ADDON_DIRS", FCITX_INSTALL_ADDONDIR, NULL);
 
     return fcitx_standard_path_ref(path);
 }

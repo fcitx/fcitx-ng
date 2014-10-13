@@ -31,7 +31,7 @@ typedef struct _FcitxKeyboard
 static void* fcitx_keyboard_init(FcitxAddonManager* manager);
 static void fcitx_keyboard_destroy(void* data);
 
-FCITX_DEFINE_ADDON(keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
+FCITX_DEFINE_ADDON(fcitx_keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
     .common = {
         .init = fcitx_keyboard_init,
         .destroy = fcitx_keyboard_destroy

@@ -21,4 +21,5 @@ if(ENABLE_LIBXML2)
 endif()
 
 add_library(fcitx-keyboard MODULE ${FCITX_KEYBOARD_SOURCES})
-target_link_libraries(fcitx-keyboard ${FCITX_KEYBOARD_LINK_LIBS})
+target_link_libraries(fcitx-keyboard ${FCITX_KEYBOARD_LINK_LIBS} Fcitx::Core)
+set_target_properties(fcitx-keyboard PROPERTIES PREFIX "")

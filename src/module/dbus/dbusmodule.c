@@ -1,5 +1,6 @@
 #include <dbus/dbus.h>
 #include <unistd.h>
+#include <assert.h>
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
@@ -11,6 +12,12 @@ typedef struct _FcitxDBus
     DBusConnection* conn;
 } FcitxDBus;
 
+typedef struct _FcitxDBusWakeUpMainData
+{
+    FcitxDBus* dbus;
+    DBusConnection* conn;
+} FcitxDBusWakeUpMainData;
+
 const int RETRY_INTERVAL = 1;
 const int MAX_RETRY_TIMES = 5;
 
@@ -18,7 +25,7 @@ static void* fcitx_dbus_init(FcitxAddonManager* manager);
 static void fcitx_dbus_destroy(void* data);
 static DBusHandlerResult fcitx_dbus_filter(DBusConnection* connection, DBusMessage* msg, void* user_data);
 
-FCITX_DEFINE_ADDON(dbus, module, FcitxAddonAPICommon) = {
+FCITX_DEFINE_ADDON(fcitx_dbus, module, FcitxAddonAPICommon) = {
     .init = fcitx_dbus_init,
     .destroy = fcitx_dbus_destroy
 };
@@ -28,12 +35,14 @@ void fcitx_dbus_watch_callback(FcitxIOEvent* _event, int fd, unsigned int flag, 
 {
     FCITX_UNUSED(_event);
     FCITX_UNUSED(fd);
+
     unsigned int dflag =
            ((flag & FIOEF_IN) ? DBUS_WATCH_READABLE : 0)
          | ((flag & FIOEF_OUT) ? DBUS_WATCH_WRITABLE : 0)
          | ((flag & FIOEF_ERR) ? DBUS_WATCH_ERROR : 0)
          | ((flag & FIOEF_HUP) ? DBUS_WATCH_HANGUP : 0);
     DBusWatch* watch = data;
+    assert(fd == dbus_watch_get_unix_fd(watch));
     dbus_watch_handle(watch, dflag);
 }
 
@@ -135,26 +144,54 @@ void fcitx_dbus_toggle_timeout(DBusTimeout *timeout, void *data)
         fcitx_dbus_remove_timeout (timeout, data);
 }
 
+void fcitx_dbus_dispatch(FcitxTimeoutEvent* event, void* data)
+{
+    FCITX_UNUSED(event);
+    DBusConnection* conn = data;
+    dbus_connection_ref(conn);
+    while (dbus_connection_dispatch(conn) == DBUS_DISPATCH_DATA_REMAINS);
+    dbus_connection_unref(conn);
+}
+
+void fcitx_dbus_wakeup_main(void* _data)
+{
+    FcitxDBusWakeUpMainData* data = _data;
+    fcitx_mainloop_register_timeout_event(data->dbus->mainloop, 0, false, fcitx_dbus_dispatch, (FcitxDestroyNotify) dbus_connection_unref, dbus_connection_ref(data->conn));
+}
+
+
+static DBusHandlerResult IPCDBusEventHandler(DBusConnection *connection, DBusMessage *msg, void *user_data)
+{
+    return DBUS_HANDLER_RESULT_HANDLED;
+}
+
 bool fcitx_dbus_setup_connection(FcitxDBus* dbus, DBusConnection* conn)
 {
-    if (!dbus_connection_add_filter(conn, fcitx_dbus_filter, dbus, NULL))
+    if (!dbus_connection_add_filter(conn, fcitx_dbus_filter, dbus, NULL)) {
         return false;
+    }
 
     if (!dbus_connection_set_watch_functions(conn,
-                                                fcitx_dbus_add_watch,
-                                                fcitx_dbus_remove_watch,
-                                                fcitx_dbus_toggle_watch,
-                                                dbus, NULL)) {
+                                             fcitx_dbus_add_watch,
+                                             fcitx_dbus_remove_watch,
+                                             fcitx_dbus_toggle_watch,
+                                             dbus, NULL)) {
         return false;
     }
 
     if (!dbus_connection_set_timeout_functions(conn,
-                                                fcitx_dbus_add_timeout,
-                                                fcitx_dbus_remove_timeout,
-                                                fcitx_dbus_toggle_timeout,
-                                                dbus, NULL)) {
+                                               fcitx_dbus_add_timeout,
+                                               fcitx_dbus_remove_timeout,
+                                               fcitx_dbus_toggle_timeout,
+                                               dbus, NULL)) {
         return false;
     }
+
+
+    FcitxDBusWakeUpMainData* data = fcitx_utils_new(FcitxDBusWakeUpMainData);
+    data->conn = conn;
+    data->dbus = dbus;
+    dbus_connection_set_wakeup_main_function(conn, fcitx_dbus_wakeup_main, data, NULL);
 
     return true;
 }
@@ -194,6 +231,7 @@ void* fcitx_dbus_init(FcitxAddonManager* manager)
         if (!fcitx_dbus_setup_connection(dbus, conn)) {
             dbus_connection_unref(conn);
             conn = NULL;
+            break;
         }
 
         /* from here we know dbus connection is successful, now we need to register the service */
@@ -209,9 +247,15 @@ void* fcitx_dbus_init(FcitxAddonManager* manager)
 
             int replaceBit = doReplace ? DBUS_NAME_FLAG_REPLACE_EXISTING : 0;
             // request a name on the bus
+            DBusError error;
+            dbus_error_init(&error);
             int ret = dbus_bus_request_name(conn, "org.fcitx.Fcitx",
                                             DBUS_NAME_FLAG_ALLOW_REPLACEMENT | DBUS_NAME_FLAG_DO_NOT_QUEUE | replaceBit,
-                                            NULL);
+                                            &error);
+            if (dbus_error_is_set(&error)) {
+                fprintf(stderr, "%s %s", error.name, error.message);
+            }
+            dbus_error_free(&error);
             if (DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER != ret) {
                 if (replaceCountdown > 0) {
                     replaceCountdown --;
@@ -228,17 +272,17 @@ void* fcitx_dbus_init(FcitxAddonManager* manager)
                 dbus_connection_unref(conn);
                 free(dbus);
                 return NULL;
-            } else {
-                dbus_bus_request_name(conn, "org.fcitx.Fcitx", DBUS_NAME_FLAG_DO_NOT_QUEUE, NULL);
             }
         } while (request_retry);
 
+        DBusObjectPathVTable fcitxIPCVTable = {NULL, &IPCDBusEventHandler, NULL, NULL, NULL, NULL };
+
+        if (conn) {
+            dbus_connection_register_object_path(conn, "/", &fcitxIPCVTable, dbus);
+        }
+
         dbus_connection_flush(conn);
     } while(0);
-
-
-    /* from here we know dbus connection is successful, now we need to register the service */
-    dbus_connection_set_exit_on_disconnect(conn, FALSE);
 
     return dbus;
 }
@@ -251,7 +295,7 @@ fcitx_dbus_filter(DBusConnection* connection, DBusMessage* msg, void* user_data)
     if (dbus_message_is_signal(msg, DBUS_INTERFACE_LOCAL, "Disconnected")) {
         fcitx_instance_shutdown(dbus->instance);
         return DBUS_HANDLER_RESULT_HANDLED;
-    } else if (dbus_message_is_signal(msg, DBUS_INTERFACE_LOCAL, "NameLost")) {
+    } else if (dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS, "NameLost")) {
         const char* name;
         do {
             if (!dbus_message_get_args(msg, NULL,

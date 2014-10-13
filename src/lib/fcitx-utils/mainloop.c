@@ -22,10 +22,10 @@ struct _FcitxIOEvent
 {
     FcitxIOEventCallback callback;
     int fd;
-    FcitxListHead list;
     FcitxDestroyNotify destroyNotify;
     void* userdata;
     int id;
+    int32_t refcount;
 };
 
 struct _FcitxTimeoutEvent
@@ -37,6 +37,7 @@ struct _FcitxTimeoutEvent
     int64_t time;
     void* userdata;
     FcitxDestroyNotify destroyNotify;
+    int32_t refcount;
 };
 
 struct _FcitxMainLoop
@@ -53,6 +54,26 @@ struct _FcitxMainLoop
     int wakeupPipe[2];
     int pollRet;
 };
+
+void fcitx_io_event_ref(FcitxIOEvent* data)
+{
+    fcitx_utils_atomic_add (&data->refcount, 1);
+}
+
+int32_t fcitx_io_event_unref(FcitxIOEvent* data)
+{
+    return fcitx_utils_atomic_add (&data->refcount, -1);
+}
+
+void fcitx_timeout_event_ref(FcitxTimeoutEvent* data)
+{
+    fcitx_utils_atomic_add (&data->refcount, 1);
+}
+
+int32_t fcitx_timeout_event_unref(FcitxTimeoutEvent* data)
+{
+    return fcitx_utils_atomic_add (&data->refcount, -1);
+}
 
 static void fcitx_mainloop_wakeup(FcitxMainLoop* mainloop);
 static bool get_time(int64_t* ms);
@@ -180,18 +201,30 @@ void fcitx_mainloop_dispatch_timeout(FcitxMainLoop* mainloop)
 {
     int64_t now = 0;
     get_time(&now);
-    fcitx_list_entry_foreach_safe(event, FcitxTimeoutEvent, &mainloop->timeoutHandler, list) {
+
+    FcitxTimeoutEvent* event = fcitx_container_of((&mainloop->timeoutHandler)->next, FcitxTimeoutEvent, list);
+    while (&event->list != &mainloop->timeoutHandler) {
         if (mainloop->quit) {
             break;
         }
 
         if (event->time < now) {
+            fcitx_timeout_event_ref(event);
             event->callback(event, event->userdata);
-            if (event->repeat) {
-                set_time_event(event);
-            } else {
+            FcitxTimeoutEvent* next = fcitx_container_of(event->list.next, FcitxTimeoutEvent, list);
+            if (fcitx_timeout_event_unref(event) == 1) {
+                fcitx_timeout_event_ref(event);
                 fcitx_mainloop_remove_timeout_event(mainloop, event);
+            } else {
+                if (event->repeat) {
+                    set_time_event(event);
+                } else {
+                    fcitx_mainloop_remove_timeout_event(mainloop, event);
+                }
             }
+            event = next;
+        } else {
+            event = fcitx_container_of(event->list.next, FcitxTimeoutEvent, list);
         }
     }
 }
@@ -219,10 +252,18 @@ void fcitx_mainloop_dispatch_io(FcitxMainLoop* mainloop)
             memset(&key, 0, sizeof(FcitxPollKey));
             key.fd = pfd->fd;
             key.flag = pfd->events;
-            for (FcitxIOEvent* event = fcitx_handler_table_first(mainloop->ioHandler, sizeof(FcitxPollKey), &key);
-                event;
-                event = fcitx_handler_table_next(mainloop->ioHandler, event)) {
+            FcitxIOEvent* event = fcitx_handler_table_first(mainloop->ioHandler, sizeof(FcitxPollKey), &key);
+            while (event) {
+                fcitx_io_event_ref(event);
                 event->callback(event, event->fd, fcitx_io_event_flag_from_libc_flag(pfd->revents), event->userdata);
+                if (fcitx_io_event_unref(event) == 1) {
+                    fcitx_io_event_ref(event);
+                    FcitxIOEvent* next = fcitx_handler_table_next(mainloop->ioHandler, event);
+                    fcitx_mainloop_remove_io_event(mainloop, event);
+                    event = next;
+                } else {
+                    event = fcitx_handler_table_next(mainloop->ioHandler, event);
+                }
                 if (mainloop->quit) {
                     break;
                 }
@@ -376,6 +417,7 @@ FcitxIOEvent* fcitx_mainloop_register_io_event(FcitxMainLoop* mainloop, int fd, 
     event.destroyNotify = freeFunc;
     event.userdata = userdata;
     event.callback = callback;
+    event.refcount = 1;
 
     FcitxPollKey key;
     memset(&key, 0, sizeof(FcitxPollKey));
@@ -400,6 +442,8 @@ FcitxTimeoutEvent* fcitx_mainloop_register_timeout_event(FcitxMainLoop* mainloop
     event->destroyNotify = freeFunc;
     event->userdata = userdata;
     event->callback = callback;
+    event->refcount = 1;
+
     fcitx_list_prepend(&event->list, &mainloop->timeoutHandler);
 
     fcitx_mainloop_wakeup(mainloop);
@@ -410,12 +454,18 @@ FcitxTimeoutEvent* fcitx_mainloop_register_timeout_event(FcitxMainLoop* mainloop
 FCITX_EXPORT_API
 void fcitx_mainloop_remove_io_event(FcitxMainLoop* mainloop, FcitxIOEvent* event)
 {
+    if (fcitx_io_event_unref(event) != 1) {
+        return;
+    }
     fcitx_handler_table_remove_by_id_full(mainloop->ioHandler, event->id);
 }
 
 FCITX_EXPORT_API
 void fcitx_mainloop_remove_timeout_event(FcitxMainLoop* mainloop, FcitxTimeoutEvent* event)
 {
+    if (fcitx_timeout_event_unref(event) != 1) {
+        return;
+    }
     FCITX_UNUSED(mainloop);
     fcitx_list_remove(&event->list);
     if (event->destroyNotify) {

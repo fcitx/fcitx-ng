@@ -12,8 +12,19 @@ macro(FCITX5_GENERATE_CONFIG_SOURCE infile basename name prefix)
         DEPENDS ${_in_file} Fcitx::configdesc-compiler VERBATIM)
 endmacro()
 
-macro(FCITX5_MERGE_DESKTOP_FILE infile)
+macro(FCITX5_MERGE_CONFIG_TRANSLATION infile outfile)
+    get_filename_component(abs_infile ${infile} ABSOLUTE)
+    get_filename_component(infile_name ${infile} NAME)
+    set(_outfile "${outfile}")
+    if(NOT IS_ABSOLUTE "${outfile}")
+        set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${outfile}")
+    endif()
 
+    add_custom_command(OUTPUT "${_outfile}"
+        COMMAND Fcitx::config-merge-translation "${abs_infile}" "${PROJECT_SOURCE_DIR}/po" "${_outfile}"
+        DEPENDS "${abs_infile}" Fcitx::config-merge-translation VERBATIM)
+
+    add_custom_target("${infile_name}.target" ALL DEPENDS "${_outfile}")
 endmacro()
 
 macro(fcitx5_translate_add_po_file )

@@ -21,7 +21,7 @@ typedef struct _FcitxXCBConnection
 static void* fcitx_xcb_init(FcitxAddonManager* manager);
 static void fcitx_xcb_destroy(void* data);
 
-FCITX_DEFINE_ADDON(xcb, module, FcitxAddonAPICommon) = {
+FCITX_DEFINE_ADDON(fcitx_xcb, module, FcitxAddonAPICommon) = {
     .init = fcitx_xcb_init,
     .destroy = fcitx_xcb_destroy
 };

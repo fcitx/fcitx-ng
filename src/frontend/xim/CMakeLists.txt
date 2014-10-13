@@ -1,5 +1,6 @@
 include_directories(${PROJECT_BINARY_DIR}/src/lib/fcitx)
 include_directories(${XCB_INCLUDE_DIRS})
 add_library(fcitx-xim MODULE xim.c)
-target_link_libraries(fcitx-xim fcitx-core)
+target_link_libraries(fcitx-xim Fcitx::Core)
 install(TARGETS fcitx-xim DESTINATION ${FCITX_INSTALL_ADDONDIR})
+set_target_properties(fcitx-xim PROPERTIES PREFIX "")

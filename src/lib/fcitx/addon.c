@@ -69,7 +69,7 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
         }
 
         int* version = _fcitx_library_get_symbol(library, addonConfig->addon.name, "ABI_VERSION");
-        if (*version != FCITX_ABI_VERSION) {
+        if (!version || *version != FCITX_ABI_VERSION) {
             break;
         }
 
