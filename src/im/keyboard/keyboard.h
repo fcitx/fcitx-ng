@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
+ *   Copyright (C) 2012~2012 by CSSlayer                                   *
  *   wengxt@gmail.com                                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,26 +17,51 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
-/**
- * @file   instance-internal.h
- *
- */
 
-#ifndef _FCITX_INSTANCE_INTERNAL_H_
-#define _FCITX_INSTANCE_INTERNAL_H_
-#include "inputcontext.h"
-#include "addon.h"
-#include "fcitx-utils/dict.h"
+#ifndef FCITX_KEYBOARD_H
+#define FCITX_KEYBOARD_H
 
-struct _FcitxInstance {
-    FcitxDict* inputContexts;
-    FcitxMainLoop* mainloop;
-    char* enableList;
-    char* disableList;
-    char* uiname;
-    FcitxAddonManager* addonManager;
-    FcitxStandardPath* standardPath;
-    int signalPipe;
-};
+#include "config.h"
+#include "keyboard-config.h"
+
+#include <iconv.h>
+
+#include "fcitx-utils/utils.h"
+
+#define FCITX_KEYBOARD_MAX_BUFFER 20
+#define FCITX_MAX_COMPOSE_LEN 7
+
+typedef enum _ChooseModifier {
+    CM_NONE,
+    CM_ALT,
+    CM_CTRL,
+    CM_SHIFT,
+    _CM_COUNT
+} ChooseModifier;
+
+typedef struct _FcitxKeyboard {
+    struct _FcitxInstance* owner;
+    char dictLang[6];
+    FcitxKeyboardConfig config;
+    FcitxXkbRules* rules;
+    iconv_t iconv;
+    char *initialLayout;
+    char *initialVariant;
+    char buffer[2][FCITX_KEYBOARD_MAX_BUFFER + FCITX_UTF8_MAX_LENGTH + 1];
+    int cursorPos;
+    uint composeBuffer[FCITX_MAX_COMPOSE_LEN + 1];
+    int n_compose;
+    char *tempBuffer;
+    int lastLength;
+    int dataSlot;
+    int enUSRegistered;
+    bool cursor_moved;
+} FcitxKeyboard;
+
+typedef struct _FcitxKeyboardLayout {
+    FcitxKeyboard *owner;
+    char *layoutString;
+    char *variantString;
+} FcitxKeyboardLayout;
 
 #endif

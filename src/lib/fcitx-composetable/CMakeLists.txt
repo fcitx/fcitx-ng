@@ -15,4 +15,6 @@ set_target_properties(fcitx-composetable
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined"
   )
-target_link_libraries(fcitx-composetable fcitx-utils)
+target_link_libraries(fcitx-composetable Fcitx::Utils)
+
+add_library(Fcitx::ComposeTable ALIAS fcitx-composetable)

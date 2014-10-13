@@ -11,6 +11,8 @@ include(FcitxMacros)
 
 option(ENABLE_TEST "Build Test" On)
 option(ENABLE_COVERAGE "Enable coverage" Off)
+option(ENABLE_BACKTRACE "Build with backtrace support" On)
+option(ENABLE_LIBXML2 "Build with libxml" On)
 
 set_property(GLOBAL PROPERTY "__FCITX_INTERNAL_BUILD" On)
 
@@ -65,13 +67,28 @@ endif("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STR
 find_package(DL REQUIRED)
 find_package(Libiconv REQUIRED)
 find_package(Libintl REQUIRED)
+find_package(GettextPo REQUIRED)
 find_package(Pthread REQUIRED)
 find_package(Libkvm)
 find_package(RT)
 
+if (ENABLE_BACKTRACE)
+find_package(Libexecinfo REQUIRED)
+endif ()
+
 # Dependences for modules
+# xcb
 find_package(XCB REQUIRED)
+# xim
 find_package(XCBImdkit REQUIRED)
+# dbus
+find_package(DBus REQUIRED)
+# libxml
+if (ENABLE_LIBXML2)
+find_package(LibXml2 REQUIRED)
+endif (ENABLE_LIBXML2)
+# xkbcommon
+find_package(XKBCommon REQUIRED)
 
 if (RT_FOUND)
     set(HAVE_CLOCK_GETTIME 1)
@@ -113,3 +130,5 @@ endif ()
 add_subdirectory(tools)
 
 add_subdirectory(data)
+
+add_subdirectory(po)

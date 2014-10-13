@@ -9,7 +9,7 @@
 #   XCBIMDKIT_FOUND - system has the OpenSSL library
 #   XCBIMDKIT_INCLUDE_DIR - the OpenSSL include directory
 #   XCBIMDKIT_LIBRARIES - The libraries needed to use OpenSSL
-#   XCBIMDKIT_VERSION - This is set to $major.$minor.$revision$path (eg. 0.9.8s)
+#   XCBIMDKIT_VERSION - This is set to $major.$minor.$revision
 
 #=============================================================================
 # Copyright 2014-2014 Weng Xuetian <wengxt@gmail.com>
@@ -24,8 +24,7 @@ find_path(XCBIMDKIT_INCLUDE_DIR
     xcb-imdkit/imdkit.h
   HINTS
     ${PC_XCBIMDKIT_INCLUDEDIR}
-  PATH_SUFFIXES
-    include
+    ${PC_XCBIMDKIT_INCLUDE_DIRS}
 )
 
 find_library(XCBIMDKIT_LIBRARY
@@ -33,9 +32,10 @@ find_library(XCBIMDKIT_LIBRARY
     xcb-imdkit
   HINTS
     ${PC_XCBIMDKIT_LIBDIR}
+    ${PC_XCBIMDKIT_LIBRARY_DIRS}
 )
 
-mark_as_advanced(OPENSSL_CRYPTO_LIBRARY OPENSSL_SSL_LIBRARY)
+mark_as_advanced(XCBIMDKIT_LIBRARY)
 
 set(XCBIMDKIT_LIBRARIES ${XCBIMDKIT_LIBRARY})
 

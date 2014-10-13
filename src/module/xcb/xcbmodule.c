@@ -26,7 +26,7 @@ FCITX_DEFINE_ADDON(xcb, module, FcitxAddonAPICommon) = {
     .destroy = fcitx_xcb_destroy
 };
 
-void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, int flag, void* data)
+void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
     FCITX_UNUSED(_event);
     FCITX_UNUSED(fd);

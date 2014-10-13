@@ -369,7 +369,7 @@ void fcitx_mainloop_quit(FcitxMainLoop* mainloop)
 }
 
 FCITX_EXPORT_API
-FcitxIOEvent* fcitx_mainloop_register_io_event(FcitxMainLoop* mainloop, int fd, int flag, FcitxIOEventCallback callback, FcitxDestroyNotify freeFunc, void* userdata)
+FcitxIOEvent* fcitx_mainloop_register_io_event(FcitxMainLoop* mainloop, int fd, unsigned int flag, FcitxIOEventCallback callback, FcitxDestroyNotify freeFunc, void* userdata)
 {
     FcitxIOEvent event, *pevent;
     event.fd = fd;

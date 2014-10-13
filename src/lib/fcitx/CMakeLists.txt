@@ -32,9 +32,11 @@ set_target_properties(fcitx-core
 
 configure_file(fcitx.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc)
 
-target_link_libraries(fcitx-core fcitx-config fcitx-utils
+target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils
   ${DL_LIBRARIES} ${PTHREAD_LIBRARIES})
 install(TARGETS fcitx-core LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc
   DESTINATION "${CMAKE_INSTALL_LIBDATADIR}/pkgconfig")
 install(FILES ${FCITX_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fcitx")
+
+add_library(Fcitx::Core ALIAS fcitx-core)

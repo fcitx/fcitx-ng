@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
+ *   Copyright (C) 2012~2012 by CSSlayer                                   *
  *   wengxt@gmail.com                                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,26 +17,35 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
-/**
- * @file   instance-internal.h
- *
- */
 
-#ifndef _FCITX_INSTANCE_INTERNAL_H_
-#define _FCITX_INSTANCE_INTERNAL_H_
-#include "inputcontext.h"
-#include "addon.h"
-#include "fcitx-utils/dict.h"
+#ifndef FCITX_ISOCODES_H
+#define FCITX_ISOCODES_H
 
-struct _FcitxInstance {
-    FcitxDict* inputContexts;
-    FcitxMainLoop* mainloop;
-    char* enableList;
-    char* disableList;
-    char* uiname;
-    FcitxAddonManager* addonManager;
-    FcitxStandardPath* standardPath;
-    int signalPipe;
-};
+#include "fcitx-utils/uthash.h"
+
+typedef struct _FcitxIsoCodes639Entry {
+    char* name;
+    char* iso_639_2B_code;
+    char* iso_639_2T_code;
+    char* iso_639_1_code;
+    UT_hash_handle hh1;
+    UT_hash_handle hh2;
+} FcitxIsoCodes639Entry;
+
+typedef struct _FcitxIsoCodes3166Entry {
+    char* name;
+    char* alpha_2_code;
+    UT_hash_handle hh;
+} FcitxIsoCodes3166Entry;
+
+typedef struct _FcitxIsoCodes {
+    FcitxIsoCodes639Entry* iso6392B;
+    FcitxIsoCodes639Entry* iso6392T;
+    FcitxIsoCodes3166Entry* iso3166;
+} FcitxIsoCodes;
+
+FcitxIsoCodes* FcitxXkbReadIsoCodes(const char* iso639, const char* iso3166);
+FcitxIsoCodes639Entry* FcitxIsoCodesGetEntry(FcitxIsoCodes* isocodes, const char* lang);
+void FcitxIsoCodesFree(FcitxIsoCodes* isocodes);
 
 #endif

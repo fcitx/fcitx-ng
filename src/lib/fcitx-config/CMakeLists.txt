@@ -20,4 +20,6 @@ set_target_properties(fcitx-config
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined"
   )
-target_link_libraries(fcitx-config fcitx-utils)
+target_link_libraries(fcitx-config Fcitx::Utils)
+
+add_library(Fcitx::Config ALIAS fcitx-config)

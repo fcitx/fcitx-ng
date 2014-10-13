@@ -11,3 +11,13 @@ macro(FCITX5_GENERATE_CONFIG_SOURCE infile basename name prefix)
         COMMAND Fcitx::configdesc-compiler -n "${name}" -p "${prefix}" -o ${_target_h} ${infile}
         DEPENDS ${_in_file} Fcitx::configdesc-compiler VERBATIM)
 endmacro()
+
+macro(FCITX5_MERGE_DESKTOP_FILE infile)
+
+endmacro()
+
+macro(fcitx5_translate_add_po_file )
+endmacro()
+
+macro(fcitx5_translate_set_pot_target )
+endmacro()

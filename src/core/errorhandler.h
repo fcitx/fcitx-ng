@@ -1,6 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
- *   wengxt@gmail.com                                                      *
+ *   Copyright (C) 2002~2005 by Yuking                                     *
+ *   yuking_net@sohu.com                                                   *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -17,26 +17,39 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
+#ifndef _ERRORHANDLER_H
+#define _ERRORHANDLER_H
+
+/* ***********************************************************
+ * Consts
+ * *********************************************************** */
+#ifndef SIGUNUSED
+#define SIGUNUSED 29
+#endif
+/* ***********************************************************
+ * Data structures
+ * *********************************************************** */
+
+/* ***********************************************************
+ * Functions
+ * *********************************************************** */
+
 /**
- * @file   instance-internal.h
+ * Set Posix Signal Handler
  *
- */
+ * @param  ...
+ * @return void
+ **/
+void            SetMyExceptionHandler(void);
 
-#ifndef _FCITX_INSTANCE_INTERNAL_H_
-#define _FCITX_INSTANCE_INTERNAL_H_
-#include "inputcontext.h"
-#include "addon.h"
-#include "fcitx-utils/dict.h"
-
-struct _FcitxInstance {
-    FcitxDict* inputContexts;
-    FcitxMainLoop* mainloop;
-    char* enableList;
-    char* disableList;
-    char* uiname;
-    FcitxAddonManager* addonManager;
-    FcitxStandardPath* standardPath;
-    int signalPipe;
-};
+/**
+ * Process Posix signal
+ *
+ * @param signo
+ * @return void
+ **/
+void            OnException(int signo);
 
 #endif
+
+// kate: indent-mode cstyle; space-indent on; indent-width 0;

@@ -1,3 +1,6 @@
 include_directories(${PROJECT_BINARY_DIR}/src/lib/fcitx)
-add_library(xcb MODULE xcbmodule.c)
-target_link_libraries(xcb fcitx-core)
+include_directories(${XCB_INCLUDE_DIRS})
+add_library(fcitx-xcb MODULE xcbmodule.c)
+target_link_libraries(fcitx-xcb  Fcitx::Core)
+install(TARGETS fcitx-xcb DESTINATION ${FCITX_INSTALL_ADDONDIR})
+install(FILES fcitx-xcb.conf DESTINATION ${CMAKE_INSTALL_DATADIR}/addon)

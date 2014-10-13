@@ -26,7 +26,7 @@
 #ifndef __FCITX_INSTANCE_H__
 #define __FCITX_INSTANCE_H__
 
-#include <fcitx-utils/macro.h>
+#include <fcitx-utils/utils.h>
 #include <fcitx/inputcontext.h>
 
 FCITX_DECL_BEGIN
@@ -36,6 +36,7 @@ typedef struct _FcitxInstance FcitxInstance;
 FcitxInstance* fcitx_instance_create(int argc, char* argv[]);
 int fcitx_instance_run(FcitxInstance* instance);
 FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance);
+void fcitx_instance_set_signal_pipe(FcitxInstance* instance, int fd);
 void fcitx_instance_shutdown(FcitxInstance* instance);
 void fcitx_instance_destroy(FcitxInstance* instance);
 

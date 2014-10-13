@@ -19,16 +19,16 @@ set(FCITX_UTILS_TEST
 
 foreach(TESTCASE ${FCITX_UTILS_TEST})
     add_executable(${TESTCASE} ${TESTCASE}.c)
-    target_link_libraries(${TESTCASE} fcitx-utils)
+    target_link_libraries(${TESTCASE} Fcitx::Utils)
     add_test(NAME ${TESTCASE}
              COMMAND ${TESTCASE})
 endforeach()
 
 add_executable(testcomposetable testcomposetable.c)
-target_link_libraries(testcomposetable fcitx-composetable)
+target_link_libraries(testcomposetable Fcitx::ComposeTable)
 
 add_executable(testconfiguration testconfiguration.c)
-target_link_libraries(testconfiguration fcitx-config)
+target_link_libraries(testconfiguration Fcitx::Config)
 add_test(NAME testconfiguration COMMAND testconfiguration)
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -41,14 +41,14 @@ set(TEST_DESC_COMPILE_SOURCE
   )
 
 add_executable(testdesccompile ${TEST_DESC_COMPILE_SOURCE})
-target_link_libraries(testdesccompile fcitx-config)
+target_link_libraries(testdesccompile Fcitx::Config)
 
 fcitx5_generate_config_source(${CMAKE_CURRENT_SOURCE_DIR}/test.desc test-config TestConfig Fcitx)
 add_test(NAME testdesccompile COMMAND testdesccompile)
 
 # test addon
 add_executable(testaddon testaddon.c)
-target_link_libraries(testaddon fcitx-core testim)
+target_link_libraries(testaddon Fcitx::Core testim)
 target_include_directories(testaddon PRIVATE ${PROJECT_BINARY_DIR}/src/lib/fcitx)
 add_test(NAME testaddon COMMAND testaddon ${CMAKE_CURRENT_SOURCE_DIR}/addon ${CMAKE_CURRENT_BINARY_DIR}/addon)
 

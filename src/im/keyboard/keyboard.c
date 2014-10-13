@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
+ *   Copyright (C) 2012~2014 by CSSlayer                                   *
  *   wengxt@gmail.com                                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,26 +17,40 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
-/**
- * @file   instance-internal.h
- *
- */
 
-#ifndef _FCITX_INSTANCE_INTERNAL_H_
-#define _FCITX_INSTANCE_INTERNAL_H_
-#include "inputcontext.h"
-#include "addon.h"
-#include "fcitx-utils/dict.h"
+#include "config.h"
+#include <libintl.h>
+#include <xkbcommon/xkbcommon.h>
 
-struct _FcitxInstance {
-    FcitxDict* inputContexts;
-    FcitxMainLoop* mainloop;
-    char* enableList;
-    char* disableList;
-    char* uiname;
-    FcitxAddonManager* addonManager;
-    FcitxStandardPath* standardPath;
-    int signalPipe;
+#include "fcitx/ime.h"
+
+typedef struct _FcitxKeyboard
+{
+} FcitxKeyboard;
+
+static void* fcitx_keyboard_init(FcitxAddonManager* manager);
+static void fcitx_keyboard_destroy(void* data);
+
+FCITX_DEFINE_ADDON(keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
+    .common = {
+        .init = fcitx_keyboard_init,
+        .destroy = fcitx_keyboard_destroy
+    }
 };
 
-#endif
+void* fcitx_keyboard_init(FcitxAddonManager* manager)
+{
+    FcitxKeyboard* keyboard = fcitx_utils_new(FcitxKeyboard);
+    char* localepath = fcitx_utils_get_fcitx_path("localedir");
+    bindtextdomain("xkeyboard-config", localepath);
+    bind_textdomain_codeset("xkeyboard-config", "UTF-8");
+    free(localepath);
+
+    return keyboard;
+}
+
+void fcitx_keyboard_destroy(void* data)
+{
+    FcitxKeyboard* keyboard = data;
+    free(keyboard);
+}

@@ -1,0 +1,5 @@
+set(PO_LANGS de es ja zh_CN zh_TW ko)
+foreach(lang ${PO_LANGS})
+  fcitx5_translate_add_po_file("${lang}" "${lang}.po")
+endforeach()
+fcitx5_translate_set_pot_target(pot fcitx fcitx.pot)

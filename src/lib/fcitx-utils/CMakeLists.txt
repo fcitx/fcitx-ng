@@ -81,12 +81,4 @@ install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx-utils.pc
   DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${FCITX_UTILS_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fcitx-utils")
 
-if(ENABLE_STATIC)
-  add_library(fcitx-utils-static STATIC ${FCITX_UTILS_SOURCES})
-  set_target_properties(fcitx-utils-static PROPERTIES
-    OUTPUT_NAME "fcitx-utils"
-    PREFIX "lib")
-  install(TARGETS fcitx-utils-static
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
-endif()
+add_library(Fcitx::Utils ALIAS fcitx-utils)

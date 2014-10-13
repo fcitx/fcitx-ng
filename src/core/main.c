@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
+ *   Copyright (C) 2010~2010 by CSSlayer                                   *
  *   wengxt@gmail.com                                                      *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
@@ -17,26 +17,41 @@
  *   Free Software Foundation, Inc.,                                       *
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
-/**
- * @file   instance-internal.h
- *
- */
 
-#ifndef _FCITX_INSTANCE_INTERNAL_H_
-#define _FCITX_INSTANCE_INTERNAL_H_
-#include "inputcontext.h"
-#include "addon.h"
-#include "fcitx-utils/dict.h"
+#include <unistd.h>
+#include <fcntl.h>
+#include <locale.h>
+#include <libintl.h>
+#include "fcitx/instance.h"
 
-struct _FcitxInstance {
-    FcitxDict* inputContexts;
-    FcitxMainLoop* mainloop;
-    char* enableList;
-    char* disableList;
-    char* uiname;
-    FcitxAddonManager* addonManager;
-    FcitxStandardPath* standardPath;
-    int signalPipe;
-};
+FcitxInstance* instance = NULL;
+int selfpipe[2];
+char* crashlog = NULL;
 
-#endif
+int main(int argc, char* argv[])
+{
+    if (pipe(selfpipe)) {
+        fprintf(stderr, "Could not create self-pipe.\n");
+        exit(1);
+    }
+
+    fcntl(selfpipe[0], F_SETFL, O_NONBLOCK);
+    fcntl(selfpipe[0], F_SETFD, FD_CLOEXEC);
+    fcntl(selfpipe[1], F_SETFL, O_NONBLOCK);
+    fcntl(selfpipe[1], F_SETFD, FD_CLOEXEC);
+
+    char* localedir = fcitx_utils_get_fcitx_path("localedir");
+    setlocale(LC_ALL, "");
+    bindtextdomain("fcitx", localedir);
+    free(localedir);
+    bind_textdomain_codeset("fcitx", "UTF-8");
+    textdomain("fcitx");
+
+    instance = fcitx_instance_create(argc, argv);
+    fcitx_instance_set_signal_pipe(instance, selfpipe[0]);
+    int result = fcitx_instance_run(instance);
+    fcitx_instance_destroy(instance);
+
+    return result;
+}
+// kate: indent-mode cstyle; space-indent on; indent-width 0;

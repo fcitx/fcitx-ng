@@ -149,6 +149,7 @@ void fcitx_instance_arguments_free(FcitxInstanceArguments* arg)
     free(arg->uiname);
 }
 
+FCITX_EXPORT_API
 FcitxInstance* fcitx_instance_create(int argc, char* argv[])
 {
     FcitxInstanceArguments arguments;
@@ -180,6 +181,7 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
     return instance;
 }
 
+FCITX_EXPORT_API
 int fcitx_instance_run(FcitxInstance* instance)
 {
     fcitx_addon_manager_register_default_resolver(instance->addonManager, NULL);
@@ -191,16 +193,25 @@ int fcitx_instance_run(FcitxInstance* instance)
     return fcitx_mainloop_run(instance->mainloop);
 }
 
+FCITX_EXPORT_API
+void fcitx_instance_set_signal_pipe(FcitxInstance* instance, int fd)
+{
+    instance->signalPipe = fd;
+}
+
+FCITX_EXPORT_API
 FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance)
 {
     return instance->mainloop;
 }
 
+FCITX_EXPORT_API
 void fcitx_instance_shutdown(FcitxInstance* instance)
 {
     fcitx_mainloop_quit(instance->mainloop);
 }
 
+FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)
 {
     fcitx_mainloop_free(instance->mainloop);

@@ -1,0 +1,7 @@
+[Addon]
+Name=fcitx-xcb
+_GeneralName=X11 Support
+_Comment=X11 Utilitiy used by other Addon
+Type=SharedLibrary
+Library=fcitx-xcb
+Category=Module
