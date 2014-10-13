@@ -409,7 +409,8 @@ void fcitx_addon_manager_unload(FcitxAddonManager* manager)
         return;
     }
 
-    for (size_t i = 0; i < manager->loadedAddons->len; i++) {
+    // reverse against load order
+    for (size_t i = manager->loadedAddons->len; i-- > 0; ) {
         FcitxAddon* addon = manager->loadedAddons->data[i];
         _fcitx_addon_manager_unload_addon(manager, addon);
         addon->loaded = false;
