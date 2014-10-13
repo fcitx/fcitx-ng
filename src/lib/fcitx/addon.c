@@ -82,9 +82,13 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
         if (!apiCommon->init && !apiCommon->destroy) {
             break;
         }
-        addonInst->data = apiCommon->init(manager);
+        addonInst->data = apiCommon->init(manager, addonConfig);
         if (!addonInst->data) {
             break;
+        }
+
+        if (apiCommon->registerCallback) {
+            addonInst->functions = apiCommon->registerCallback(addonInst->data);
         }
 
         addonInst->resolverData = library;
@@ -122,9 +126,13 @@ bool fcitx_static_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
         if (!apiCommon->init && !apiCommon->destroy) {
             break;
         }
-        addonInst->data = apiCommon->init(manager);
+        addonInst->data = apiCommon->init(manager, addonConfig);
         if (!addonInst->data) {
             break;
+        }
+
+        if (apiCommon->registerCallback) {
+            addonInst->functions = apiCommon->registerCallback();
         }
 
         addonInst->resolverData = NULL;
@@ -148,8 +156,16 @@ void fcitx_static_library_resolver_free(void* data)
     fcitx_dict_free(staticAddonDict);
 }
 
+FcitxAddon* fcitx_addon_new(FcitxAddonConfig* addonConfig)
+{
+    FcitxAddon* addon = fcitx_utils_new(FcitxAddon);
+    addon->config = addonConfig;
+    return addon;
+}
+
 void fcitx_addon_free(FcitxAddon* addon)
 {
+    fcitx_dict_free(addon->inst.functions);
     fcitx_addon_config_free(addon->config);
     fcitx_string_hashset_free(addon->dependencies);
     free(addon);
@@ -291,12 +307,13 @@ bool _fcitx_addon_load_metadata(const char* key, size_t keyLen, void** data, voi
                 addon->config = addonConfig;
             }
         } else {
-            addon = fcitx_utils_new(FcitxAddon);
-            addon->config = addonConfig;
+            addon = fcitx_addon_new(addonConfig);
             fcitx_dict_insert_by_str(manager->addons, addon->config->addon.name, addon, false);
         }
 
         if (addon) {
+            // free old one
+            fcitx_string_hashset_free(addon->dependencies);
             addon->dependencies = fcitx_string_hashset_parse(addon->config->addon.dependency, ',');
         }
 
@@ -333,9 +350,11 @@ void _fcitx_addon_manager_load_addon(FcitxAddonManager* manager, FcitxAddon* add
             break;
         }
         fcitx_ptr_array_append(manager->loadedAddons, addon);
+
         return;
     } while(0);
 
+    // load failed
     addon->config->addon.enabled = false;
 }
 
@@ -364,8 +383,8 @@ void fcitx_addon_manager_load(FcitxAddonManager* manager)
     do {
         update = false;
         for (FcitxDictData* data = fcitx_dict_first(manager->addons);
-            data != NULL;
-            data = fcitx_dict_data_next(data)) {
+             data != NULL;
+             data = fcitx_dict_data_next(data)) {
             FcitxAddon* addon = data->data;
             if (!addon->config->addon.enabled) {
                 continue;
@@ -373,8 +392,8 @@ void fcitx_addon_manager_load(FcitxAddonManager* manager)
             FcitxDictData* dependency = NULL;
             bool allDependenciesLoaded = true;
             for (dependency = fcitx_dict_first(addon->dependencies);
-                dependency != NULL;
-                dependency = fcitx_dict_data_next(dependency)) {
+                 dependency != NULL;
+                 dependency = fcitx_dict_data_next(dependency)) {
                 FcitxAddon* dependAddon;
                 if (!fcitx_dict_lookup_by_str(manager->addons, dependency->key, &dependAddon)) {
                     break;

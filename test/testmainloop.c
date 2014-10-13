@@ -22,11 +22,11 @@ void timeout_callback2(FcitxTimeoutEvent* event, void* data)
 }
 
 
-void io_callback(FcitxIOEvent* event, int fd, int revents, void* data)
+void io_callback(FcitxIOEvent* event, int fd, unsigned int flag, void* data)
 {
     FCITX_UNUSED(event);
     FCITX_UNUSED(fd);
-    FCITX_UNUSED(revents);
+    FCITX_UNUSED(flag);
     static int counter = 0;
     counter ++;
 

@@ -28,7 +28,7 @@ typedef struct _FcitxKeyboard
 {
 } FcitxKeyboard;
 
-static void* fcitx_keyboard_init(FcitxAddonManager* manager);
+static void* fcitx_keyboard_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_keyboard_destroy(void* data);
 
 FCITX_DEFINE_ADDON(fcitx_keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
@@ -38,8 +38,10 @@ FCITX_DEFINE_ADDON(fcitx_keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
     }
 };
 
-void* fcitx_keyboard_init(FcitxAddonManager* manager)
+void* fcitx_keyboard_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
+    FCITX_UNUSED(manager);
+    FCITX_UNUSED(config);
     FcitxKeyboard* keyboard = fcitx_utils_new(FcitxKeyboard);
     char* localepath = fcitx_utils_get_fcitx_path("localedir");
     bindtextdomain("xkeyboard-config", localepath);

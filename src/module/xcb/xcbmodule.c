@@ -18,12 +18,14 @@ typedef struct _FcitxXCBConnection
     FcitxXCB* xcb;
 } FcitxXCBConnection;
 
-static void* fcitx_xcb_init(FcitxAddonManager* manager);
+static void* fcitx_xcb_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_xcb_destroy(void* data);
+static FcitxDict* fcitx_xcb_register_callback();
 
 FCITX_DEFINE_ADDON(fcitx_xcb, module, FcitxAddonAPICommon) = {
     .init = fcitx_xcb_init,
-    .destroy = fcitx_xcb_destroy
+    .destroy = fcitx_xcb_destroy,
+    .registerCallback = fcitx_xcb_register_callback
 };
 
 void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
@@ -54,8 +56,9 @@ void fcitx_xcb_connection_close(void* data)
     free(fconn);
 }
 
-void* fcitx_xcb_init(FcitxAddonManager* manager)
+void* fcitx_xcb_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
+    FCITX_UNUSED(config);
     FcitxXCB* xcb = fcitx_utils_new(FcitxXCB);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     xcb->instance = instance;
@@ -104,4 +107,9 @@ void fcitx_xcb_destroy(void* data)
     FcitxXCB* xcb = data;
     fcitx_dict_free(xcb->conns);
     free(xcb);
+}
+
+FcitxDict* fcitx_xcb_register_callback()
+{
+    return NULL;
 }

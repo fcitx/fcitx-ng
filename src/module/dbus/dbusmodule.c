@@ -107,7 +107,7 @@ typedef struct _FcitxDBusWakeUpMainData
 const int RETRY_INTERVAL = 1;
 const int MAX_RETRY_TIMES = 5;
 
-static void* fcitx_dbus_init(FcitxAddonManager* manager);
+static void* fcitx_dbus_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_dbus_destroy(void* data);
 static DBusHandlerResult fcitx_dbus_filter(DBusConnection* connection, DBusMessage* msg, void* user_data);
 
@@ -311,8 +311,9 @@ static DBusHandlerResult fcitx_dbus_controller_handler(DBusConnection *connectio
     return result;
 }
 
-void* fcitx_dbus_init(FcitxAddonManager* manager)
+void* fcitx_dbus_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
+    FCITX_UNUSED(config);
     FcitxDBus* dbus = fcitx_utils_new(FcitxDBus);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     dbus->instance = instance;

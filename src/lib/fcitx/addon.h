@@ -35,9 +35,10 @@ typedef enum _FcitxAddonCategory {
 
 typedef struct _FcitxAddon FcitxAddon;
 
-typedef void* (*FcitxAddonInitFunc)(FcitxAddonManager* manager);
+typedef void* (*FcitxAddonInitFunc)(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 typedef void (*FcitxAddonDestroyFunc)(void* addon);
 typedef void (*FcitxAddonReloadConfig)(void* addon);
+typedef FcitxDict* (*FcitxAddonRegisterCabllack)();
 typedef struct _FcitxStaticAddon {
     char* name;
     void* entry;
@@ -51,6 +52,7 @@ typedef struct _FcitxAddonAPICommon
     FcitxAddonInitFunc init;
     FcitxAddonDestroyFunc destroy;
     FcitxAddonReloadConfig reloadConfig;
+    FcitxAddonRegisterCabllack registerCallback;
     void* padding1;
     void* padding2;
     void* padding3;
@@ -65,6 +67,7 @@ typedef struct _FcitxAddonInstance
     void* api;
     void* data;
     void* resolverData; // add a field for convinience
+    FcitxDict* functions;
 } FcitxAddonInstance;
 
 #define FCITX_ABI_VERSION 6
