@@ -172,6 +172,7 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
     instance->enableList = arguments.enableList;
     instance->disableList = arguments.disableList;
     instance->uiname = arguments.uiname;
+    instance->tryReplace = arguments.tryReplace;
 
     FcitxMainLoop* mainloop = fcitx_mainloop_new();
     instance->mainloop = mainloop;
@@ -211,6 +212,12 @@ void fcitx_instance_shutdown(FcitxInstance* instance)
 {
     fcitx_mainloop_quit(instance->mainloop);
 }
+
+bool fcitx_instance_get_try_replace(FcitxInstance* instance)
+{
+    return instance->tryReplace;
+}
+
 
 FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)

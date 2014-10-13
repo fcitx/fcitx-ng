@@ -159,12 +159,6 @@ void fcitx_dbus_wakeup_main(void* _data)
     fcitx_mainloop_register_timeout_event(data->dbus->mainloop, 0, false, fcitx_dbus_dispatch, (FcitxDestroyNotify) dbus_connection_unref, dbus_connection_ref(data->conn));
 }
 
-
-static DBusHandlerResult IPCDBusEventHandler(DBusConnection *connection, DBusMessage *msg, void *user_data)
-{
-    return DBUS_HANDLER_RESULT_HANDLED;
-}
-
 bool fcitx_dbus_setup_connection(FcitxDBus* dbus, DBusConnection* conn)
 {
     if (!dbus_connection_add_filter(conn, fcitx_dbus_filter, dbus, NULL)) {
@@ -239,7 +233,7 @@ void* fcitx_dbus_init(FcitxAddonManager* manager)
         dbus->conn = conn;
 
         bool request_retry;
-        bool doReplace = true;
+        bool doReplace = fcitx_instance_get_try_replace(instance);
         bool replaceCountdown = doReplace ? 3 : 0;
 
         do {
@@ -274,12 +268,6 @@ void* fcitx_dbus_init(FcitxAddonManager* manager)
                 return NULL;
             }
         } while (request_retry);
-
-        DBusObjectPathVTable fcitxIPCVTable = {NULL, &IPCDBusEventHandler, NULL, NULL, NULL, NULL };
-
-        if (conn) {
-            dbus_connection_register_object_path(conn, "/", &fcitxIPCVTable, dbus);
-        }
 
         dbus_connection_flush(conn);
     } while(0);

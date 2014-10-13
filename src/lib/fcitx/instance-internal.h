@@ -37,6 +37,7 @@ struct _FcitxInstance {
     FcitxAddonManager* addonManager;
     FcitxStandardPath* standardPath;
     int signalPipe;
+    bool tryReplace;
 };
 
 #endif
