@@ -213,6 +213,7 @@ void fcitx_instance_shutdown(FcitxInstance* instance)
     fcitx_mainloop_quit(instance->mainloop);
 }
 
+FCITX_EXPORT_API
 bool fcitx_instance_get_try_replace(FcitxInstance* instance)
 {
     return instance->tryReplace;

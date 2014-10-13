@@ -1,7 +1,7 @@
 include_directories(${PROJECT_BINARY_DIR}/src/lib/fcitx)
 include_directories(${XCB_INCLUDE_DIRS})
 add_library(fcitx-xcb MODULE xcbmodule.c)
-target_link_libraries(fcitx-xcb Fcitx::Core)
+target_link_libraries(fcitx-xcb Fcitx::Core XCB::XCB)
 set_target_properties(fcitx-xcb PROPERTIES PREFIX "")
 fcitx5_merge_config_translation(fcitx-xcb.conf.in fcitx-xcb.conf)
 install(TARGETS fcitx-xcb DESTINATION ${FCITX_INSTALL_ADDONDIR})
