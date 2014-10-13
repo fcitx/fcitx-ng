@@ -38,6 +38,8 @@ struct _FcitxInstance {
     FcitxStandardPath* standardPath;
     int signalPipe;
     bool tryReplace;
+    bool running;
+    bool shutdown;
 };
 
 #endif

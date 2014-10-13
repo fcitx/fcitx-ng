@@ -135,7 +135,7 @@ void OnException(int signo)
     BufferReset(&buffer);
     BufferAppendUInt64(&buffer, signo, 10);
     _write_string(fd, "=========================\n");
-    _write_string(fd, "FCITX " FCITX_VERSION " -- Get Signal No.: ");
+    _write_string(fd, "Fcitx " FCITX_VERSION " -- Get Signal No.: ");
     _write_buffer(fd, &buffer);
     _write_string(fd, "\n");
 

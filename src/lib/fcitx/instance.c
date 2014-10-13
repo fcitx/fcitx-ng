@@ -18,6 +18,7 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
+#include <signal.h>
 #include <getopt.h>
 #include <unistd.h>
 #include "config.h"
@@ -173,6 +174,7 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
     instance->disableList = arguments.disableList;
     instance->uiname = arguments.uiname;
     instance->tryReplace = arguments.tryReplace;
+    instance->signalPipe = -1;
 
     FcitxMainLoop* mainloop = fcitx_mainloop_new();
     instance->mainloop = mainloop;
@@ -183,6 +185,19 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
     return instance;
 }
 
+void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
+{
+    FCITX_UNUSED(_event);
+    FCITX_UNUSED(flag);
+    FcitxInstance* instance = data;
+    uint8_t signo = 0;
+    while (read(fd, &signo, sizeof(signo)) > 0) {
+        if (signo == SIGINT || signo == SIGTERM || signo == SIGQUIT || signo == SIGXCPU) {
+            fcitx_instance_shutdown(instance);
+        }
+    }
+}
+
 FCITX_EXPORT_API
 int fcitx_instance_run(FcitxInstance* instance)
 {
@@ -190,7 +205,15 @@ int fcitx_instance_run(FcitxInstance* instance)
     fcitx_addon_manager_register_default_resolver(instance->addonManager, NULL);
     fcitx_addon_manager_set_override(instance->addonManager, instance->enableList, instance->disableList);
     fcitx_addon_manager_load(instance->addonManager);
+    instance->running = true;
 
+    if (instance->shutdown) {
+        return 1;
+    }
+
+    if (instance->signalPipe != -1) {
+        fcitx_mainloop_register_io_event(instance->mainloop, instance->signalPipe, FIOEF_IN, fcitx_instance_handle_signal, NULL, instance);
+    }
 
     return fcitx_mainloop_run(instance->mainloop);
 }
@@ -210,7 +233,10 @@ FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance)
 FCITX_EXPORT_API
 void fcitx_instance_shutdown(FcitxInstance* instance)
 {
-    fcitx_mainloop_quit(instance->mainloop);
+    instance->shutdown = true;
+    if (instance->running) {
+        fcitx_mainloop_quit(instance->mainloop);
+    }
 }
 
 FCITX_EXPORT_API
@@ -223,6 +249,8 @@ bool fcitx_instance_get_try_replace(FcitxInstance* instance)
 FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)
 {
+    fcitx_addon_manager_unref(instance->addonManager);
+    fcitx_standard_path_unref(instance->standardPath);
     fcitx_mainloop_free(instance->mainloop);
     free(instance->enableList);
     free(instance->disableList);

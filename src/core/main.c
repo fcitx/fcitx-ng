@@ -23,6 +23,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include "fcitx/instance.h"
+#include "errorhandler.h"
 
 FcitxInstance* instance = NULL;
 int selfpipe[2];
@@ -34,6 +35,8 @@ int main(int argc, char* argv[])
         fprintf(stderr, "Could not create self-pipe.\n");
         exit(1);
     }
+
+    SetMyExceptionHandler();
 
     fcntl(selfpipe[0], F_SETFL, O_NONBLOCK);
     fcntl(selfpipe[0], F_SETFD, FD_CLOEXEC);
