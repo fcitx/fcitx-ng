@@ -57,7 +57,7 @@ static inline bool fcitx_dict_insert_by_str(FcitxDict* dict, const char* key, vo
 
 #define fcitx_dict_insert_data_by_str(DICT, KEY, VALUE, REPLACE) \
     fcitx_dict_insert_by_str(DICT, KEY, (void*)((intptr_t)(VALUE)), REPLACE);
-#define fcitx_dict_insert_data(DICT, KEY, KEYLEN, VALUE) \
+#define fcitx_dict_insert_data(DICT, KEY, KEYLEN, VALUE, REPLACE) \
     fcitx_dict_insert(DICT, KEY, KEYLEN, (void*)((intptr_t)(VALUE)), REPLACE);
 
 #define fcitx_dict_lookup(dict, key, keyLen, dataOut) _fcitx_dict_lookup(dict, key, keyLen, (void**) dataOut)

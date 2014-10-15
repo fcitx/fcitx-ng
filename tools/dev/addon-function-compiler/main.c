@@ -74,7 +74,7 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         fprintf(fout, "{\n");
         bool doreturn = strcmp(sig->function.returnType, "void") != 0;
         if (doreturn) {
-            fprintf(fout, "    FcitxAddonFunctionArgument retVal;\n", actualReturnType);
+            fprintf(fout, "    FcitxAddonFunctionArgument retVal;\n");
             fprintf(fout, "    fcitx_addon_manager_invoke(manager, \"%s\", \"%s\", &retVal", functionInfo->fcitxAddon.name, function);
         } else {
             fprintf(fout, "    fcitx_addon_manager_invoke(manager, \"%s\", \"%s\", NULL", functionInfo->fcitxAddon.name, function);

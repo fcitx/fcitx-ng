@@ -345,6 +345,8 @@ void _fcitx_addon_manager_load_addon(FcitxAddonManager* manager, FcitxAddon* add
         if (!resolver->resolve(addon->config, &addon->inst, manager, resolver->data)) {
             break;
         }
+
+        addon->loaded = true;
         fcitx_ptr_array_append(manager->loadedAddons, addon);
 
         return;

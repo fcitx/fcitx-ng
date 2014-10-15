@@ -68,7 +68,7 @@ FcitxStringList* fcitx_standard_default_paths_construct(const char* env, const c
     }
 
     const char* dir = getenv(env);
-    if (!dir || !dir[0]) {
+    if (!dir) {
         dir = defaultPath;
     }
 
