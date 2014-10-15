@@ -10,6 +10,6 @@ find_path(LIBKVM_INCLUDE_DIR kvm.h)
 find_library(LIBKVM_LIBRARIES NAMES kvm)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(Libkvm  DEFAULT_MSG  LIBKVM_INCLUDE_DIR  LIBKVM_LIBRARIES)
+find_package_handle_standard_args(LibKVM  DEFAULT_MSG  LIBKVM_INCLUDE_DIR  LIBKVM_LIBRARIES)
 
 mark_as_advanced(LIBKVM_INCLUDE_DIR  LIBKVM_LIBRARIES)

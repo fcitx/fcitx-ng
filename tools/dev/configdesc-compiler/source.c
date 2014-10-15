@@ -135,7 +135,7 @@ void print_option_info(FcitxConfiguration* config, const char* type, const char*
             storeFunc = structStoreFunc;
             loadFunc = structLoadFunc;
         } else {
-            freeFunc = get_free_func(subType);
+            freeFunc = get_list_free_func(subType);
             loadFunc = get_load_func(subType);
             storeFunc = get_store_func(subType);
         }

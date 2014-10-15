@@ -1,0 +1,13 @@
+[FcitxAddon/Name]
+Type=String
+
+[FcitxAddon/Include]
+Type=List
+SubType=String
+
+[FcitxAddon/Function]
+Type=List
+SubType=String
+
+[FcitxAddon/Self.Type]
+Type=String

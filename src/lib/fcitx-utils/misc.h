@@ -283,6 +283,27 @@ return fcitx_utils_write_uint16(fp, (uint16_t)i);
 
 void fcitx_utils_init_as_daemon();
 
+static inline void*
+fcitx_utils_malloc_with_data(size_t base_size, const void *extra_data,
+                           size_t extra_size)
+{
+    void *res = fcitx_utils_malloc0(base_size + extra_size);
+    memcpy(((char*)res) + base_size, extra_data, extra_size);
+    return res;
+}
+
+static inline void*
+fcitx_utils_malloc_with_str(size_t base_size, const char *extra_str)
+{
+    return fcitx_utils_malloc_with_data(base_size, (const void*)extra_str,
+                                        strlen(extra_str) + 1);
+}
+
+#define fcitx_utils_new_with_data(TYPE, data, size)                     \
+    ((TYPE*)fcitx_utils_malloc_with_data(sizeof(TYPE), data, size))
+#define fcitx_utils_new_with_str(TYPE, str)                     \
+    ((TYPE*)fcitx_utils_malloc_with_str(sizeof(TYPE), str))
+
 FCITX_DECL_END
 
 #endif

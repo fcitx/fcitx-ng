@@ -13,6 +13,8 @@ void compile_to_c_source(FcitxConfiguration* config, FcitxDescription* desc, con
 
 void compile_to_c_header(FcitxConfiguration* config, FcitxDescription* desc, const char* name, const char* prefix, const char* includes);
 
+void print_includes(const char* includes);
+
 bool validate(FcitxConfiguration* config, FcitxStringHashSet* structs);
 
 #endif // _FCITX_TOOLS_CONFIGDESC_COMPILER_MAIN_H_

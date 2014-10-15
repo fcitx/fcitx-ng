@@ -44,6 +44,12 @@ typedef struct _FcitxStaticAddon {
     void* entry;
 } FcitxStaticAddon;
 
+typedef struct _FcitxAddonFunctionEntry
+{
+    FcitxCallback function;
+    char signature[];
+} FcitxAddonFunctionEntry;
+
 #define FCITX_STATIC_ADDON(NAME, ENTRY) (FcitxStaticAddon){.name = (NAME), .entry = (ENTRY)}
 #define FCITX_STATIC_ADDON_END() FCITX_STATIC_ADDON(NULL, NULL)
 
@@ -101,6 +107,7 @@ void fcitx_addon_manager_set_override(FcitxAddonManager* manager, const char* en
 void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger, FcitxStaticAddon* staticAddon);
 void fcitx_addon_manager_load(FcitxAddonManager* manager);
 void fcitx_addon_manager_unload(FcitxAddonManager* manager);
+void fcitx_addon_manager_invoke(FcitxAddonManager* manager, const char* addonName, const char* functionName, void* retVal, ...);
 FcitxStandardPath* fcitx_addon_manager_get_standard_path(FcitxAddonManager* manager);
 
 #endif // __FCITX_ADDON_H__

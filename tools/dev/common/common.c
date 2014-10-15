@@ -1,13 +1,17 @@
 #include <stdio.h>
 #include "common.h"
-#include "main.h"
 
-void remove_space(char* str)
+void remove_invalid_char(char* str)
 {
     size_t i = 0, j = 0;
     while(str[i]) {
-        if (!fcitx_utils_isspace(str[i])) {
-            str[j] = str[i];
+        if (!fcitx_utils_isspace(str[i])
+         && str[i] != '.') {
+            if (str[i] == '-') {
+                str[j] = '_';
+            } else {
+                str[j] = str[i];
+            }
             j++;
         }
         i++;
@@ -19,7 +23,7 @@ char* type_name(const char* prefix, const char* groupName)
 {
     char* fullName = NULL;
     asprintf(&fullName, "%s%sGroup", prefix, groupName);
-    remove_space(fullName);
+    remove_invalid_char(fullName);
     return fullName;
 }
 
@@ -27,7 +31,7 @@ char* type_name(const char* prefix, const char* groupName)
 char* format_first_lower_name(const char* name)
 {
     char* result = strdup(name);
-    remove_space(result);
+    remove_invalid_char(result);
     size_t i = 0;
     while (fcitx_utils_isupper(result[i])) {
         result[i] = fcitx_utils_tolower(result[i]);
@@ -45,18 +49,17 @@ char* format_first_lower_name(const char* name)
 char* format_underscore_name(const char* _name, bool toupper)
 {
     char* name = strdup(_name);
-    remove_space(name);
+    remove_invalid_char(name);
     size_t len = strlen(name);
     char* newName = malloc(len * 2 + 1);
     size_t j = 0;
     for (size_t i = 0; i < len; i ++) {
-        if (fcitx_utils_isupper(name[i]) && fcitx_utils_islower(name[i + 1]) && i != 0) {
+        newName[j] = toupper ? fcitx_utils_toupper(name[i]) : fcitx_utils_tolower(name[i]);
+        j++;
+        if (fcitx_utils_islower(name[i]) && fcitx_utils_isupper(name[i + 1]) && i != 0) {
             newName[j] = '_';
             j++;
         }
-
-        newName[j] = toupper ? fcitx_utils_toupper(name[i]) : fcitx_utils_tolower(name[i]);
-        j++;
     }
     newName[j] = '\0';
     free(name);
@@ -152,12 +155,15 @@ const char* get_free_func(const char* type)
     return NULL;
 }
 
-void print_includes(const char* includes)
+const char* get_list_free_func(const char* type)
 {
-    if (includes) {
-        FcitxStringList* includeFiles = fcitx_utils_string_split(includes, ",");
-        utarray_foreach(includeFile, includeFiles, char*) {
-            fprintf(fout, "#include <%s>\n", *includeFile);
-        }
+    if (strcmp(type, "String") == 0 ||
+        strcmp(type, "File") == 0 || strcmp(type, "Font") == 0) {
+        return "fcitx_configuration_string_free";
+    } else if (strcmp(type, "I18NString") == 0) {
+        return "fcitx_configuration_i18n_string_free";
+    } else if (strcmp(type, "Hotkey") == 0) {
+        return "fcitx_configuration_key_list_free";
     }
+    return NULL;
 }

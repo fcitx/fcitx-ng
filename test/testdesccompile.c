@@ -30,9 +30,17 @@ int main()
     fcitx_configuration_set_value_by_path(config, "Test Option/Color", "100 200 30");
     fcitx_configuration_set_value_by_path(config, "Test Option/List/0/A", "Sub");
     fcitx_configuration_set_value_by_path(config, "Test Option/List/1/A", "Sub1");
-    fcitx_configuration_set_value_by_path(config, "Test Option/ListInteger/0", "5");
-    fcitx_configuration_set_value_by_path(config, "Test Option/ListInteger/1", "6");
-    fcitx_configuration_set_value_by_path(config, "Test Option/ListInteger/2", "7");
+    fcitx_configuration_set_value_by_path(config, "Test Option/List.Integer/0", "5");
+    fcitx_configuration_set_value_by_path(config, "Test Option/List.Integer/1", "6");
+    fcitx_configuration_set_value_by_path(config, "Test Option/List.Integer/2", "7");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListI18NString/0", "5");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListI18NString/0[zh_CN]", "6");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListI18NString/1", "6");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListI18NString/1[de]", "7");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListHotkey/0", "5");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListHotkey/1", "6");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListString/0", "s0");
+    fcitx_configuration_set_value_by_path(config, "Test Option/ListString/1", "s1");
     // load something
     fcitx_test_config_load(testConfig, config);
 

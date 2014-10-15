@@ -1,6 +1,16 @@
 #include "main.h"
 #include "common.h"
 
+void print_includes(const char* includes)
+{
+    if (includes) {
+        FcitxStringList* includeFiles = fcitx_utils_string_split(includes, ",");
+        utarray_foreach(includeFile, includeFiles, char*) {
+            fprintf(fout, "#include <%s>\n", *includeFile);
+        }
+    }
+}
+
 /// print header guard
 void print_header_guard(const char* name, const char* prefix)
 {

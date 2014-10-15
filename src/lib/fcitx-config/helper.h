@@ -84,5 +84,16 @@ void fcitx_configuration_get_list(FcitxConfiguration* config, const char* path, 
 
 void fcitx_configuration_set_list(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, FcitxPtrArray** list);
 
+static inline void fcitx_configuration_string_free(char** pStr) {
+    free(*pStr);
+}
+static inline void fcitx_configuration_key_list_free(FcitxKeyList** keylist) {
+    fcitx_key_list_free(*keylist);
+}
+
+static inline void fcitx_configuration_i18n_string_free(FcitxI18NString** str) {
+    fcitx_i18n_string_free(*str);
+}
+
 #endif // _FCITX_CONFIG_HELPER_H_
 

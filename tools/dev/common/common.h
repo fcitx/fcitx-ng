@@ -23,6 +23,6 @@ const char* get_store_func(const char* type);
 
 const char* get_free_func(const char* type);
 
-void print_includes(const char* includes);
+const char* get_list_free_func(const char* type);
 
 #endif // _FCITX_TOOLS_CONFIGDESC_COMPILER_COMMON_H_

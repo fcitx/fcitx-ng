@@ -41,7 +41,7 @@ Type=Color
 Description=Color
 DefaultValue=#34567890
 
-[Test Option/ListInteger]
+[Test Option/List.Integer]
 Type=List
 Description=Test Integer
 SubType=Integer
@@ -58,3 +58,18 @@ Enum2=C
 [Ele Ment/A]
 Type=String
 Description=M
+
+[Test Option/ListHotkey]
+Type=List
+Description=Test List
+SubType=Hotkey
+
+[Test Option/ListI18NString]
+Type=List
+Description=Test List
+SubType=I18NString
+
+[Test Option/ListString]
+Type=List
+Description=Test List
+SubType=String

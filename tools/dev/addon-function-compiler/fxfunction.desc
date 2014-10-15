@@ -1,0 +1,7 @@
+[Function/ReturnType]
+Type=String
+DefaultValue=void
+
+[Function/Arg]
+Type=List
+SubType=String

@@ -285,6 +285,7 @@ void fcitx_configuration_set_list(FcitxConfiguration* config, const char* path, 
 {
     FcitxPtrArray* list = *_list;
     config = fcitx_configuration_get(config, path, true);
+    // 64 is enough for integer
     char buf[64];
     for (uint32_t i = 0; i < list->len; i++) {
         sprintf(buf, "%u", i);

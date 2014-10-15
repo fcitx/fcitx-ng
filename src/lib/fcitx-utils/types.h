@@ -33,7 +33,7 @@ typedef int (*FcitxCompareClosureFunc)(const void*, const void*, void*);
  * Function used to free the content of a structure,
  * DO NOT free the pointer itself
  **/
-typedef void (*FcitxCallBack)();
+typedef void (*FcitxCallback)();
 
 FCITX_DECL_END
 

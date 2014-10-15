@@ -1,7 +1,8 @@
+#include <xcb/xcb.h>
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
-#include <xcb/xcb.h>
+#include "fcitx-xcb-internal.h"
 
 typedef struct _FcitxXCB
 {
@@ -16,16 +17,16 @@ typedef struct _FcitxXCBConnection
     int screen;
     FcitxIOEvent* event;
     FcitxXCB* xcb;
+    char* name;
 } FcitxXCBConnection;
 
 static void* fcitx_xcb_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_xcb_destroy(void* data);
-static FcitxDict* fcitx_xcb_register_callback();
 
 FCITX_DEFINE_ADDON(fcitx_xcb, module, FcitxAddonAPICommon) = {
     .init = fcitx_xcb_init,
     .destroy = fcitx_xcb_destroy,
-    .registerCallback = fcitx_xcb_register_callback
+    .registerCallback = fcitx_xcb_register_functions
 };
 
 void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
@@ -36,6 +37,11 @@ void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void
 
     FcitxXCBConnection* fconn = data;
     xcb_generic_event_t* event;
+
+    if (xcb_connection_has_error(fconn->conn)) {
+        fcitx_dict_remove_by_str(fconn->xcb->conns, fconn->name, NULL);
+        return;
+    }
 
     while ((event = xcb_poll_for_event(fconn->conn))) {
         // TODO run the dispatcher
@@ -95,9 +101,10 @@ void fcitx_xcb_open_connection(FcitxXCB* xcb, const char* name)
     FcitxXCBConnection* fconn = fcitx_utils_new(FcitxXCBConnection);
     fconn->xcb = xcb;
     fconn->conn = conn;
+    fconn->name = strdup(name);
     int fd = xcb_get_file_descriptor(conn);
     FcitxMainLoop* mainloop = fcitx_instance_get_mainloop(xcb->instance);
-    fconn->event = fcitx_mainloop_register_io_event(mainloop, fd, FIOEF_IN | FIOEF_OUT, fcitx_xcb_io_callback, NULL, fconn);
+    fconn->event = fcitx_mainloop_register_io_event(mainloop, fd, FIOEF_IN, fcitx_xcb_io_callback, NULL, fconn);
 
     fcitx_dict_insert_by_str(xcb->conns, name, fconn, false);
 }
@@ -109,7 +116,28 @@ void fcitx_xcb_destroy(void* data)
     free(xcb);
 }
 
-FcitxDict* fcitx_xcb_register_callback()
+xcb_connection_t* fcitx_xcb_get_connection(FcitxXCB* self, const char* name)
 {
+    if (name == NULL) {
+        FcitxDictData* data = fcitx_dict_first(self->conns);
+        if (data) {
+            FcitxXCBConnection* fconn = data->data;
+            return fconn->conn;
+        }
+        return NULL;
+    }
+
+    FcitxXCBConnection* fconn = NULL;
+    if (fcitx_dict_lookup_by_str(self->conns, name, &fconn)) {
+        return fconn->conn;
+    }
     return NULL;
+}
+
+void fcitx_xcb_on_connection_created(FcitxXCB* self, void* arg0)
+{
+}
+
+void fcitx_xcb_on_connection_closed(FcitxXCB* self, void* arg0)
+{
 }
