@@ -2,7 +2,7 @@
 Name=fcitx-xcb
 Include/0=<xcb/xcb.h>
 Include/1=xcbmodule.h
-Self.Type=FcitxXCB*
+Self.Type=FcitxXCB
 Function/0=GetConnection
 Function/1=OnConnectionCreated
 Function/2=OnConnectionClosed

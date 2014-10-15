@@ -30,8 +30,6 @@ endmacro()
 macro(FCITX5_GENERATE_ADDON_FUNCTION infile)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     get_filename_component(infile_name ${infile} NAME_WE)
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h"
         COMMAND Fcitx::addon-function-compiler -i "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h"

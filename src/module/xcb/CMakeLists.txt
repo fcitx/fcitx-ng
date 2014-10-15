@@ -1,4 +1,6 @@
 include_directories(${XCB_INCLUDE_DIRS})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 fcitx5_generate_addon_function(fcitx-xcb.fxaddon)
 

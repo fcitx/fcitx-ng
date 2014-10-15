@@ -1,4 +1,6 @@
 #include <dlfcn.h>
+#include <ffi.h>
+#include <stdarg.h>
 #include "addon.h"
 #include "addon-internal.h"
 #include "fcitx-utils/utils.h"
@@ -8,11 +10,20 @@
 #include "config.h"
 #include "addon-config.h"
 
-typedef struct {
-    char* name;
-    FcitxStringHashSet* dependencies;
-    FcitxListHead list;
-} FcitxAddonTopoSortItem;
+typedef union _FcitxAddonFunctionArgument
+{
+    int8_t s8;
+    int16_t s16;
+    int32_t s32;
+    int64_t s64;
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint64_t u64;
+    float f;
+    double d;
+    void* a;
+} FcitxAddonFunctionArgument;
 
 static const char* addonType[] = {
     "inputmethod",
@@ -435,4 +446,120 @@ void fcitx_addon_manager_unload(FcitxAddonManager* manager)
         addon->loaded = false;
     }
     fcitx_ptr_array_clear(manager->loadedAddons);
+}
+
+void fcitx_arg_to_ffi_args(char c, FcitxAddonFunctionArgument* farg, ffi_type** ffitype, void** arg)
+{
+#define CHAR_TO_FFI_TYPE(CHAR, FIELD, FFI_TYPE, C_TYPE) \
+    case CHAR: \
+        *ffitype = &ffi_type_##FFI_TYPE; \
+        if (arg) { \
+            *arg = &farg->FIELD; \
+        } \
+        break;
+    switch(c) {
+        CHAR_TO_FFI_TYPE('a', a, pointer, void*)
+        CHAR_TO_FFI_TYPE('y', s8, sint8, int8_t)
+        CHAR_TO_FFI_TYPE('n', s16, sint16, int16_t)
+        CHAR_TO_FFI_TYPE('i', s32, sint32, int32_t)
+        CHAR_TO_FFI_TYPE('x', s64, sint64, int64_t)
+        CHAR_TO_FFI_TYPE('z', u8, uint8, uint8_t)
+        CHAR_TO_FFI_TYPE('q', u16, uint16, uint16_t)
+        CHAR_TO_FFI_TYPE('u', u32, uint32, uint32_t)
+        CHAR_TO_FFI_TYPE('t', u64, uint64, uint64_t)
+        CHAR_TO_FFI_TYPE('f', f, float, float)
+        CHAR_TO_FFI_TYPE('d', d, double, double)
+        case 'v':
+            *ffitype = &ffi_type_void;
+            break;
+    }
+}
+
+void va_arg_to_fcitx_arg(char c, FcitxAddonFunctionArgument* arg, va_list ap)
+{
+#define CHAR_TO_FIELD(CHAR, FIELD, C_TYPE) \
+    case CHAR: \
+        arg->FIELD = va_arg(ap, C_TYPE); \
+        break;
+    switch(c) {
+        CHAR_TO_FIELD('a', a, void*)
+        CHAR_TO_FIELD('y', s8, int)
+        CHAR_TO_FIELD('n', s16, int)
+        CHAR_TO_FIELD('i', s32, int32_t)
+        CHAR_TO_FIELD('x', s64, int64_t)
+        CHAR_TO_FIELD('z', u8, int)
+        CHAR_TO_FIELD('q', u16, int)
+        CHAR_TO_FIELD('u', u32, uint32_t)
+        CHAR_TO_FIELD('t', u64, uint64_t)
+        CHAR_TO_FIELD('f', f, double)
+        CHAR_TO_FIELD('d', d, double)
+        case 'v':
+            break;
+    }
+}
+
+FCITX_EXPORT_API
+void fcitx_addon_manager_invoke(FcitxAddonManager* manager, const char* addonName, const char* functionName, void* retVal, ...)
+{
+    FcitxAddon* addon;
+    if (!fcitx_dict_lookup_by_str(manager->addons, addonName, &addon)) {
+        return;
+    }
+
+    if (!addon->inst.functions) {
+        return;
+    }
+
+    FcitxAddonFunctionEntry* entry;
+    if (!fcitx_dict_lookup_by_str(addon->inst.functions, functionName, &entry)) {
+        return;
+    }
+
+    // bad addon!
+    if (!entry->function || !entry->signature) {
+        return;
+    }
+
+    size_t siglen = strlen(entry->signature);
+    if (siglen == 0 || siglen > FCITX_ADDON_FUNCTION_MAX_ARG + 1) {
+        return;
+    }
+    // validate signature
+    for (size_t i = 0; i < siglen; i++) {
+        if (entry->signature[i] == 'v' && i != 0) {
+            return;
+        }
+
+        if (!strchr("aynixzqutfdv", entry->signature[i])) {
+            return;
+        }
+    }
+
+    va_list ap;
+
+    ffi_type *ffi_types[FCITX_ADDON_FUNCTION_MAX_ARG + 1];
+    void* ffi_args[FCITX_ADDON_FUNCTION_MAX_ARG + 1];
+    FcitxAddonFunctionArgument fargs[FCITX_ADDON_FUNCTION_MAX_ARG + 1];
+    // signature 0 is return value, but we also need a extra value
+
+    va_start(ap, retVal);
+    for (size_t i = 1; i < siglen; i++) {
+        va_arg_to_fcitx_arg(entry->signature[i], &fargs[i], ap);
+        fcitx_arg_to_ffi_args(entry->signature[i], &fargs[i], &ffi_types[i], &ffi_args[i]);
+    }
+    va_end(ap);
+
+    // self
+    ffi_args[0] = &addon->inst.data;
+    ffi_types[0] = &ffi_type_pointer;
+
+    ffi_type* ffi_rettype = NULL;
+
+    fcitx_arg_to_ffi_args(entry->signature[0], NULL, &ffi_rettype, NULL);
+
+    ffi_cif cif;
+    if (FFI_OK != ffi_prep_cif(&cif, FFI_DEFAULT_ABI, siglen, ffi_rettype, ffi_types)) {
+        return;
+    }
+    ffi_call(&cif, entry->function, retVal, ffi_args);
 }

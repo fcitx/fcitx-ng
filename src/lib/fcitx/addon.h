@@ -98,6 +98,8 @@ typedef struct _FcitxAddonResolver {
     void* padding6;
 } FcitxAddonResolver;
 
+#define FCITX_ADDON_FUNCTION_MAX_ARG 20
+
 FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath);
 FcitxAddonManager* fcitx_addon_manager_ref(FcitxAddonManager* manager);
 void fcitx_addon_manager_unref(FcitxAddonManager* manager);

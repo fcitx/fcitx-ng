@@ -1,5 +1,5 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(..)
+include_directories(${LIBFFI_INCLUDE_DIR})
 
 set(LIBFCITX_SOURCES
   instance.c
@@ -32,7 +32,7 @@ set_target_properties(fcitx-core
 
 configure_file(fcitx.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc)
 
-target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils
+target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils ${LIBFFI_LIBRARIES}
   ${DL_LIBRARIES} ${PTHREAD_LIBRARIES})
 install(TARGETS fcitx-core LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc

@@ -132,7 +132,7 @@ void print_c_header_internal(FcitxFunctionInfo* functionInfo, FcitxConfiguration
         char* name = format_underscore_name(function, false);
         fprintf(fout, "%s %s_%s(", sig->function.returnType, prefix, name);
         free(name);
-        fprintf(fout, "%s self", functionInfo->fcitxAddon.selfType);
+        fprintf(fout, "%s* self", functionInfo->fcitxAddon.selfType);
         for (uint32_t j = 0; j < sig->function.arg->len; j++) {
             char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char*);
             fprintf(fout, ", %s arg%d", typename, j);

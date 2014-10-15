@@ -1,0 +1,12 @@
+[FcitxAddon]
+Name=testim
+Self.Type=int
+Function/0=TestInvoke
+Function/1=TestInvokeWithArg
+
+[TestInvoke/Function]
+ReturnType=int
+
+[TestInvokeWithArg/Function]
+ReturnType=uint32_t
+Arg/0=char*
