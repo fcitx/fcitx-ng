@@ -58,7 +58,7 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         char* name = format_underscore_name(function, false);
         fprintf(fout, "// return %s\n", sig->function.returnType);
         for (uint32_t j = 0; j < sig->function.arg->len; j++) {
-            char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char*);
+            char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char**);
             fprintf(fout, "// %s arg%d\n", typename, j);
         }
 
@@ -66,7 +66,7 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         free(name);
         fprintf(fout, "FcitxAddonManager* manager");
         for (uint32_t j = 0; j < sig->function.arg->len; j++) {
-            char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char*);
+            char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char**);
             char* type = strchr(typename, '*') ? "void*" : typename;
             fprintf(fout, ", %s arg%d", type, j);
         }
@@ -157,7 +157,7 @@ void print_c_header_internal(FcitxFunctionInfo* functionInfo, FcitxConfiguration
         free(name);
         fprintf(fout, "%s* self", functionInfo->fcitxAddon.selfType);
         for (uint32_t j = 0; j < sig->function.arg->len; j++) {
-            char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char*);
+            char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char**);
             fprintf(fout, ", %s arg%d", typename, j);
         }
         fprintf(fout, ");\n");
@@ -319,7 +319,7 @@ char* generate_signature_string(FcitxFunctionSignatureInfo* sig)
     sigstr[0] = get_sigchar_from_string(sig->function.returnType);
 
     for (uint32_t i = 0; i < sig->function.arg->len; i++) {
-        char* typename = *fcitx_ptr_array_index(sig->function.arg, i, char*);
+        char* typename = *fcitx_ptr_array_index(sig->function.arg, i, char**);
         sigstr[i + 1] = get_sigchar_from_string(typename);
     }
 

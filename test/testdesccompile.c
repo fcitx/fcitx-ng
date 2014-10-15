@@ -54,11 +54,11 @@ int main()
     assert(testConfig->testOption.list->len == 2);
     fcitx_color_parse(&color, "#64c81eff");
     assert(memcmp(&testConfig->testOption.color, &color, sizeof(color)) == 0);
-    assert(strcmp(fcitx_ptr_array_index(testConfig->testOption.list, 0, FcitxEleMentGroup)->a, "Sub") == 0);
-    assert(strcmp(fcitx_ptr_array_index(testConfig->testOption.list, 1, FcitxEleMentGroup)->a, "Sub1") == 0);
-    assert(*fcitx_ptr_array_index(testConfig->testOption.listInteger, 0, int) == 5);
-    assert(*fcitx_ptr_array_index(testConfig->testOption.listInteger, 1, int) == 6);
-    assert(*fcitx_ptr_array_index(testConfig->testOption.listInteger, 2, int) == 7);
+    assert(strcmp(fcitx_ptr_array_index(testConfig->testOption.list, 0, FcitxEleMentGroup*)->a, "Sub") == 0);
+    assert(strcmp(fcitx_ptr_array_index(testConfig->testOption.list, 1, FcitxEleMentGroup*)->a, "Sub1") == 0);
+    assert(*fcitx_ptr_array_index(testConfig->testOption.listInteger, 0, int*) == 5);
+    assert(*fcitx_ptr_array_index(testConfig->testOption.listInteger, 1, int*) == 6);
+    assert(*fcitx_ptr_array_index(testConfig->testOption.listInteger, 2, int*) == 7);
 
     FcitxConfiguration* config2 = fcitx_configuration_new(NULL);
     fcitx_test_config_store(testConfig, config2);

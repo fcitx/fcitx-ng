@@ -32,7 +32,7 @@ static _FCITX_ALWAYS_INLINE_ size_t fcitx_ptr_array_size(FcitxPtrArray* array)
     return array->len;
 }
 
-#define fcitx_ptr_array_index(array, index, type) ((type*) _fcitx_ptr_array_index((array), (index)))
+#define fcitx_ptr_array_index(array, index, type) ((type) _fcitx_ptr_array_index((array), (index)))
 
 static _FCITX_ALWAYS_INLINE_ void* _fcitx_ptr_array_index(FcitxPtrArray* array, size_t index)
 {

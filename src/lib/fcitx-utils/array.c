@@ -54,7 +54,7 @@ void fcitx_ptr_array_insert(FcitxPtrArray* array, void* data, size_t position)
         fcitx_ptr_array_resize(array);
     }
 
-    for (size_t i = position ; i < array->len; i ++) {
+    for (size_t i = array->len ; i -- > position; ) {
         array->data[i + 1] = array->data[i];
     }
     

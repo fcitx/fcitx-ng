@@ -289,7 +289,7 @@ void fcitx_configuration_set_list(FcitxConfiguration* config, const char* path, 
     char buf[64];
     for (uint32_t i = 0; i < list->len; i++) {
         sprintf(buf, "%u", i);
-        void* data = fcitx_ptr_array_index(list, i, void);
+        void* data = fcitx_ptr_array_index(list, i, void*);
         FcitxConfiguration* subConfig = fcitx_configuration_get(config, buf, true);
         info->list.storeFunc(subConfig, "", info, data);
     }
