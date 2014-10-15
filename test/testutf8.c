@@ -46,5 +46,20 @@ int main()
                                                strlen(UTF8_PART2 ASCII_PART2)),
                    ASCII_PART2, strlen(ASCII_PART2)) == 0);
 
+    for (uint32_t c = 0; c < 0x4000000; c ++ ) {
+        char utf8_buf[7];
+        int len = fcitx_ucs4_to_utf8(c, utf8_buf);
+        if (fcitx_utf8_check_string(utf8_buf)) {
+            uint32_t c2 = 0;
+            char* pos = fcitx_utf8_get_char(utf8_buf, &c2);
+            if (c != c2) {
+                printf("%x %x\n", c, c2);
+                printf("%d\n", len);
+            }
+            assert(c == c2);
+            assert(pos == utf8_buf + len);
+        }
+    }
+
     return 0;
 }

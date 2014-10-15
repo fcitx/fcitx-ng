@@ -134,6 +134,10 @@ void test_string_map()
     char* joined = fcitx_string_map_to_string(map, '\n');
     assert(strcmp(joined, "a:true\nb:false\nc:false") == 0);
     free(joined);
+    fcitx_string_map_remove(map, "b");
+    joined = fcitx_string_map_to_string(map, '\n');
+    assert(strcmp(joined, "a:true\nc:false") == 0);
+    free(joined);
 
     fcitx_string_map_free(map);
 }
