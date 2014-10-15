@@ -10,21 +10,6 @@
 #include "config.h"
 #include "addon-config.h"
 
-typedef union _FcitxAddonFunctionArgument
-{
-    int8_t s8;
-    int16_t s16;
-    int32_t s32;
-    int64_t s64;
-    uint8_t u8;
-    uint16_t u16;
-    uint32_t u32;
-    uint64_t u64;
-    float f;
-    double d;
-    void* a;
-} FcitxAddonFunctionArgument;
-
 static const char* addonType[] = {
     "inputmethod",
     "frontend",

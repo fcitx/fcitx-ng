@@ -18,6 +18,8 @@ typedef enum {
     Operation_C_Header_Internal,
 } FcitxAddonFunctionCompileOperation;
 
+char get_sigchar_from_string(const char* type);
+
 void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
 {
     // print header guard
@@ -47,6 +49,11 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
 
         // reset to default value
         fcitx_function_signature_info_load(sig, subConfig);
+        char* actualReturnType = strchr(sig->function.returnType, '*') ? "void*" : sig->function.returnType;
+        char sigchar = get_sigchar_from_string(actualReturnType);
+        if (!actualReturnType) {
+            continue;
+        }
 
         char* name = format_underscore_name(function, false);
         fprintf(fout, "// return %s\n", sig->function.returnType);
@@ -55,8 +62,6 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
             fprintf(fout, "// %s arg%d\n", typename, j);
         }
 
-
-        char* actualReturnType = strchr(sig->function.returnType, '*') ? "void*" : sig->function.returnType;
         fprintf(fout, "static inline %s %s_invoke_%s(", actualReturnType, prefix, name);
         free(name);
         fprintf(fout, "FcitxAddonManager* manager");
@@ -69,7 +74,7 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         fprintf(fout, "{\n");
         bool doreturn = strcmp(sig->function.returnType, "void") != 0;
         if (doreturn) {
-            fprintf(fout, "    %s retVal;\n", actualReturnType);
+            fprintf(fout, "    FcitxAddonFunctionArgument retVal;\n", actualReturnType);
             fprintf(fout, "    fcitx_addon_manager_invoke(manager, \"%s\", \"%s\", &retVal", functionInfo->fcitxAddon.name, function);
         } else {
             fprintf(fout, "    fcitx_addon_manager_invoke(manager, \"%s\", \"%s\", NULL", functionInfo->fcitxAddon.name, function);
@@ -79,7 +84,25 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         }
         fprintf(fout, ");\n");
         if (doreturn) {
-            fprintf(fout, "    return retVal;\n");
+            char* fieldname = NULL;
+#define CHAR_TO_FIELD_NAME(CHAR, FIELD) \
+    case CHAR: \
+        fieldname = FIELD; \
+        break;
+            switch(sigchar) {
+                CHAR_TO_FIELD_NAME('a', "a")
+                CHAR_TO_FIELD_NAME('y', "s8")
+                CHAR_TO_FIELD_NAME('n', "s16")
+                CHAR_TO_FIELD_NAME('i', "s32")
+                CHAR_TO_FIELD_NAME('x', "s64")
+                CHAR_TO_FIELD_NAME('z', "u8")
+                CHAR_TO_FIELD_NAME('q', "u16")
+                CHAR_TO_FIELD_NAME('u', "u32")
+                CHAR_TO_FIELD_NAME('t', "u64")
+                CHAR_TO_FIELD_NAME('f', "f")
+                CHAR_TO_FIELD_NAME('d', "d")
+            }
+            fprintf(fout, "    return retVal.%s;\n", fieldname);
         }
         fprintf(fout, "}\n");
     }

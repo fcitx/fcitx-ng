@@ -58,7 +58,7 @@ int main (int argc, char* argv[])
     // (self = 5) * 10
     assert(testim_invoke_test_invoke(manager) == 50);
     // strlen("ABC") + self=5
-    // assert(testim_invoke_test_invoke_with_arg(manager, "ABC") == 8);
+    assert(testim_invoke_test_invoke_with_arg(manager, "ABC") == 8);
 
     fcitx_addon_manager_unref(manager);
     fcitx_standard_path_unref(standardPath);

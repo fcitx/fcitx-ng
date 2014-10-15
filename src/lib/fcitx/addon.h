@@ -50,6 +50,21 @@ typedef struct _FcitxAddonFunctionEntry
     char signature[];
 } FcitxAddonFunctionEntry;
 
+typedef union _FcitxAddonFunctionArgument
+{
+    int8_t s8;
+    int16_t s16;
+    int32_t s32;
+    int64_t s64;
+    uint8_t u8;
+    uint16_t u16;
+    uint32_t u32;
+    uint64_t u64;
+    float f;
+    double d;
+    void* a;
+} FcitxAddonFunctionArgument;
+
 #define FCITX_STATIC_ADDON(NAME, ENTRY) (FcitxStaticAddon){.name = (NAME), .entry = (ENTRY)}
 #define FCITX_STATIC_ADDON_END() FCITX_STATIC_ADDON(NULL, NULL)
 

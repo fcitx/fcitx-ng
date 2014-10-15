@@ -47,7 +47,8 @@ fcitx5_generate_config_source(${CMAKE_CURRENT_SOURCE_DIR}/test.desc test-config 
 add_test(NAME testdesccompile COMMAND testdesccompile)
 
 # test addon
-add_executable(testaddon testaddon.c ${CMAKE_CURRENT_BINARY_DIR}/addon/testim.h)
+add_executable(testaddon testaddon.c)
+add_dependencies(testaddon testim.h.target)
 target_include_directories(testaddon PRIVATE ${LIBFFI_INCLUDE_DIR})
 target_link_libraries(testaddon Fcitx::Core testim)
 target_include_directories(testaddon PRIVATE ${PROJECT_BINARY_DIR}/src/lib/fcitx)
