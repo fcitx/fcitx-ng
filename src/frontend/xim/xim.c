@@ -10,6 +10,8 @@ typedef struct _FcitxXIM
     FcitxInstance* instance;
     FcitxAddonManager* manager;
     FcitxDict* connFilterId;
+    int connCreatedId;
+    int connClosedId;
 } FcitxXIM;
 
 typedef struct _FcitxXIMServer
@@ -18,6 +20,7 @@ typedef struct _FcitxXIMServer
     FcitxXIM* xim;
     xcb_im_t* im;
     int id;
+    xcb_connection_t* conn;
 } FcitxXIMServer;
 
 
@@ -97,6 +100,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* con
                                0,
                                callback,
                                server);
+    server->conn = conn;
     server->id = fcitx_xcb_invoke_add_event_filter(self->manager, (void*) name, fcitx_xim_xcb_event_fitler, server);
     fcitx_dict_insert_by_str(self->connFilterId, name, server, false);
 
@@ -111,9 +115,22 @@ void fcitx_xim_on_xcb_connection_closed(const char* name, xcb_connection_t* conn
     if (fcitx_dict_lookup_by_str(self->connFilterId, name, &server)) {
         return;
     }
+
+    server->conn = NULL;
+    fcitx_dict_remove_by_str(self->connFilterId, name, NULL);
+}
+
+void fcitx_xim_server_destroy(void* data)
+{
+    FcitxXIMServer* server = data;
+    FcitxXIM* self = server->xim;
     fcitx_xcb_invoke_remove_watcher(self->manager, server->id);
+    xcb_im_close_im(server->im);
     xcb_im_destroy(server->im);
     // connection is going to close, what's the point of destroy window?
+    if (server->conn) {
+        xcb_destroy_window(server->conn, server->window);
+    }
     free(server);
 }
 
@@ -124,10 +141,10 @@ void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     xim->instance = instance;
     xim->manager = manager;
-    xim->connFilterId = fcitx_dict_new(NULL);
+    xim->connFilterId = fcitx_dict_new(fcitx_xim_server_destroy);
 
-    fcitx_xcb_invoke_on_connection_created(manager, fcitx_xim_on_xcb_connection_created, xim);
-    fcitx_xcb_invoke_on_connection_closed(manager, fcitx_xim_on_xcb_connection_closed, xim);
+    xim->connCreatedId = fcitx_xcb_invoke_on_connection_created(manager, fcitx_xim_on_xcb_connection_created, xim);
+    xim->connClosedId =fcitx_xcb_invoke_on_connection_closed(manager, fcitx_xim_on_xcb_connection_closed, xim);
 
     return xim;
 }
@@ -135,5 +152,8 @@ void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 void fcitx_xim_destroy(void* data)
 {
     FcitxXIM* xim = data;
+    fcitx_xcb_invoke_remove_watcher(xim->manager, xim->connCreatedId);
+    fcitx_xcb_invoke_remove_watcher(xim->manager, xim->connClosedId);
+    fcitx_dict_free(xim->connFilterId);
     free(xim);
 }

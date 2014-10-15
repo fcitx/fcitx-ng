@@ -90,6 +90,7 @@ void fcitx_xcb_connection_close(void* data)
     fcitx_mainloop_remove_io_event(mainloop, fconn->event);
     xcb_disconnect(fconn->conn);
 
+    free(fconn->name);
     free(fconn);
 }
 
@@ -155,6 +156,7 @@ void fcitx_xcb_destroy(void* data)
 {
     FcitxXCB* xcb = data;
     fcitx_dict_free(xcb->conns);
+    fcitx_handler_table_free(xcb->table);
     free(xcb);
 }
 
