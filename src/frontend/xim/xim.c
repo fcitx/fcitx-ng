@@ -7,11 +7,11 @@
 
 typedef struct _FcitxXIM
 {
-    FcitxInstance* instance;
     FcitxAddonManager* manager;
     FcitxDict* connFilterId;
     int connCreatedId;
     int connClosedId;
+    FcitxInputContextManager* icManager;
 } FcitxXIM;
 
 typedef struct _FcitxXIMServer
@@ -64,6 +64,12 @@ bool callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* ic,
     FCITX_UNUSED(frame);
     FCITX_UNUSED(arg);
     FCITX_UNUSED(user_data);
+
+    switch (hdr->major_opcode) {
+        case XIM_CREATE_IC:
+            break;
+    }
+
     return false;
 }
 
@@ -102,6 +108,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* con
                                server);
     server->conn = conn;
     server->id = fcitx_xcb_invoke_add_event_filter(self->manager, (void*) name, fcitx_xim_xcb_event_fitler, server);
+
     fcitx_dict_insert_by_str(self->connFilterId, name, server, false);
 
     xcb_im_open_im(server->im);
@@ -138,8 +145,8 @@ void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
     FCITX_UNUSED(config);
     FcitxXIM* xim = fcitx_utils_new(FcitxXIM);
-    FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
-    xim->instance = instance;
+    FcitxInputContextManager* icmanager = fcitx_addon_manager_get_property(manager, "icmanager");
+    xim->icManager = icmanager;
     xim->manager = manager;
     xim->connFilterId = fcitx_dict_new(fcitx_xim_server_destroy);
 

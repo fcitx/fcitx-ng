@@ -181,6 +181,7 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
 
     instance->standardPath = fcitx_standard_path_new();
     instance->addonManager = fcitx_addon_manager_new(instance->standardPath);
+    instance->icManager = fcitx_input_context_manager_new();
 
     return instance;
 }
@@ -202,6 +203,7 @@ FCITX_EXPORT_API
 int fcitx_instance_run(FcitxInstance* instance)
 {
     fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
+    fcitx_addon_manager_set_property(instance->addonManager, "icmanager", instance->icManager);
     fcitx_addon_manager_register_default_resolver(instance->addonManager, NULL);
     fcitx_addon_manager_set_override(instance->addonManager, instance->enableList, instance->disableList);
     fcitx_addon_manager_load(instance->addonManager);
@@ -252,6 +254,7 @@ void fcitx_instance_destroy(FcitxInstance* instance)
     fcitx_addon_manager_unref(instance->addonManager);
     fcitx_standard_path_unref(instance->standardPath);
     fcitx_mainloop_free(instance->mainloop);
+    fcitx_input_context_manager_unref(instance->icManager);
     free(instance->enableList);
     free(instance->disableList);
     free(instance->uiname);

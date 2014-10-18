@@ -49,6 +49,10 @@ typedef void (*FcitxInputContextFillDataCallback)(FcitxInputContext* context, vo
 FcitxInputContextManager* fcitx_input_context_manager_new();
 FcitxInputContextManager* fcitx_input_context_manager_ref(FcitxInputContextManager* manager);
 void fcitx_input_context_manager_unref(FcitxInputContextManager* manager);
+
+void fcitx_input_context_manager_add_source(FcitxInputContextManager* manager, const char* name);
+void fcitx_input_context_manager_remove_source(FcitxInputContextManager* manager, const char* name);
+
 FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager,
                                                          FcitxInputContextFillDataCallback callback,
                                                          void* data);

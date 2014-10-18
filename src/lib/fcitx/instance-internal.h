@@ -29,7 +29,6 @@
 #include "fcitx-utils/dict.h"
 
 struct _FcitxInstance {
-    FcitxDict* inputContexts;
     FcitxMainLoop* mainloop;
     char* enableList;
     char* disableList;
@@ -40,6 +39,7 @@ struct _FcitxInstance {
     bool tryReplace;
     bool running;
     bool shutdown;
+    FcitxInputContextManager* icManager;
 };
 
 #endif

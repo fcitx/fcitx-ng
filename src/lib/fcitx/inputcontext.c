@@ -2,6 +2,11 @@
 #include "fcitx-utils/macro-internal.h"
 #include "inputcontext-internal.h"
 
+typedef struct _FcitxInputSource
+{
+
+} FcitxInputSource;
+
 typedef struct _FcitxInputContextManager
 {
     int refcount;
@@ -101,4 +106,3 @@ void fcitx_input_context_destroy(FcitxInputContext* inputContext)
     inputContext->hh.next = manager->freeList;
     manager->freeList = inputContext;
 }
-
