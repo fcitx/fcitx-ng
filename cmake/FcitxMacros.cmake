@@ -4,11 +4,11 @@ macro(FCITX5_GENERATE_CONFIG_SOURCE infile basename name prefix)
     set(_target_h ${CMAKE_CURRENT_BINARY_DIR}/${basename}.h)
 
     add_custom_command(OUTPUT ${_target_c}
-        COMMAND Fcitx::configdesc-compiler -c -i "${basename}.h" -n "${name}" -p "${prefix}" -o ${_target_c} ${infile}
-        DEPENDS ${_in_file} Fcitx::configdesc-compiler VERBATIM)
+        COMMAND Fcitx::configdesc-compiler -c -i "${basename}.h" -n "${name}" -p "${prefix}" -o ${_target_c} ${_in_file}
+        DEPENDS ${_in_file} Fcitx::configdesc-compiler ${_target_h} VERBATIM)
 
     add_custom_command(OUTPUT ${_target_h}
-        COMMAND Fcitx::configdesc-compiler -n "${name}" -p "${prefix}" -o ${_target_h} ${infile}
+        COMMAND Fcitx::configdesc-compiler -n "${name}" -p "${prefix}" -o ${_target_h} ${_in_file}
         DEPENDS ${_in_file} Fcitx::configdesc-compiler VERBATIM)
 endmacro()
 

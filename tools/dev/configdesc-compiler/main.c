@@ -123,6 +123,7 @@ int main(int argc, char* argv[])
     }
     free(output);
     free(prefix);
+    free(includes);
     free(name);
 
     fcitx_description_free(desc);

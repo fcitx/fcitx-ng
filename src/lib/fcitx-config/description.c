@@ -99,6 +99,10 @@ void find_top_level_structs(FcitxConfiguration* config, FcitxDescription* desc)
 FCITX_EXPORT_API
 void fcitx_description_free(FcitxDescription* desc)
 {
+    if (!desc) {
+        return;
+    }
+
     free(desc->errorMessage);
     fcitx_string_hashset_free(desc->structs);
     fcitx_string_hashset_free(desc->topLevelStructs);

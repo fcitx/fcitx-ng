@@ -4,6 +4,7 @@
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
 #include "module/xcb/fcitx-xcb.h"
+#include "xim-config.h"
 
 typedef struct _FcitxXIM
 {
@@ -43,6 +44,15 @@ static xcb_im_styles_t styles = {
     5, style_array
 };
 
+const char* guess_server_name()
+{
+    char* env = getenv("XMODIFIERS");
+    if (env && fcitx_utils_string_starts_with(env, "@im=")) {
+        return env + 4; // length of "@im="
+    }
+
+    return "fcitx";
+}
 
 static void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_xim_destroy(void* data);
@@ -97,7 +107,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* con
     server->im = xcb_im_create(conn,
                                defaultScreen,
                                w,
-                               "fcitx",
+                               guess_server_name(),
                                XCB_IM_ALL_LOCALES,
                                &styles,
                                NULL,
@@ -107,11 +117,16 @@ void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* con
                                callback,
                                server);
     server->conn = conn;
-    server->id = fcitx_xcb_invoke_add_event_filter(self->manager, (void*) name, fcitx_xim_xcb_event_fitler, server);
 
-    fcitx_dict_insert_by_str(self->connFilterId, name, server, false);
 
-    xcb_im_open_im(server->im);
+    if (xcb_im_open_im(server->im)) {
+        server->id = fcitx_xcb_invoke_add_event_filter(self->manager, (void*) name, fcitx_xim_xcb_event_fitler, server);
+        fcitx_dict_insert_by_str(self->connFilterId, name, server, false);
+    } else {
+        xcb_im_destroy(server->im);
+        xcb_destroy_window(conn, server->window);
+        free(server);
+    }
 }
 
 void fcitx_xim_on_xcb_connection_closed(const char* name, xcb_connection_t* conn, void* data)
@@ -146,6 +161,7 @@ void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
     FCITX_UNUSED(config);
     FcitxXIM* xim = fcitx_utils_new(FcitxXIM);
     FcitxInputContextManager* icmanager = fcitx_addon_manager_get_property(manager, "icmanager");
+
     xim->icManager = icmanager;
     xim->manager = manager;
     xim->connFilterId = fcitx_dict_new(fcitx_xim_server_destroy);

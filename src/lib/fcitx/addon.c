@@ -315,7 +315,7 @@ bool _fcitx_addon_load_metadata(const char* key, size_t keyLen, void** data, voi
 
         if (addon &&
             (manager->disabledAllAddons ||
-             (manager->disabledAllAddons && fcitx_string_hashset_contains(manager->disabledAddons, addon->config->addon.name)))) {
+             (manager->disabledAddons && fcitx_string_hashset_contains(manager->disabledAddons, addon->config->addon.name)))) {
             addon->config->addon.enabled = false;
         }
 
