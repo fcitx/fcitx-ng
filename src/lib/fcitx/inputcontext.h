@@ -6,6 +6,14 @@
 
 typedef struct _FcitxInputContext FcitxInputContext;
 
+typedef enum _FcitxInputContextGroupType
+{
+    FICG_Global,
+    FICG_Local,
+    FICG_Independent
+} FcitxInputContextGroupType;
+
+typedef struct _FcitxInputContextGroup FcitxInputContextGroup;
 
 /** fcitx input context capability flags */
 typedef enum _FcitxCapabilityFlags {
@@ -50,8 +58,8 @@ FcitxInputContextManager* fcitx_input_context_manager_new();
 FcitxInputContextManager* fcitx_input_context_manager_ref(FcitxInputContextManager* manager);
 void fcitx_input_context_manager_unref(FcitxInputContextManager* manager);
 
-void fcitx_input_context_manager_add_source(FcitxInputContextManager* manager, const char* name);
-void fcitx_input_context_manager_remove_source(FcitxInputContextManager* manager, const char* name);
+FcitxInputContextGroup* fcitx_input_context_manager_create_group(FcitxInputContextManager* manager);
+void fcitx_input_context_group_free(FcitxInputContextGroup* group);
 
 FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager,
                                                          FcitxInputContextFillDataCallback callback,
@@ -70,14 +78,17 @@ void fcitx_input_context_manager_focus_out(FcitxInputContextManager* manager, ui
  */
 FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* manager, uint32_t id);
 
+void fcitx_input_context_set_group(FcitxInputContext* ic, FcitxInputContextGroupType type, FcitxInputContextGroup* group);
+void fcitx_input_context_reset(FcitxInputContext* inputContext);
 void fcitx_input_context_destroy(FcitxInputContext* inputContext);
 uint32_t fcitx_input_context_get_id(FcitxInputContext* inputContext);
 uint32_t fcitx_input_context_get_capability_flags(FcitxInputContext* inputContext);
-void fcitx_input_context_process_event(FcitxInputContext* inputContext, FcitxKeyEvent* event);
+bool fcitx_input_context_process_event(FcitxInputContext* inputContext, FcitxKeyEvent* event);
 void fcitx_input_context_commit_string(FcitxInputContext* inputContext, const char* commitString);
 void fcitx_input_context_delete_surrounding_text(FcitxInputContext* inputContext, int offset, unsigned int size);
 void fcitx_input_context_get_surrounding_text(FcitxInputContext* inputContext, char** str, unsigned int* cursor, unsigned int* anchor);
 void fcitx_input_context_update_preedit(FcitxInputContext* inputContext);
 FcitxRect fcitx_input_context_get_window_rect(FcitxInputContext* inputContext);
+bool fcitx_input_context_is_focused(FcitxInputContext* inputContext);
 
 #endif // __FCITX_INPUTCONTEXT_H__

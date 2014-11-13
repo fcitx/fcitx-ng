@@ -1,6 +1,7 @@
 #ifndef _FCITX_INPUTCONTEXT_INTERNAL_H_
 #define _FCITX_INPUTCONTEXT_INTERNAL_H_
 
+#include <uuid/uuid.h>
 #include "inputcontext.h"
 #include "fcitx-utils/uthash.h"
 
@@ -18,6 +19,11 @@ struct _FcitxInputContext {
     UT_hash_handle hh;
     FcitxInputContextManager* manager;
     FcitxDestroyNotify destroyNotify;
+    uuid_t uuid;
+    FcitxInputContextGroup* group;
+
+    FcitxListHead list;
+    bool focused;
 };
 
 #endif // _FCITX_INPUTCONTEXT_INTERNAL_H_

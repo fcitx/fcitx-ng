@@ -4,6 +4,8 @@
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
+#include "dbusmodule.h"
+#include "fcitx-dbus-internal.h"
 
 #define FCITX_CONTROLLER_DBUS_INTERFACE "org.fcitx.Fcitx.Controller"
 
@@ -88,7 +90,7 @@ const char * controller_introspection_xml =
     "</interface>"
     "</node>";
 
-typedef struct _FcitxDBus
+struct _FcitxDBus
 {
     FcitxInstance* instance;
     FcitxMainLoop* mainloop;
@@ -96,7 +98,7 @@ typedef struct _FcitxDBus
     bool shutdown;
     FcitxTimeoutEvent* wakeup_main;
     bool objectRegistered;
-} FcitxDBus;
+};
 
 typedef struct _FcitxDBusWakeUpMainData
 {
@@ -104,8 +106,8 @@ typedef struct _FcitxDBusWakeUpMainData
     DBusConnection* conn;
 } FcitxDBusWakeUpMainData;
 
-const int RETRY_INTERVAL = 1;
-const int MAX_RETRY_TIMES = 5;
+static const int RETRY_INTERVAL = 1;
+static const int MAX_RETRY_TIMES = 5;
 
 static void* fcitx_dbus_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_dbus_destroy(void* data);
@@ -113,7 +115,8 @@ static DBusHandlerResult fcitx_dbus_filter(DBusConnection* connection, DBusMessa
 
 FCITX_DEFINE_ADDON(fcitx_dbus, module, FcitxAddonAPICommon) = {
     .init = fcitx_dbus_init,
-    .destroy = fcitx_dbus_destroy
+    .destroy = fcitx_dbus_destroy,
+    .registerCallback = fcitx_dbus_register_functions
 };
 
 
@@ -443,4 +446,9 @@ void fcitx_dbus_destroy(void* data)
     dbus_connection_unref(dbus->conn);
     dbus_shutdown();
     free(dbus);
+}
+
+DBusConnection* fcitx_dbus_get_connection(FcitxDBus* self)
+{
+    return self->conn;
 }

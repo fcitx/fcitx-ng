@@ -70,6 +70,7 @@ find_package(Libintl REQUIRED)
 find_package(GettextPo REQUIRED)
 find_package(Pthread REQUIRED)
 find_package(LibFFI REQUIRED)
+find_package(LibUUID REQUIRED)
 find_package(LibKVM)
 find_package(RT)
 
@@ -79,7 +80,7 @@ endif ()
 
 # Dependences for modules
 # xcb
-find_package(XCB REQUIRED)
+find_package(XCB REQUIRED COMPONENTS XKB AUX)
 # xim
 find_package(XCBImdkit REQUIRED)
 # dbus

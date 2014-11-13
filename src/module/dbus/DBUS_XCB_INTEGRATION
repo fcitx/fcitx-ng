@@ -1,0 +1,28 @@
+This document is about how dbus work with different display server.
+
+Fcitx will support multiple focus, the focus is defined by display server.
+Several application would belong to a specific focus group.
+
+We'd like to see 3 kinds of focus group.
+1. Global one, means "unknown", those application are regular application and
+ought to have normal focus, but just can't decide which display server it
+belongs to.
+2. Display server group. Applications in different display server does not
+share same focus.
+3. Independent focus, those will not be affected by any application nor affect
+any other application and will usually keep is "focused" state, which is designed
+to be used on "webserver-like" frontend, or fbterm, tty.
+
+This raises a problem between XCB and DBus.
+
+Current situation:
+1. Application in X prefer to use dbus for communication.
+2. There is no way to identify a display server (namely, by address).
+3. Application want to tell im server which display server it's on.
+
+Solution:
+When fcitx starts on one X server, it do XSetSelectionOwner on root, the atom name be
+_FCITX_SERVER, if client is running as a X client, it will use XFixes to watch the
+selection owner. When create a IC via dbus, fcitx will return with a one time id
+(not ic id), and the dbus client, send _FCITX_SERVER a client message for with both icid
+and the unique id. Fcitx will recognize the id and verify if it's the id for ic.

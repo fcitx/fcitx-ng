@@ -1,19 +1,59 @@
+#include <assert.h>
 #include "fcitx/inputcontext.h"
 
-void init_ic(FcitxInputContext* context, void* userData)
-{
-}
+#define TEST_FOCUS(ARGS...) \
+    do { \
+        bool focus_result[] = { ARGS }; \
+        for (size_t i = 0; i < FCITX_ARRAY_SIZE(focus_result); i++) { \
+            assert(fcitx_input_context_is_focused(ic[i]) == focus_result[i]); \
+        } \
+    } while(0)
 
 int main()
 {
     FcitxInputContextManager* manager = fcitx_input_context_manager_new();
-    FcitxInputContext* ic = fcitx_input_context_manager_create_ic(manager, init_ic, NULL);
+    FcitxInputContext *ic[] = { fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL),
+                                fcitx_input_context_manager_create_ic(manager, NULL, NULL) };
 
-    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic));
+    FcitxInputContextGroup* group = fcitx_input_context_manager_create_group(manager);
+    FcitxInputContextGroup* group2 = fcitx_input_context_manager_create_group(manager);
 
-    fcitx_input_context_manager_focus_out(manager, fcitx_input_context_get_id(ic));
+    fcitx_input_context_set_group(ic[0], FICG_Global, NULL);
+    fcitx_input_context_set_group(ic[1], FICG_Global, NULL);
+    fcitx_input_context_set_group(ic[2], FICG_Local, group);
+    fcitx_input_context_set_group(ic[3], FICG_Local, group);
+    fcitx_input_context_set_group(ic[4], FICG_Local, group2);
+    fcitx_input_context_set_group(ic[5], FICG_Local, group2);
+    fcitx_input_context_set_group(ic[6], FICG_Independent, NULL);
+    fcitx_input_context_set_group(ic[7], FICG_Independent, NULL);
 
-    fcitx_input_context_manager_destroy_ic
+    TEST_FOCUS(false, false, false, false, false, false, false, false);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[0]));
+    TEST_FOCUS(true, false, false, false, false, false, false, false);
+    fcitx_input_context_manager_focus_out(manager, fcitx_input_context_get_id(ic[0]));
+    TEST_FOCUS(false, false, false, false, false, false, false, false);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[2]));
+    TEST_FOCUS(false, false, true, false, false, false, false, false);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[3]));
+    TEST_FOCUS(false, false, false, true, false, false, false, false);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[4]));
+    TEST_FOCUS(false, false, false, true, true, false, false, false);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[6]));
+    TEST_FOCUS(false, false, false, true, true, false, true, false);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[7]));
+    TEST_FOCUS(false, false, false, true, true, false, true, true);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[1]));
+    TEST_FOCUS(false, true, false, false, false, false, true, true);
+    fcitx_input_context_manager_focus_in(manager, fcitx_input_context_get_id(ic[5]));
+    TEST_FOCUS(false, false, false, false, false, true, true, true);
+
+    fcitx_input_context_manager_unref(manager);
 
     return 0;
 }

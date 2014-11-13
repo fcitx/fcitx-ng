@@ -1,5 +1,6 @@
-#include <xcb-imdkit/imdkit.h>
+#include <xcb/xcb.h>
 #include <xcb/xcb_aux.h>
+#include <xcb-imdkit/imdkit.h>
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
@@ -22,6 +23,7 @@ typedef struct _FcitxXIMServer
     xcb_im_t* im;
     int id;
     xcb_connection_t* conn;
+    FcitxInputContextGroup* group;
 } FcitxXIMServer;
 
 
@@ -63,24 +65,56 @@ FCITX_DEFINE_ADDON(fcitx_xim, frontend, FcitxAddonAPICommon) = {
 };
 
 
-bool callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* ic,
+void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic,
               const xcb_im_packet_header_fr_t* hdr,
               void* frame, void* arg, void* user_data)
 {
     FCITX_UNUSED(im);
     FCITX_UNUSED(client);
-    FCITX_UNUSED(ic);
     FCITX_UNUSED(hdr);
     FCITX_UNUSED(frame);
     FCITX_UNUSED(arg);
-    FCITX_UNUSED(user_data);
+
+    FcitxXIMServer* server = user_data;
+    FcitxInputContext* ic = NULL;
+    if (xic && hdr->major_opcode != XIM_CREATE_IC) {
+        ic = xcb_im_input_context_get_data(xic);
+    }
 
     switch (hdr->major_opcode) {
         case XIM_CREATE_IC:
+            ic = fcitx_input_context_manager_create_ic(server->xim->icManager, NULL, NULL);
+            xcb_im_input_context_set_data(xic, ic, NULL);
+            fcitx_input_context_set_group(ic, FICG_Local, server->group);
+            break;
+        case XIM_DESTROY_IC:
+            fcitx_input_context_destroy(ic);
+            break;
+        case XIM_SET_IC_VALUES:
+            // kinds of like notification for position moving
+            break;
+        case XIM_FORWARD_EVENT:
+        {
+            xcb_key_press_event_t* xevent = arg;
+            FcitxKeyEvent event;
+            event.isRelease = (xevent->response_type & ~0x80) != XCB_KEY_RELEASE;
+            event.keyCode = xevent->detail;
+            event.key = fcitx_key_normalize(event.rawKey);
+            if (!fcitx_input_context_process_event(ic, &event)) {
+                xcb_im_forward_event(im, xic, xevent);
+            }
+            break;
+        }
+        case XIM_RESET_IC:
+            fcitx_input_context_reset(ic);
+            break;
+        case XIM_SET_IC_FOCUS:
+            fcitx_input_context_manager_focus_in(server->xim->icManager, fcitx_input_context_get_id(ic));
+            break;
+        case XIM_UNSET_IC_FOCUS:
+            fcitx_input_context_manager_focus_out(server->xim->icManager, fcitx_input_context_get_id(ic));
             break;
     }
-
-    return false;
 }
 
 bool fcitx_xim_xcb_event_fitler(xcb_connection_t* conn, xcb_generic_event_t* event, void* data)
@@ -90,7 +124,11 @@ bool fcitx_xim_xcb_event_fitler(xcb_connection_t* conn, xcb_generic_event_t* eve
     return xcb_im_filter_event(server->im, event);
 }
 
-void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* conn, int defaultScreen, void* data)
+void fcitx_xim_on_xcb_connection_created(const char* name,
+                                         xcb_connection_t* conn,
+                                         int defaultScreen,
+                                         FcitxInputContextGroup* group,
+                                         void* data)
 {
     FcitxXIM* self = data;
     FcitxXIMServer* server = fcitx_utils_new(FcitxXIMServer);
@@ -104,6 +142,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* con
                        0, NULL);
     server->window = w;
     server->xim = self;
+    server->group = group;
     server->im = xcb_im_create(conn,
                                defaultScreen,
                                w,
@@ -113,7 +152,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name, xcb_connection_t* con
                                NULL,
                                NULL,
                                &encodings,
-                               0,
+                               XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_KEY_RELEASE,
                                callback,
                                server);
     server->conn = conn;

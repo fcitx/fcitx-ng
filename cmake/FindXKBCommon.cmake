@@ -7,7 +7,7 @@
 #   XKBCOMMON_DEFINITIONS - Compiler switches required for using XKBCommon
 
 find_package(PkgConfig)
-pkg_check_modules(PC_XKBCOMMON QUIET xkbcommon)
+pkg_check_modules(PC_XKBCOMMON QUIET "xkbcommon>=0.4.0")
 set(XKBCOMMON_DEFINITIONS ${PC_XKBCOMMON_CFLAGS_OTHER})
 
 find_path(XKBCOMMON_INCLUDE_DIR

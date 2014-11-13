@@ -1,4 +1,5 @@
 #include <xcb/xcb.h>
+#include <xcb/xcb_aux.h>
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
@@ -9,6 +10,7 @@ typedef struct _FcitxXCB
     FcitxInstance* instance;
     FcitxDict* conns;
     FcitxHandlerTable* table;
+    FcitxInputContextManager* icManager;
 } FcitxXCB;
 
 typedef struct _FcitxXCBConnection
@@ -18,6 +20,9 @@ typedef struct _FcitxXCBConnection
     FcitxIOEvent* event;
     FcitxXCB* xcb;
     char* name;
+    xcb_atom_t atom;
+    xcb_window_t server_window;
+    FcitxInputContextGroup* group;
 } FcitxXCBConnection;
 
 typedef struct _FcitxXCBCallbackClosure
@@ -26,7 +31,11 @@ typedef struct _FcitxXCBCallbackClosure
     void* userData;
 } FcitxXCBCallbackClosure;
 
-typedef void (*FcitxXCBConnectionCreatedCallback)(const char* name, xcb_connection_t* conn, int screen, void* userData);
+typedef void (*FcitxXCBConnectionCreatedCallback)(const char* name,
+                                                  xcb_connection_t* conn,
+                                                  int screen,
+                                                  FcitxInputContextGroup* group,
+                                                  void* userData);
 typedef void (*FcitxXCBConnectionClosedCallback)(const char* name, xcb_connection_t* conn, void* userData);
 typedef bool (*FcitxXCBEventFilterCallback)(xcb_connection_t* conn, xcb_generic_event_t*, void* userData);
 
@@ -85,6 +94,10 @@ void fcitx_xcb_connection_close(void* data)
         ((FcitxXCBConnectionClosedCallback) p->callback)(fconn->name, fconn->conn, p->userData);
     }
 
+    FcitxInputContextGroup* group = fconn->group;
+    fconn->group = NULL;
+    fcitx_input_context_group_free(group);
+
     FcitxXCB* xcb = fconn->xcb;
     FcitxMainLoop* mainloop = fcitx_instance_get_mainloop(xcb->instance);
     fcitx_mainloop_remove_io_event(mainloop, fconn->event);
@@ -99,7 +112,9 @@ void* fcitx_xcb_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
     FCITX_UNUSED(config);
     FcitxXCB* xcb = fcitx_utils_new(FcitxXCB);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
+    FcitxInputContextManager* icManager = fcitx_addon_manager_get_property(manager, "icmanager");
     xcb->instance = instance;
+    xcb->icManager = icManager;
     xcb->conns = fcitx_dict_new(fcitx_xcb_connection_close);
     xcb->table = fcitx_handler_table_new(sizeof(FcitxXCBCallbackClosure), NULL);
 
@@ -129,27 +144,61 @@ void fcitx_xcb_open_connection(FcitxXCB* xcb, const char* name)
         return;
     }
     if (xcb_connection_has_error(conn)) {
-        xcb_disconnect(conn);
-        return;
+        goto _xcb_init_error;
     }
+
+    xcb_atom_t atom;
+    xcb_intern_atom_cookie_t atom_cookie = xcb_intern_atom(conn, false, strlen("_FCITX_SERVER"), "_FCITX_SERVER");
+    xcb_intern_atom_reply_t* atom_reply = xcb_intern_atom_reply(conn, atom_cookie, NULL);
+    if (atom_reply) {
+        atom = atom_reply->atom;
+        free(atom_reply);
+    } else {
+        goto _xcb_init_error;
+    }
+    xcb_window_t w = xcb_generate_id (conn);
+    xcb_screen_t* screen = xcb_aux_get_screen(conn, screenp);
+    xcb_create_window (conn, XCB_COPY_FROM_PARENT, w, screen->root,
+                       0, 0, 1, 1, 1,
+                       XCB_WINDOW_CLASS_INPUT_OUTPUT,
+                       screen->root_visual,
+                       0, NULL);
+
+    xcb_set_selection_owner(conn, w, atom, XCB_CURRENT_TIME);
 
     FcitxXCBConnection* fconn = fcitx_utils_new(FcitxXCBConnection);
     fconn->xcb = xcb;
     fconn->conn = conn;
+    fconn->screen = screenp;
     fconn->name = strdup(name);
+    fconn->atom = atom;
+    fconn->server_window = w;
     int fd = xcb_get_file_descriptor(conn);
     FcitxMainLoop* mainloop = fcitx_instance_get_mainloop(xcb->instance);
     fconn->event = fcitx_mainloop_register_io_event(mainloop, fd, FIOEF_IN, fcitx_xcb_io_callback, NULL, fconn);
 
     fcitx_dict_insert_by_str(xcb->conns, name, fconn, false);
 
+    // create a focus group for display server
+    FcitxInputContextGroup* group = fcitx_input_context_manager_create_group(xcb->icManager);
+    fconn->group = group;
+
+    // call on create callback
     FcitxXCBCallbackClosure* p;
     for (int id = fcitx_handler_table_first_id(fconn->xcb->table, sizeof(void*), &connection_created), nextid;
             (p = fcitx_handler_table_get_by_id(fconn->xcb->table, id));
             id = nextid) {
         nextid = fcitx_handler_table_next_id(fconn->xcb->table, p);
-        ((FcitxXCBConnectionClosedCallback) p->callback)(fconn->name, fconn->conn, p->userData);
+        ((FcitxXCBConnectionCreatedCallback) p->callback)(fconn->name, fconn->conn, fconn->screen, fconn->group, p->userData);
     }
+
+    return;
+
+_xcb_init_error:
+    xcb_disconnect(conn);
+
+// _xcb_open_connection_error:
+    return;
 }
 
 void fcitx_xcb_destroy(void* data)
@@ -180,19 +229,21 @@ xcb_connection_t* fcitx_xcb_get_connection(FcitxXCB* self, const char* name)
 
 int fcitx_xcb_on_connection_created(FcitxXCB* self, void* _callback, void* userdata)
 {
+    FcitxXCBCallbackClosure closure;
+    closure.callback = _callback;
+    closure.userData = userdata;
+    int result = fcitx_handler_table_append(self->table, sizeof(void*), &connection_created, &closure);
+
     // call it on all existing connection
     for(FcitxDictData* data = fcitx_dict_first(self->conns);
         data;
         data = fcitx_dict_data_next(data)) {
         FcitxXCBConnection* fconn = data->data;
         FcitxXCBConnectionCreatedCallback callback = _callback;
-        callback(fconn->name, fconn->conn, fconn->screen, userdata);
+        callback(fconn->name, fconn->conn, fconn->screen, fconn->group, userdata);
     }
 
-    FcitxXCBCallbackClosure closure;
-    closure.callback = _callback;
-    closure.userData = userdata;
-    return fcitx_handler_table_append(self->table, sizeof(void*), &connection_created, &closure);
+    return result;
 }
 
 int fcitx_xcb_on_connection_closed(FcitxXCB* self, void* callback, void* userdata)

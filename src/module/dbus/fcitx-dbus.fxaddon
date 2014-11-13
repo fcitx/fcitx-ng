@@ -1,0 +1,9 @@
+[FcitxAddon]
+Name=fcitx-dbus
+Include/0=<dbus/dbus.h>
+Include/0="dbusmodule.h"
+Self.Type=FcitxDBus
+Function/0=GetConnection
+
+[GetConnection/Function]
+ReturnType=DBusConnection*
