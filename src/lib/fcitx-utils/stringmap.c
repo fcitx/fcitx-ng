@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdlib.h>
 #include "utils.h"
 #include "stringmap.h"
@@ -69,7 +88,7 @@ void fcitx_string_map_set(FcitxStringMap* map, const char* key, bool value)
     HASH_FIND_STR(map->items, key, item);
     if (!item) {
         item = fcitx_utils_new(FcitxStringMapItem);
-        item->key = strdup(key);
+        item->key = fcitx_utils_strdup(key);
         HASH_ADD_KEYPTR(hh, map->items, item->key, strlen(item->key), item);
     }
     item->value = value;
@@ -107,7 +126,7 @@ FCITX_EXPORT_API
 char* fcitx_string_map_to_string(FcitxStringMap* map, char delim)
 {
     if (HASH_COUNT(map->items) == 0)
-        return strdup("");
+        return fcitx_utils_strdup("");
 
     size_t len = 0;
     HASH_FOREACH(item, map->items, FcitxStringMapItem) {
@@ -115,7 +134,7 @@ char* fcitx_string_map_to_string(FcitxStringMap* map, char delim)
                                       strlen("false")) + 1;
     }
 
-    char* result = (char*)malloc(sizeof(char) * len);
+    char* result = (char*)fcitx_utils_malloc(sizeof(char) * len);
     char* p = result;
     HASH_FOREACH(item2, map->items, FcitxStringMapItem) {
         size_t strl = item2->hh.keylen;

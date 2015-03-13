@@ -54,12 +54,6 @@ set(FCITX_UTILS_HEADERS
     rect.h
     )
 
-include_directories(${DL_INCLUDE_DIR})
-
-if(LIBKVM_FOUND)
-  include_directories(LIBKVM_INCLUDE_DIR)
-endif()
-
 add_library(fcitx-utils SHARED ${FCITX_UTILS_SOURCES})
 set_target_properties(fcitx-utils
   PROPERTIES VERSION 1.0
@@ -67,12 +61,7 @@ set_target_properties(fcitx-utils
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined"
   )
-target_link_libraries(fcitx-utils ${LIBINTL_LIBRARIES} ${DL_LIBRARIES} ${RT_LIBRARIES}
-  ${LIBICONV_LIBRARIES} ${LIBEXECINFO_LIBRARIES})
-
-if(LIBKVM_FOUND)
-  target_link_libraries(fcitx-utils ${LIBKVM_LIBRARIES})
-endif()
+target_link_libraries(fcitx-utils DL::DL RT::RT)
 
 configure_file(fcitx-utils.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx-utils.pc)
 

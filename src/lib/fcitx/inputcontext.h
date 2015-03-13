@@ -6,14 +6,14 @@
 
 typedef struct _FcitxInputContext FcitxInputContext;
 
-typedef enum _FcitxInputContextGroupType
+typedef enum _FcitxInputContextFocusGroupType
 {
-    FICG_Global,
-    FICG_Local,
-    FICG_Independent
-} FcitxInputContextGroupType;
+    FICFG_Global,
+    FICFG_Local,
+    FICFG_Independent
+} FcitxInputContextFocusGroupType;
 
-typedef struct _FcitxInputContextGroup FcitxInputContextGroup;
+typedef struct _FcitxInputContextFocusGroup FcitxInputContextFocusGroup;
 
 /** fcitx input context capability flags */
 typedef enum _FcitxCapabilityFlags {
@@ -58,8 +58,8 @@ FcitxInputContextManager* fcitx_input_context_manager_new();
 FcitxInputContextManager* fcitx_input_context_manager_ref(FcitxInputContextManager* manager);
 void fcitx_input_context_manager_unref(FcitxInputContextManager* manager);
 
-FcitxInputContextGroup* fcitx_input_context_manager_create_group(FcitxInputContextManager* manager);
-void fcitx_input_context_group_free(FcitxInputContextGroup* group);
+FcitxInputContextFocusGroup* fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager);
+void fcitx_input_context_focus_group_free(FcitxInputContextFocusGroup* group);
 
 FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager,
                                                          FcitxInputContextFillDataCallback callback,
@@ -78,7 +78,7 @@ void fcitx_input_context_manager_focus_out(FcitxInputContextManager* manager, ui
  */
 FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* manager, uint32_t id);
 
-void fcitx_input_context_set_group(FcitxInputContext* ic, FcitxInputContextGroupType type, FcitxInputContextGroup* group);
+void fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContextFocusGroupType type, FcitxInputContextFocusGroup* group);
 void fcitx_input_context_reset(FcitxInputContext* inputContext);
 void fcitx_input_context_destroy(FcitxInputContext* inputContext);
 uint32_t fcitx_input_context_get_id(FcitxInputContext* inputContext);

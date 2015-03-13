@@ -38,22 +38,22 @@ int main()
     int i;
     for (i = 0;i < 6;i++) {
         obj.id = i;
-        obj.str = strdup(strs[i]);
+        obj.str = fcitx_utils_strdup(strs[i]);
         fcitx_handler_table_append_strkey(table, KEY1, &obj);
     }
     for (;i < 12;i++) {
         obj.id = i;
-        obj.str = strdup(strs[i]);
+        obj.str = fcitx_utils_strdup(strs[i]);
         fcitx_handler_table_prepend_strkey(table, KEY1, &obj);
     }
     for (i = 0;i < 6;i++) {
         obj.id = i;
-        obj.str = strdup(strs[i]);
+        obj.str = fcitx_utils_strdup(strs[i]);
         fcitx_handler_table_prepend_strkey(table, KEY2, &obj);
     }
     for (;i < 12;i++) {
         obj.id = i;
-        obj.str = strdup(strs[i]);
+        obj.str = fcitx_utils_strdup(strs[i]);
         fcitx_handler_table_append_strkey(table, KEY2, &obj);
     }
 

@@ -1,60 +1,48 @@
-#.rst:
-# FindLibFFI
-# -----------
-#
-# Read-Only variables:
-#
-# ::
-#
-#   LIBFFI_FOUND - system has the OpenSSL library
-#   LIBFFI_INCLUDE_DIR - the OpenSSL include directory
-#   LIBFFI_LIBRARIES - The libraries needed to use OpenSSL
-#   LIBFFI_VERSION - This is set to $major.$minor.$revision
+find_package(PkgConfig)
 
-#=============================================================================
-# Copyright 2014-2014 Weng Xuetian <wengxt@gmail.com>
-#
+pkg_check_modules(PKG_LIBFFI QUIET libffi)
 
-find_package(PkgConfig QUIET)
-pkg_check_modules(PC_LIBFFI QUIET libffi)
-
+set(LIBFFI_DEFINITIONS ${PKG_LIBFFI_CFLAGS_OTHER})
+set(LIBFFI_VERSION ${PKG_LIBFFI_VERSION})
 
 find_path(LIBFFI_INCLUDE_DIR
-  NAMES
-    ffi.h
-  HINTS
-    ${PC_LIBFFI_INCLUDEDIR}
-    ${PC_LIBFFI_INCLUDE_DIRS}
+    NAMES ffi.h
+    HINTS ${PKG_LIBFFI_INCLUDE_DIRS}
 )
-
 find_library(LIBFFI_LIBRARY
-  NAMES
-    ffi
-  HINTS
-    ${PC_LIBFFI_LIBDIR}
-    ${PC_LIBFFI_LIBRARY_DIRS}
+    NAMES ffi
+    HINTS ${PKG_LIBFFI_LIBRARY_DIRS}
 )
-
-mark_as_advanced(LIBFFI_LIBRARY)
-
-set(LIBFFI_LIBRARIES ${LIBFFI_LIBRARY})
-
-if (LIBFFI_INCLUDE_DIR)
-  if (PC_LIBFFI_VERSION)
-    set(LIBFFI_VERSION "${PC_LIBFFI_VERSION}")
-  endif ()
-endif ()
 
 include(FindPackageHandleStandardArgs)
-
-find_package_handle_standard_args(LIBFFI
-  REQUIRED_VARS
-    LIBFFI_LIBRARIES
-    LIBFFI_INCLUDE_DIR
-  VERSION_VAR
-    LIBFFI_VERSION
-  FAIL_MESSAGE
-    "Could NOT find libffi"
+find_package_handle_standard_args(LibFFI
+    FOUND_VAR
+        LIBFFI_FOUND
+    REQUIRED_VARS
+        LIBFFI_LIBRARY
+        LIBFFI_INCLUDE_DIR
+    VERSION_VAR
+        LIBFFI_VERSION
 )
 
-mark_as_advanced(LIBFFI_INCLUDE_DIR LIBFFI_LIBRARIES)
+if(LIBFFI_FOUND AND NOT TARGET LibFFI::FFI)
+    add_library(LibFFI::FFI UNKNOWN IMPORTED)
+    set_target_properties(LibFFI::FFI PROPERTIES
+        IMPORTED_LOCATION "${LIBFFI_LIBRARY}"
+        INTERFACE_COMPILE_OPTIONS "${LIBFFI_DEFINITIONS}"
+        INTERFACE_INCLUDE_DIRECTORIES "${LIBFFI_INCLUDE_DIR}"
+    )
+endif()
+
+mark_as_advanced(LIBFFI_INCLUDE_DIR LIBFFI_LIBRARY)
+
+# compatibility variables
+set(LIBFFI_LIBRARIES ${LIBFFI_LIBRARY})
+set(LIBFFI_INCLUDE_DIRS ${LIBFFI_INCLUDE_DIR})
+set(LIBFFI_VERSION_STRING ${LIBFFI_VERSION})
+
+include(FeatureSummary)
+set_package_properties(LIBFFI PROPERTIES
+    URL "http://sourceware.org/libffi"
+    DESCRIPTION "A portable, high level programming interface to various calling conventions."
+)

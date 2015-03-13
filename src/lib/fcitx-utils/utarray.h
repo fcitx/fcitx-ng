@@ -1,4 +1,24 @@
 /*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
+/* original copyright */
+/*
   Copyright (c) 2008-2010, Troy D. Hanson   http://uthash.sourceforge.net
   All rights reserved.
 
@@ -94,7 +114,7 @@ static _FCITX_ALWAYS_INLINE_ void* utarray_steal(UT_array* a)
 
 static _FCITX_ALWAYS_INLINE_ UT_array* utarray_new (const UT_icd* icd)
 {
-    UT_array* a = (UT_array*) malloc(sizeof(UT_array));
+    UT_array* a = (UT_array*) fcitx_utils_malloc(sizeof(UT_array));
     utarray_init(a, icd);
     return a;
 }
@@ -104,7 +124,7 @@ static _FCITX_ALWAYS_INLINE_ UT_array* utarray_new_alt (FcitxInitFunc init,
                                                         FcitxDestroyNotify destroy,
                                                         size_t size)
 {
-    UT_array* a = malloc(sizeof(UT_array) + sizeof(UT_icd));
+    UT_array* a = fcitx_utils_malloc(sizeof(UT_array) + sizeof(UT_icd));
     UT_icd* icd = ((void*) a) + sizeof(UT_array);
     icd->init = init;
     icd->copy = copy;
@@ -129,7 +149,7 @@ static _FCITX_ALWAYS_INLINE_ void utarray_reserve(UT_array* a, size_t by)
         while(((a)->i + by) > ((a)->n)) {
             (a)->n = ((a)->n ? (2 * (a)->n) : 8);
         }
-        if (!((a)->d = (char*)realloc((a)->d, (a)->n * (a)->icd->sz))) {
+        if (!((a)->d = (char*)fcitx_utils_realloc((a)->d, (a)->n * (a)->icd->sz))) {
             abort();
         }
     }
@@ -207,7 +227,7 @@ static _FCITX_ALWAYS_INLINE_ void utarray_move(UT_array* a, size_t f, size_t t) 
     if (f == t) {
         return;
     }
-    void *_temp = malloc((a)->icd->sz);
+    void *_temp = fcitx_utils_malloc((a)->icd->sz);
     if (f > t) {
         memcpy(_temp, _utarray_eltptr(a, f), (a)->icd->sz);
         memmove(_utarray_eltptr(a, t + 1), _utarray_eltptr(a, t),

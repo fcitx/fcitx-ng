@@ -1,4 +1,4 @@
-macro(FCITX5_GENERATE_CONFIG_SOURCE infile basename name prefix)
+macro(fcitx5_generate_config_source infile basename name prefix)
     get_filename_component(_in_file ${infile} ABSOLUTE)
     set(_target_c ${CMAKE_CURRENT_BINARY_DIR}/${basename}.c)
     set(_target_h ${CMAKE_CURRENT_BINARY_DIR}/${basename}.h)
@@ -12,7 +12,7 @@ macro(FCITX5_GENERATE_CONFIG_SOURCE infile basename name prefix)
         DEPENDS ${_in_file} Fcitx::configdesc-compiler VERBATIM)
 endmacro()
 
-macro(FCITX5_MERGE_CONFIG_TRANSLATION infile outfile)
+macro(fcitx5_merge_config_translation infile outfile)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     get_filename_component(infile_name ${infile} NAME)
     set(_outfile "${outfile}")
@@ -27,7 +27,7 @@ macro(FCITX5_MERGE_CONFIG_TRANSLATION infile outfile)
     add_custom_target("${infile_name}.target" ALL DEPENDS "${_outfile}")
 endmacro()
 
-macro(FCITX5_GENERATE_ADDON_FUNCTION infile)
+macro(fcitx5_generate_addon_function infile)
     get_filename_component(abs_infile ${infile} ABSOLUTE)
     get_filename_component(infile_name ${infile} NAME_WE)
 
@@ -38,11 +38,11 @@ macro(FCITX5_GENERATE_ADDON_FUNCTION infile)
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h"
         COMMAND Fcitx::addon-function-compiler "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h"
         DEPENDS "${abs_infile}" Fcitx::addon-function-compiler VERBATIM)
-    add_custom_target("${infile_name}.h.target" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h")
+    add_custom_target("${infile_name}.h.target" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h")
 
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.c"
         COMMAND Fcitx::addon-function-compiler -c "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.c"
-        DEPENDS "${abs_infile}" Fcitx::addon-function-compiler VERBATIM)
+        DEPENDS "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h" Fcitx::addon-function-compiler VERBATIM)
 endmacro()
 
 macro(fcitx5_translate_add_po_file )
@@ -51,7 +51,7 @@ endmacro()
 macro(fcitx5_translate_set_pot_target )
 endmacro()
 
-macro(FCITX5_INSTALL_ADDON_CONFIG name)
+macro(fcitx5_install_addon_config name)
 fcitx5_merge_config_translation("${name}.conf.in" "${name}.conf")
 install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${name}.conf" DESTINATION "${FCITX_INSTALL_PKGDATADIR}/addon")
 endmacro()

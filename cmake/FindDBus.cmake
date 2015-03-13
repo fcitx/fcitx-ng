@@ -1,70 +1,50 @@
-#.rst:
-# FindDBus
-# -----------
-#
-# Read-Only variables:
-#
-# ::
-#
-#   DBUS_FOUND - system has the dbus-1 library
-#   DBUS_INCLUDE_DIR - the dbus include directory
-#   DBUS_LIBRARIES - The libraries needed to use OpenSSL
-#   DBUS_VERSION - This is set to $major.$minor.$revision
+find_package(PkgConfig)
 
-#=============================================================================
-# Copyright 2014-2014 Weng Xuetian <wengxt@gmail.com>
-#
+pkg_check_modules(PKG_DBUS QUIET dbus-1)
 
-find_package(PkgConfig QUIET)
-pkg_check_modules(PC_DBUS QUIET dbus-1)
+set(DBUS_DEFINITIONS ${PKG_DBUS_CFLAGS_OTHER})
+set(DBUS_VERSION ${PKG_DBUS_VERSION})
 
 find_path(DBUS_INCLUDE_DIR
-  NAMES
-    dbus/dbus.h
-  HINTS
-    ${PC_DBUS_INCLUDEDIR}
-    ${PC_DBUS_INCLUDE_DIRS}
+    NAMES dbus/dbus.h
+    HINTS ${PKG_DBUS_INCLUDE_DIRS}
+)
+
+find_path(DBUS_ARCH_INCLUDE_DIR
+    NAMES dbus/dbus-arch-deps.h
+    HINTS ${PKG_DBUS_INCLUDE_DIRS}
 )
 
 find_library(DBUS_LIBRARY
-  NAMES
-    dbus-1
-  HINTS
-    ${PC_DBUS_LIBDIR}
-    ${PC_DBUS_LIBRARY_DIRS}
+    NAMES dbus-1
+    HINTS ${PKG_DBUS_LIBRARY_DIRS}
 )
-
-get_filename_component(_DBUS_LIBRARY_DIR ${DBUS_LIBRARY} PATH)
-find_path(DBUS_ARCH_INCLUDE_DIR
-    NAMES dbus/dbus-arch-deps.h
-    HINTS ${PC_DBUS_INCLUDEDIR}
-          ${PC_DBUS_INCLUDE_DIRS}
-          ${_DBUS_LIBRARY_DIR}
-          ${DBUS_INCLUDE_DIR}
-    PATH_SUFFIXES include
-)
-
-mark_as_advanced(DBUS_LIBRARY)
-
-set(DBUS_LIBRARIES ${DBUS_LIBRARY})
-set(DBUS_INCLUDE_DIRS ${DBUS_INCLUDE_DIR} ${DBUS_ARCH_INCLUDE_DIR})
-
-if (DBUS_INCLUDE_DIR)
-  if (PC_DBUS_VERSION)
-    set(DBUS_VERSION "${PC_DBUS_VERSION}")
-  endif ()
-endif ()
 
 include(FindPackageHandleStandardArgs)
-
 find_package_handle_standard_args(DBus
-  REQUIRED_VARS
-    DBUS_LIBRARIES
-    DBUS_INCLUDE_DIRS
-  VERSION_VAR
-    DBUS_VERSION
-  FAIL_MESSAGE
-    "Could NOT find dbus-1"
+    FOUND_VAR
+        DBUS_FOUND
+    REQUIRED_VARS
+        DBUS_LIBRARY
+        DBUS_INCLUDE_DIR
+        DBUS_ARCH_INCLUDE_DIR
+    VERSION_VAR
+        DBUS_VERSION
 )
 
-mark_as_advanced(DBUS_INCLUDE_DIRS DBUS_LIBRARIES)
+if(DBUS_FOUND AND NOT TARGET DBus::DBus)
+    add_library(DBus::DBus UNKNOWN IMPORTED)
+    set_target_properties(DBus::DBus PROPERTIES
+        IMPORTED_LOCATION "${DBUS_LIBRARY}"
+        INTERFACE_COMPILE_OPTIONS "${DBUS_DEFINITIONS}"
+        INTERFACE_INCLUDE_DIRECTORIES "${DBUS_INCLUDE_DIR};${DBUS_ARCH_INCLUDE_DIR}"
+    )
+endif()
+
+mark_as_advanced(DBUS_INCLUDE_DIR DBUS_ARCH_INCLUDE_DIR DBUS_LIBRARY)
+
+include(FeatureSummary)
+set_package_properties(DBUS PROPERTIES
+    URL "http://www.freedesktop.org/Software/dbus"
+    DESCRIPTION "Freedesktop.org message bus system"
+)

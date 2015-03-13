@@ -39,8 +39,8 @@
 
 
 #define uthash_fatal(msg)         /* fatal error (out of memory, etc) */
-#define uthash_malloc(sz) malloc(sz)      /* malloc fcn                      */
-#define uthash_free(ptr) free(ptr)        /* free fcn                        */
+#define uthash_malloc(sz) fcitx_utils_malloc(sz)      /* malloc fcn                      */
+#define uthash_free(ptr) fcitx_utils_free(ptr)        /* free fcn                        */
 
 #define uthash_noexpand_fyi(tbl)          /* can be defined to log noexpand  */
 #define uthash_expand_fyi(tbl)            /* can be defined to log expands   */

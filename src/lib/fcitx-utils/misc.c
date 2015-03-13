@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2012~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdlib.h>
 #include <string.h>
 #include <sys/wait.h>
@@ -22,14 +41,14 @@ char* fcitx_utils_get_fcitx_path(const char* type)
         if (fcitxdir) {
             fcitx_utils_alloc_cat_str(result, fcitxdir, "/share");
         } else {
-            result = strdup(FCITX_INSTALL_DATADIR);
+            result = fcitx_utils_strdup(FCITX_INSTALL_DATADIR);
         }
     }
     else if (strcmp(type, "pkgdatadir") == 0) {
         if (fcitxdir) {
             fcitx_utils_alloc_cat_str(result, fcitxdir, "/share/fcitx");
         } else {
-            result = strdup(FCITX_INSTALL_PKGDATADIR);
+            result = fcitx_utils_strdup(FCITX_INSTALL_PKGDATADIR);
         }
     }
     else if (strcmp(type, "bindir") == 0) {
@@ -37,21 +56,21 @@ char* fcitx_utils_get_fcitx_path(const char* type)
             fcitx_utils_alloc_cat_str(result, fcitxdir, "/bin");
         }
         else
-            result = strdup(FCITX_INSTALL_BINDIR);
+            result = fcitx_utils_strdup(FCITX_INSTALL_BINDIR);
     }
     else if (strcmp(type, "libdir") == 0) {
         if (fcitxdir) {
             fcitx_utils_alloc_cat_str(result, fcitxdir, "/lib");
         }
         else
-            result = strdup(FCITX_INSTALL_LIBDIR);
+            result = fcitx_utils_strdup(FCITX_INSTALL_LIBDIR);
     }
     else if (strcmp(type, "localedir") == 0) {
         if (fcitxdir) {
             fcitx_utils_alloc_cat_str(result, fcitxdir, "/share/locale");
         }
         else
-            result = strdup(FCITX_INSTALL_LOCALEDIR);
+            result = fcitx_utils_strdup(FCITX_INSTALL_LOCALEDIR);
     }
     return result;
 }

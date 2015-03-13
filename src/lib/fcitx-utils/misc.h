@@ -1,31 +1,28 @@
-/***************************************************************************
- *   Copyright (C) 2002~2005 by Yuking                                     *
- *   yuking_net@sohu.com                                                   *
- *   Copyright (C) 2011~2012 by CSSlayer                                   *
- *   wengxt@gmail.com                                                      *
- *   Copyright (C) 2012~2013 by Yichao Yu                                  *
- *   yyc1992@gmail.com                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
-
+/*
+ * Copyright (C) 2012~2015 by CSSlayer
+ * wengxt@gmail.com
+ * Copyright (C) 2012~2013 by Yichao Yu
+ * yyc1992@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef _FCITX_UTILS_MISC_H_
 #define _FCITX_UTILS_MISC_H_
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -33,7 +30,6 @@
 #include <malloc.h>
 #include "macro.h"
 #include "types.h"
-#include "utarray.h"
 
 FCITX_DECL_BEGIN
 
@@ -110,7 +106,7 @@ static _FCITX_ALWAYS_INLINE_ int fcitx_utils_strcmp0(const char* a, const char* 
 
 /**
  * if obj is not null, free it, after that, if str is NULL set it with NULL,
- * if str is not NULL, set it with strdup(str)
+ * if str is not NULL, set it with fcitx_utils_strdup(str)
  *
  * @param obj object string
  * @param str source string
@@ -280,6 +276,43 @@ fcitx_utils_write_int16(FILE *fp, int16_t i)
 {
 return fcitx_utils_write_uint16(fp, (uint16_t)i);
 }
+
+static inline void* fcitx_utils_calloc(size_t nmemb, size_t size)
+{
+    void* result = calloc(nmemb, size);
+    if (!result) {
+        abort();
+    }
+    return result;
+}
+
+static inline void* fcitx_utils_malloc(size_t size)
+{
+    void* result = malloc(size);
+    if (!result) {
+        abort();
+    }
+    return result;
+}
+
+static inline void* fcitx_utils_realloc(void* ptr, size_t size)
+{
+    void* result = realloc(ptr, size);
+    if (!result) {
+        abort();
+    }
+    return result;
+}
+
+static inline void* fcitx_utils_malloc0(size_t size)
+{
+    return fcitx_utils_calloc(1, size);
+}
+
+#define fcitx_utils_new(TYPE) ((TYPE*) fcitx_utils_malloc0(sizeof(TYPE)))
+#define fcitx_utils_newv(TYPE, _N) ((TYPE*) fcitx_utils_calloc(_N, sizeof(TYPE)))
+#define fcitx_utils_new_with_private(TYPE) ((TYPE*) fcitx_utils_malloc0(sizeof(TYPE) + sizeof(TYPE##Private)))
+#define fcitx_utils_free(PTR) free(PTR)
 
 void fcitx_utils_init_as_daemon();
 

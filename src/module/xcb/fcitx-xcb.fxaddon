@@ -8,6 +8,7 @@ Function/1=OnConnectionCreated
 Function/2=OnConnectionClosed
 Function/3=RemoveWatcher
 Function/4=AddEventFilter
+Function/5=GetXkbRulesNames
 
 [GetConnection/Function]
 ReturnType=xcb_connection_t*
@@ -32,3 +33,7 @@ ReturnType=int
 Arg/0=const char*
 Arg/1=void*
 Arg/2=void*
+
+[GetXkbRulesNames/Function]
+ReturnType=char*
+Arg/0=const char*

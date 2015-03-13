@@ -37,11 +37,11 @@ int main()
     utarray_done(&array);
 
     FcitxPtrArray* ptrArray = fcitx_ptr_array_new(free);
-    fcitx_ptr_array_append(ptrArray, strdup("E"));
-    fcitx_ptr_array_append(ptrArray, strdup("D"));
-    fcitx_ptr_array_append(ptrArray, strdup("A"));
-    fcitx_ptr_array_append(ptrArray, strdup("C"));
-    fcitx_ptr_array_append(ptrArray, strdup("B"));
+    fcitx_ptr_array_append(ptrArray, fcitx_utils_strdup("E"));
+    fcitx_ptr_array_append(ptrArray, fcitx_utils_strdup("D"));
+    fcitx_ptr_array_append(ptrArray, fcitx_utils_strdup("A"));
+    fcitx_ptr_array_append(ptrArray, fcitx_utils_strdup("C"));
+    fcitx_ptr_array_append(ptrArray, fcitx_utils_strdup("B"));
 
     assert(fcitx_ptr_array_size(ptrArray) == 5);
 
@@ -51,7 +51,7 @@ int main()
     fcitx_ptr_array_remove_fast(ptrArray, 2, NULL);
     assert(fcitx_ptr_array_size(ptrArray) == 3);
 
-    fcitx_ptr_array_insert(ptrArray, strdup("C"), 1);
+    fcitx_ptr_array_insert(ptrArray, fcitx_utils_strdup("C"), 1);
     assert(fcitx_ptr_array_size(ptrArray) == 4);
 
     fcitx_ptr_array_sort(ptrArray, (FcitxCompareFunc) cmp);

@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <assert.h>
 #include "helper.h"
 
@@ -157,7 +176,7 @@ void get_i18n_string_foreach(FcitxConfiguration* config, const char* path, void*
     fcitx_dict_insert(context->str,
                       &path[context->prefixLen + 1],
                       len - context->prefixLen - 2,
-                      strdup(fcitx_configuration_get_value(config)),
+                      fcitx_utils_strdup(fcitx_configuration_get_value(config)),
                       true);
 }
 
@@ -170,7 +189,7 @@ void fcitx_configuration_get_i18n_string(FcitxConfiguration* config, const char*
     FcitxI18NString* str = *pStr;
     fcitx_dict_remove_all(str);
     const char* value = fcitx_configuration_get_value_by_path_with_default(config, path, info->regular.defaultValue, "");
-    fcitx_dict_insert_by_str(str, "", strdup(value), false);
+    fcitx_dict_insert_by_str(str, "", fcitx_utils_strdup(value), false);
 
     get_i18n_string_foreach_context context;
     context.str = str;

@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2014~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
 
 #include <locale.h>
 #include <stdio.h>
@@ -19,7 +37,7 @@ void _fcitx_compose_table_find_system_compose_dir(FcitxComposeTable* table, int 
         char* path;
         fcitx_utils_alloc_cat_str(path, possibleLocation[i], "/compose.dir");
         if (fcitx_utils_isreg(path)) {
-            table->systemComposeDir = strdup(possibleLocation[i]);
+            table->systemComposeDir = fcitx_utils_strdup(possibleLocation[i]);
             found = true;
         }
         
@@ -307,7 +325,7 @@ FcitxComposeTable* _fcitx_compose_table_alloc(const char* locale)
     FcitxComposeTable* table = fcitx_utils_new(FcitxComposeTable);
     table->localeToTable = fcitx_dict_new(free);
     table->composeTable = utarray_new(&composeElementIcd);
-    table->locale = locale ? strdup(locale) : strdup(_get_locale());
+    table->locale = locale ? fcitx_utils_strdup(locale) : fcitx_utils_strdup(_get_locale());
     char* p = table->locale;
     while(*p) {
         *p = fcitx_utils_toupper(*p);

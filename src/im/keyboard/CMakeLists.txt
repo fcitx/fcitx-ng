@@ -6,8 +6,7 @@ include_directories (
   )
 set(FCITX_KEYBOARD_LINK_LIBS)
 if(ENABLE_LIBXML2)
-  include_directories(${LIBXML2_INCLUDE_DIR})
-  set(FCITX_KEYBOARD_LINK_LIBS ${FCITX_KEYBOARD_LINK_LIBS} ${LIBXML2_LIBRARIES} ${XKBCOMMON_LIBRARIES})
+  set(FCITX_KEYBOARD_LINK_LIBS XKBCommon::XKBCommon LibXml2::LibXml)
 endif()
 
 set(FCITX_KEYBOARD_SOURCES
@@ -17,7 +16,7 @@ set(FCITX_KEYBOARD_SOURCES
   )
 fcitx5_generate_config_source(${CMAKE_CURRENT_SOURCE_DIR}/fcitx-keyboard.desc keyboard-config KeyboardConfig Fcitx)
 if(ENABLE_LIBXML2)
-  set(FCITX_KEYBOARD_SOURCES ${FCITX_KEYBOARD_SOURCES} isocodes.c)
+  set(FCITX_KEYBOARD_SOURCES ${FCITX_KEYBOARD_SOURCES} isocodes.c rules.c)
 endif()
 
 add_library(fcitx-keyboard MODULE ${FCITX_KEYBOARD_SOURCES})

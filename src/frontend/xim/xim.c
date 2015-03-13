@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <xcb/xcb.h>
 #include <xcb/xcb_aux.h>
 #include <xcb-imdkit/imdkit.h>
@@ -23,7 +42,7 @@ typedef struct _FcitxXIMServer
     xcb_im_t* im;
     int id;
     xcb_connection_t* conn;
-    FcitxInputContextGroup* group;
+    FcitxInputContextFocusGroup* group;
 } FcitxXIMServer;
 
 
@@ -85,7 +104,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
         case XIM_CREATE_IC:
             ic = fcitx_input_context_manager_create_ic(server->xim->icManager, NULL, NULL);
             xcb_im_input_context_set_data(xic, ic, NULL);
-            fcitx_input_context_set_group(ic, FICG_Local, server->group);
+            fcitx_input_context_set_focus_group(ic, FICFG_Local, server->group);
             break;
         case XIM_DESTROY_IC:
             fcitx_input_context_destroy(ic);
@@ -127,7 +146,7 @@ bool fcitx_xim_xcb_event_fitler(xcb_connection_t* conn, xcb_generic_event_t* eve
 void fcitx_xim_on_xcb_connection_created(const char* name,
                                          xcb_connection_t* conn,
                                          int defaultScreen,
-                                         FcitxInputContextGroup* group,
+                                         FcitxInputContextFocusGroup* group,
                                          void* data)
 {
     FcitxXIM* self = data;

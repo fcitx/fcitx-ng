@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/macro-internal.h"
 #include "inputcontext-internal.h"
@@ -7,7 +26,7 @@
  * relation between group and ic
  * when a group is free'd, move all ic to global group
  */
-struct _FcitxInputContextGroup
+struct _FcitxInputContextFocusGroup
 {
     FcitxListHead inputContexts;
     FcitxInputContext* focus;
@@ -21,12 +40,12 @@ typedef struct _FcitxInputContextManager
     uint32_t icid;
     FcitxInputContext* freeList;
     FcitxInputContext* ics;
-    FcitxInputContextGroup* globalGroup;
+    FcitxInputContextFocusGroup* globalGroup;
     FcitxListHead groups;
 } FcitxInputContextManager;
 
-static FcitxInputContextGroup* _fcitx_input_context_manager_create_group(FcitxInputContextManager* manager);
-static void _fcitx_input_context_set_group(FcitxInputContext* ic, FcitxInputContextGroup* group);
+static FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager);
+static void _fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContextFocusGroup* group);
 static void _fcitx_input_context_focus_in(FcitxInputContext* ic);
 static void _fcitx_input_context_focus_out(FcitxInputContext* ic);
 static void _fcitx_input_context_destroy(FcitxInputContext* ic);
@@ -35,18 +54,18 @@ FCITX_EXPORT_API
 FcitxInputContextManager* fcitx_input_context_manager_new()
 {
     FcitxInputContextManager* manager = fcitx_utils_new(FcitxInputContextManager);
-    manager->globalGroup = _fcitx_input_context_manager_create_group(manager);
+    manager->globalGroup = _fcitx_input_context_manager_create_focus_group(manager);
     fcitx_list_init(&manager->groups);
     return fcitx_input_context_manager_ref(manager);
 }
 
 void fcitx_input_context_manager_free(FcitxInputContextManager* manager)
 {
-    fcitx_list_entry_foreach_safe(group, FcitxInputContextGroup, &manager->groups, list) {
-        fcitx_input_context_group_free(group);
+    fcitx_list_entry_foreach_safe(group, FcitxInputContextFocusGroup, &manager->groups, list) {
+        fcitx_input_context_focus_group_free(group);
     }
 
-    fcitx_input_context_group_free(manager->globalGroup);
+    fcitx_input_context_focus_group_free(manager->globalGroup);
 
     while (manager->ics) {
         fcitx_input_context_destroy(manager->ics);
@@ -63,9 +82,9 @@ void fcitx_input_context_manager_free(FcitxInputContextManager* manager)
 
 FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxInputContextManager, fcitx_input_context_manager);
 
-FcitxInputContextGroup* _fcitx_input_context_manager_create_group(FcitxInputContextManager* manager)
+FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager)
 {
-    FcitxInputContextGroup* group = fcitx_utils_new(FcitxInputContextGroup);
+    FcitxInputContextFocusGroup* group = fcitx_utils_new(FcitxInputContextFocusGroup);
     fcitx_list_init(&group->inputContexts);
     group->manager = manager;
 
@@ -73,9 +92,9 @@ FcitxInputContextGroup* _fcitx_input_context_manager_create_group(FcitxInputCont
 
 }
 FCITX_EXPORT_API
-FcitxInputContextGroup* fcitx_input_context_manager_create_group(FcitxInputContextManager* manager)
+FcitxInputContextFocusGroup* fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager)
 {
-    FcitxInputContextGroup* group = _fcitx_input_context_manager_create_group(manager);
+    FcitxInputContextFocusGroup* group = _fcitx_input_context_manager_create_focus_group(manager);
     fcitx_list_append(&group->list, &manager->groups);
 
     return group;
@@ -83,20 +102,20 @@ FcitxInputContextGroup* fcitx_input_context_manager_create_group(FcitxInputConte
 }
 
 FCITX_EXPORT_API
-void fcitx_input_context_group_free(FcitxInputContextGroup* group)
+void fcitx_input_context_focus_group_free(FcitxInputContextFocusGroup* group)
 {
     if (group != group->manager->globalGroup) {
         fcitx_list_remove(&group->list);
     }
 
     fcitx_list_entry_foreach_safe(entry, FcitxInputContext, &group->inputContexts, list) {
-        _fcitx_input_context_set_group(entry, NULL);
+        _fcitx_input_context_set_focus_group(entry, NULL);
     }
 
     free(group);
 }
 
-void _fcitx_input_context_set_group(FcitxInputContext* ic, FcitxInputContextGroup* group)
+void _fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContextFocusGroup* group)
 {
     if (ic->group == group) {
         return;
@@ -116,18 +135,18 @@ void _fcitx_input_context_set_group(FcitxInputContext* ic, FcitxInputContextGrou
 }
 
 FCITX_EXPORT_API
-void fcitx_input_context_set_group(FcitxInputContext* ic, FcitxInputContextGroupType type, FcitxInputContextGroup* group)
+void fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContextFocusGroupType type, FcitxInputContextFocusGroup* group)
 {
-    if ((type == FICG_Local && group == NULL)
-     || (type != FICG_Local && group != NULL)) {
+    if ((type == FICFG_Local && group == NULL)
+     || (type != FICFG_Local && group != NULL)) {
         return;
     }
 
-    if (type == FICG_Global) {
+    if (type == FICFG_Global) {
         group = ic->manager->globalGroup;
     }
 
-    _fcitx_input_context_set_group(ic, group);
+    _fcitx_input_context_set_focus_group(ic, group);
 }
 
 
@@ -163,7 +182,7 @@ FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManage
     return ic;
 }
 
-void _fcitx_input_context_group_set_focus(FcitxInputContextGroup* group, FcitxInputContext* ic)
+void _fcitx_input_context_group_set_focus(FcitxInputContextFocusGroup* group, FcitxInputContext* ic)
 {
     FcitxInputContext* focus = group->focus;
     group->focus = ic;
@@ -185,7 +204,7 @@ void fcitx_input_context_manager_focus_in(FcitxInputContextManager* manager, uin
     }
 
     if (ic->group == manager->globalGroup) {
-        fcitx_list_entry_foreach(group, FcitxInputContextGroup, &manager->groups, list) {
+        fcitx_list_entry_foreach(group, FcitxInputContextFocusGroup, &manager->groups, list) {
             _fcitx_input_context_group_set_focus(group, NULL);
         }
 

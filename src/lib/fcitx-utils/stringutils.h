@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _FCITX_UTILS_STRINGUTILS_H_
 #define _FCITX_UTILS_STRINGUTILS_H_
 
@@ -67,7 +86,7 @@ void fcitx_utils_cat_str_with_len(char *out, size_t len, size_t n,
         size_t __size_list[sizeof(__str_list) / sizeof(char*)];         \
         size_t __total_size = fcitx_utils_str_lens(__cat_str_n,         \
                                                    __str_list, __size_list); \
-        dest = malloc(__total_size);                                    \
+        dest = fcitx_utils_malloc(__total_size);                                    \
         fcitx_utils_cat_str(dest, __cat_str_n,                          \
                             __str_list, __size_list);                   \
     } while (0)
@@ -78,7 +97,7 @@ void fcitx_utils_cat_str_with_len(char *out, size_t len, size_t n,
         size_t __size_list[sizeof(__str_list) / sizeof(char*)];         \
         size_t __total_size = fcitx_utils_str_lens(__cat_str_n,         \
                                                    __str_list, __size_list); \
-        dest = realloc(dest, __total_size);                             \
+        dest = fcitx_utils_realloc(dest, __total_size);                             \
         fcitx_utils_cat_str(dest, __cat_str_n,                          \
                             __str_list, __size_list);                   \
     } while (0)
@@ -109,6 +128,9 @@ bool fcitx_utils_string_starts_with(const char* s, const char* needle);
 bool fcitx_utils_string_ends_with(const char* s, const char* needle);
 
 char* fcitx_utils_string_replace(const char* s, const char* before, const char* after, bool nullIfNoMatch);
+
+char* fcitx_utils_strdup(const char *str);
+
 
 FCITX_DECL_END
 

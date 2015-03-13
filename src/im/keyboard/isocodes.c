@@ -1,22 +1,21 @@
-/***************************************************************************
- *   Copyright (C) 2012~2012 by CSSlayer                                   *
- *   wengxt@gmail.com                                                      *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
+/*
+ * Copyright (C) 2012~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
 
 #include "config.h"
 
@@ -67,13 +66,13 @@ static void IsoCodes639HandlerStartElement(void *ctx,
         int i = 0;
         while(atts && atts[i*2] != 0) {
             if (strcmp(XMLCHAR_CAST atts[i * 2], "iso_639_2B_code") == 0)
-                entry->iso_639_2B_code = strdup(XMLCHAR_CAST atts[i * 2 + 1]);
+                entry->iso_639_2B_code = fcitx_utils_strdup(XMLCHAR_CAST atts[i * 2 + 1]);
             else if (strcmp(XMLCHAR_CAST atts[i * 2], "iso_639_2T_code") == 0)
-                entry->iso_639_2T_code = strdup(XMLCHAR_CAST atts[i * 2 + 1]);
+                entry->iso_639_2T_code = fcitx_utils_strdup(XMLCHAR_CAST atts[i * 2 + 1]);
             else if (strcmp(XMLCHAR_CAST atts[i * 2], "iso_639_1_code") == 0)
-                entry->iso_639_1_code = strdup(XMLCHAR_CAST atts[i * 2 + 1]);
+                entry->iso_639_1_code = fcitx_utils_strdup(XMLCHAR_CAST atts[i * 2 + 1]);
             else if (strcmp(XMLCHAR_CAST atts[i * 2], "name") == 0)
-                entry->name = strdup(XMLCHAR_CAST atts[i * 2 + 1]);
+                entry->name = fcitx_utils_strdup(XMLCHAR_CAST atts[i * 2 + 1]);
             i++;
         }
         if (!entry->iso_639_2B_code || !entry->iso_639_2T_code || !entry->name)
@@ -112,9 +111,9 @@ static void IsoCodes3166HandlerStartElement(void *ctx,
         int i = 0;
         while(atts && atts[i*2] != 0) {
             if (strcmp(XMLCHAR_CAST atts[i * 2], "alpha_2_code") == 0)
-                entry->alpha_2_code = strdup(XMLCHAR_CAST atts[i * 2 + 1]);
+                entry->alpha_2_code = fcitx_utils_strdup(XMLCHAR_CAST atts[i * 2 + 1]);
             else if (strcmp(XMLCHAR_CAST atts[i * 2], "name") == 0)
-                entry->name = strdup(XMLCHAR_CAST atts[i * 2 + 1]);
+                entry->name = fcitx_utils_strdup(XMLCHAR_CAST atts[i * 2 + 1]);
             i++;
         }
         if (!entry->name || !entry->alpha_2_code)
@@ -156,4 +155,66 @@ void FcitxIsoCodesFree(FcitxIsoCodes* isocodes)
     }
 
     free(isocodes);
+}
+
+const char* FindBestLanguage(FcitxIsoCodes* isocodes, const char* hint, UT_array* languages)
+{
+    const char* bestLang = NULL;
+
+    /* score:
+     * 1 -> first one
+     * 2 -> match 2
+     * 3 -> match three
+     */
+    FcitxIsoCodes639Entry* bestEntry = NULL;
+    int bestScore = 0;
+    utarray_foreach(plang, languages, char*) {
+        FcitxIsoCodes639Entry* entry = FcitxIsoCodesGetEntry(isocodes, *plang);
+        if (!entry) {
+            continue;
+        }
+
+        const char* lang = entry->iso_639_1_code;
+        if (!lang) {
+            lang = entry->iso_639_2T_code;
+        }
+
+        if (!lang) {
+            lang = entry->iso_639_2B_code;
+        }
+
+        if (!lang) {
+            continue;
+        }
+
+        size_t len = strlen(lang);
+        if (len != 2 && len != 3) {
+            continue;
+        }
+
+        int score = 1;
+        while (len >= 2) {
+            if (strncasecmp(hint, lang, len) == 0) {
+                score = len;
+                break;
+            }
+
+            len --;
+        }
+
+        if (bestScore < score) {
+            bestEntry = entry;
+            bestScore = score;
+        }
+    }
+    if (bestEntry) {
+        bestLang = bestEntry->iso_639_1_code;
+        if (!bestLang) {
+            bestLang = bestEntry->iso_639_2T_code;
+        }
+        if (!bestLang) {
+            bestLang = bestEntry->iso_639_2B_code;
+        }
+    }
+    return bestLang;
 }

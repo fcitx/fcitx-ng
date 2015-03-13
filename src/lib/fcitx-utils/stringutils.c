@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include "utils.h"
 #include <stdarg.h>
 #include <stdio.h>
@@ -7,9 +26,9 @@ FCITX_EXPORT_API char*
 fcitx_utils_set_str_with_len(char *res, const char *str, size_t len)
 {
     if (res) {
-        res = realloc(res, len + 1);
+        res = fcitx_utils_realloc(res, len + 1);
     } else {
-        res = malloc(len + 1);
+        res = fcitx_utils_malloc(len + 1);
     }
     memcpy(res, str, len);
     res[len] = '\0';
@@ -24,9 +43,9 @@ fcitx_utils_set_escape_str_with_set(char *res, const char *str, const char *set)
         set = FCITX_CHAR_NEED_ESCAPE;
     size_t len = strlen(str) * 2 + 1;
     if (res) {
-        res = realloc(res, len);
+        res = fcitx_utils_realloc(res, len);
     } else {
-        res = malloc(len);
+        res = fcitx_utils_malloc(len);
     }
     char *dest = res;
     const char *src = str;
@@ -44,7 +63,7 @@ fcitx_utils_set_escape_str_with_set(char *res, const char *str, const char *set)
         memcpy(dest, src, len);
     dest += len;
     *dest = '\0';
-    res = realloc(res, dest - res + 1);
+    res = fcitx_utils_realloc(res, dest - res + 1);
     return res;
 }
 
@@ -136,9 +155,9 @@ fcitx_utils_set_unescape_str(char *res, const char *str)
 {
     size_t len = strlen(str) + 1;
     if (res) {
-        res = realloc(res, len);
+        res = fcitx_utils_realloc(res, len);
     } else {
-        res = malloc(len);
+        res = fcitx_utils_malloc(len);
     }
     char *dest = res;
     const char *src = str;
@@ -202,7 +221,7 @@ char* fcitx_utils_trim(const char* s)
 
     size_t len = end - s;
 
-    char* result = malloc(len + 1);
+    char* result = fcitx_utils_malloc(len + 1);
     memcpy(result, s, len);
     result[len] = '\0';
     return result;
@@ -303,7 +322,7 @@ char* fcitx_utils_string_replace(const char* s, const char* before, const char* 
         if (nullIfNoMatch) {
             return NULL;
         } else {
-            return strdup(s);
+            return fcitx_utils_strdup(s);
         }
     }
     
@@ -331,7 +350,7 @@ char* fcitx_utils_string_replace(const char* s, const char* before, const char* 
         if (nIndices) {
             if (!newString) {
                 lastLen = len + nIndices * (afterLen - beforeLen) + 1;
-                newString = malloc(lastLen * sizeof(char));
+                newString = fcitx_utils_malloc(lastLen * sizeof(char));
             } else {
                 size_t newLen = lastLen + nIndices * (afterLen - beforeLen);
                 if (newLen > lastLen) {
@@ -369,7 +388,7 @@ char* fcitx_utils_string_replace(const char* s, const char* before, const char* 
         if (nullIfNoMatch) {
             return NULL;
         } else {
-            return strdup(s);
+            return fcitx_utils_strdup(s);
         }
     } else {
         _COPY_AND_MOVE_ON(s + oldStringPos, len - oldStringPos);
@@ -377,4 +396,17 @@ char* fcitx_utils_string_replace(const char* s, const char* before, const char* 
     }
     
     return newString;
+}
+
+FCITX_EXPORT_API
+char* fcitx_utils_strdup(const char *str)
+{
+    char *new_str = NULL;
+    size_t length;
+    if (str) {
+        length = strlen (str) + 1;
+        new_str = fcitx_utils_newv (char, length);
+        memcpy (new_str, str, length);
+    }
+    return new_str;
 }

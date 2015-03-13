@@ -6,23 +6,32 @@
 #  GETTEXTPO_LIBRARIES - GETTEXT-PO library
 #
 # Copyright (c) 2012 Yichao Yu <yyc1992@gmail.com>
+# Copyright (c) 2015 Weng Xuetian <wengxt@gmail.com>
 #
 # Redistribution and use is allowed according to the terms of the BSD license.
 # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
 
-if(GETTEXTPO_INCLUDE_DIR AND GETTEXTPO_LIBRARIES)
-  # Already in cache, be silent
-  set(GETTEXTPO_FIND_QUIETLY TRUE)
-endif()
-
 find_path(GETTEXTPO_INCLUDE_DIR
   NAMES gettext-po.h)
 
-find_library(GETTEXTPO_LIBRARIES
+find_library(GETTEXTPO_LIBRARY
   NAMES gettextpo)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(GettextPo DEFAULT_MSG GETTEXTPO_LIBRARIES
-  GETTEXTPO_INCLUDE_DIR)
+find_package_handle_standard_args(GettextPo
+    FOUND_VAR
+        GETTEXTPO_FOUND
+    REQUIRED_VARS
+        GETTEXTPO_LIBRARY
+        GETTEXTPO_INCLUDE_DIR
+)
 
-mark_as_advanced(GETTEXTPO_INCLUDE_DIR GETTEXTPO_LIBRARIES)
+if(GETTEXTPO_FOUND AND NOT TARGET GettextPo::GettextPo)
+    add_library(GettextPo::GettextPo UNKNOWN IMPORTED)
+    set_target_properties(GettextPo::GettextPo PROPERTIES
+        IMPORTED_LOCATION "${GETTEXTPO_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${GETTEXTPO_INCLUDE_DIR}"
+    )
+endif()
+
+mark_as_advanced(GETTEXTPO_INCLUDE_DIR GETTEXTPO_LIBRARY)

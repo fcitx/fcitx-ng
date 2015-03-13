@@ -65,22 +65,19 @@ if("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STREQU
 endif("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STREQUAL "-1")
 
 find_package(DL REQUIRED)
-find_package(Libiconv REQUIRED)
-find_package(Libintl REQUIRED)
-find_package(GettextPo REQUIRED)
-find_package(Pthread REQUIRED)
 find_package(LibFFI REQUIRED)
 find_package(LibUUID REQUIRED)
-find_package(LibKVM)
+find_package(GettextPo REQUIRED)
 find_package(RT)
 
 if (ENABLE_BACKTRACE)
-find_package(Libexecinfo REQUIRED)
+find_package(LibExecinfo REQUIRED)
 endif ()
 
 # Dependences for modules
 # xcb
-find_package(XCB REQUIRED COMPONENTS XKB AUX)
+find_package(XCB REQUIRED COMPONENTS XCB XKB AUX)
+find_package(XKeyboardConfig REQUIRED)
 # xim
 find_package(XCBImdkit REQUIRED)
 # dbus
@@ -88,6 +85,7 @@ find_package(DBus REQUIRED)
 # libxml
 if (ENABLE_LIBXML2)
 find_package(LibXml2 REQUIRED)
+find_package(IsoCodes REQUIRED)
 endif (ENABLE_LIBXML2)
 # xkbcommon
 find_package(XKBCommon REQUIRED)

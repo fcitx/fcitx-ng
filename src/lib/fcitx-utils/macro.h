@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef _FCITX_UTILS_MACRO_H_
 #define _FCITX_UTILS_MACRO_H_
 
@@ -65,18 +84,6 @@
     FCITX_DEFINE_SIMPLE_UT_ICD(type, name)                    \
     FCITX_EXPORT_API const UT_icd *const fcitx_##name##_icd = \
         &__fcitx_##name##_icd;
-
-/**
- * Malloc and memset all memory to zero
- *
- * @param bytes malloc size
- * @return void* malloced pointer
- **/
-#define fcitx_utils_malloc0(SIZE) calloc(1, (SIZE))
-#define fcitx_utils_new(TYPE) ((TYPE*) calloc(1, sizeof(TYPE)))
-#define fcitx_utils_newv(TYPE, _N) ((TYPE*) calloc(_N, sizeof(TYPE)))
-#define fcitx_utils_new_with_private(TYPE) ((TYPE*) calloc(1, sizeof(TYPE) + sizeof(TYPE##Private)))
-#define fcitx_utils_free(PTR) free(PTR)
 
 #define FCITX_GET_PRIVATE(p, TYPE) ((TYPE##Private*) (((char*) p) + sizeof(TYPE)))
 

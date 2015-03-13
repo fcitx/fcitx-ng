@@ -1,6 +1,4 @@
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
-include_directories(${LIBFFI_INCLUDE_DIR}
-                    ${LIBUUID_INCLUDE_DIR})
 
 set(LIBFCITX_SOURCES
   instance.c
@@ -9,6 +7,7 @@ set(LIBFCITX_SOURCES
   addon.c
   inputcontext.c
   inputdevice.c
+  ime.c
   )
 
 set(FCITX_HEADERS
@@ -33,8 +32,7 @@ set_target_properties(fcitx-core
 
 configure_file(fcitx.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc)
 
-target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils ${LIBFFI_LIBRARIES} ${LIBUUID_LIBRARIES}
-  ${DL_LIBRARIES} ${PTHREAD_LIBRARIES})
+target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils LibFFI::FFI LibUUID::UUID DL::DL)
 install(TARGETS fcitx-core LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc
   DESTINATION "${CMAKE_INSTALL_LIBDATADIR}/pkgconfig")

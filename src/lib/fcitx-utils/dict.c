@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdlib.h>
 #include "utils.h"
 #include "uthash.h"
@@ -47,7 +66,7 @@ bool fcitx_dict_insert(FcitxDict* dict, const char* key, size_t keyLen, void* va
     }
 
     // make all key null terminated
-    item->content.key = malloc(keyLen + 1);
+    item->content.key = fcitx_utils_malloc(keyLen + 1);
     item->content.key[keyLen] = 0;
     item->content.keyLen = keyLen;
     memcpy(item->content.key, key, keyLen);

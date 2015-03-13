@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <stdio.h>
 #include "common.h"
 
@@ -30,7 +49,7 @@ char* type_name(const char* prefix, const char* groupName)
 
 char* format_first_lower_name(const char* name)
 {
-    char* result = strdup(name);
+    char* result = fcitx_utils_strdup(name);
     remove_invalid_char(result);
     size_t i = 0;
     while (fcitx_utils_isupper(result[i])) {
@@ -48,10 +67,10 @@ char* format_first_lower_name(const char* name)
 
 char* format_underscore_name(const char* _name, bool toupper)
 {
-    char* name = strdup(_name);
+    char* name = fcitx_utils_strdup(_name);
     remove_invalid_char(name);
     size_t len = strlen(name);
-    char* newName = malloc(len * 2 + 1);
+    char* newName = fcitx_utils_malloc(len * 2 + 1);
     size_t j = 0;
     for (size_t i = 0; i < len; i ++) {
         newName[j] = toupper ? fcitx_utils_toupper(name[i]) : fcitx_utils_tolower(name[i]);

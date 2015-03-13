@@ -1,22 +1,21 @@
-/***************************************************************************
- *   Copyright (C) 2014~2014 by CSSlayer                                   *
- *   wengxt@gmail.com                                                      *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
+/*
+ * Copyright (C) 2014~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
 
 #ifndef _FCITX_STANDARD_PATH_H_
 #define _FCITX_STANDARD_PATH_H_
@@ -76,6 +75,8 @@ FcitxStandardPath* fcitx_standard_path_new();
 
 FcitxStandardPathFile* fcitx_standard_path_locate(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path, uint32_t flag);
 
+FcitxStandardPathFile fcitx_standard_path_create_tempfile(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path);
+
 FcitxDict* fcitx_standard_path_match(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path, FcitxStandardPathFilter* filter);
 
 FcitxStandardPath* fcitx_standard_path_ref(FcitxStandardPath* sp);
@@ -83,6 +84,8 @@ FcitxStandardPath* fcitx_standard_path_ref(FcitxStandardPath* sp);
 void fcitx_standard_path_unref(FcitxStandardPath* sp);
 
 void fcitx_standard_path_file_close(FcitxStandardPathFile* file);
+
+void fcitx_standard_path_file_close_single(FcitxStandardPathFile* file);
 
 FCITX_DECL_END
 

@@ -1,22 +1,21 @@
-/***************************************************************************
- *   Copyright (C) 2012~2013 by Yichao Yu                                  *
- *   yyc1992@gmail.com                                                     *
- *                                                                         *
- *   This program is free software; you can redistribute it and/or modify  *
- *   it under the terms of the GNU General Public License as published by  *
- *   the Free Software Foundation; either version 2 of the License, or     *
- *   (at your option) any later version.                                   *
- *                                                                         *
- *   This program is distributed in the hope that it will be useful,       *
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the         *
- *   GNU General Public License for more details.                          *
- *                                                                         *
- *   You should have received a copy of the GNU General Public License     *
- *   along with this program; if not, write to the                         *
- *   Free Software Foundation, Inc.,                                       *
- *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
- ***************************************************************************/
+/*
+ * Copyright (C) 2012~2013 by Yichao Yu
+ * yyc1992@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
 
 #include "utils.h"
 #include "uthash.h"
@@ -71,8 +70,8 @@ FCITX_EXPORT_API FcitxHandlerKey*
     HASH_FIND(hh, table->keys, key, keysize, key_struct);
     if (key_struct || !create)
         return key_struct;
-    key_struct = malloc(sizeof(FcitxHandlerKey) + keysize +
-                        table->key_vtable.size + 1);
+    key_struct = fcitx_utils_malloc(sizeof(FcitxHandlerKey) + keysize +
+                                    table->key_vtable.size + 1);
     key_struct->first = key_struct->last = FCITX_OBJECT_POOL_INVALID_ID;
     void *key_ptr = ((void*)(key_struct + 1)) + table->key_vtable.size;
     memcpy(key_ptr, key, keysize);

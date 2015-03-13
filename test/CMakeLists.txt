@@ -1,3 +1,4 @@
+include_directories(${PROJECT_BINARY_DIR}/src/lib/fcitx)
 
 set(FCITX_UTILS_TEST
     testarray
@@ -49,12 +50,13 @@ add_test(NAME testdesccompile COMMAND testdesccompile)
 # test addon
 add_executable(testaddon testaddon.c)
 add_dependencies(testaddon testim.h.target)
-target_include_directories(testaddon PRIVATE ${LIBFFI_INCLUDE_DIR})
 target_link_libraries(testaddon Fcitx::Core testim)
-target_include_directories(testaddon PRIVATE ${PROJECT_BINARY_DIR}/src/lib/fcitx)
 add_test(NAME testaddon COMMAND testaddon ${CMAKE_CURRENT_SOURCE_DIR}/addon ${CMAKE_CURRENT_BINARY_DIR}/addon)
 
 add_subdirectory(addon)
 
 add_executable(testinputcontext testinputcontext.c)
 target_link_libraries(testinputcontext Fcitx::Core)
+
+add_executable(testinputmethod testinputmethod.c)
+target_link_libraries(testinputmethod Fcitx::Core)

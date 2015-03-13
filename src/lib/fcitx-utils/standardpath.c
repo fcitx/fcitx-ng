@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2015~2015 by CSSlayer
+ * wengxt@gmail.com
+ *
+ * This library is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; see the file COPYING. If not,
+ * see <http://www.gnu.org/licenses/>.
+ */
+
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libgen.h>
@@ -24,7 +43,7 @@ char* fcitx_standard_default_path_construct(const char* env, const char* default
 {
     char* dir = getenv(env);
     if (dir && dir[0]) {
-        dir = strdup(dir);
+        dir = fcitx_utils_strdup(dir);
     } else {
         // caller need to ensure HOME is not empty;
         if (defaultPath[0] != '/') {
@@ -41,7 +60,7 @@ char* fcitx_standard_default_path_construct(const char* env, const char* default
                 }
 
             } else {
-                dir = strdup(defaultPath);
+                dir = fcitx_utils_strdup(defaultPath);
             }
         }
     }
@@ -146,7 +165,7 @@ FcitxStandardPathFile fcitx_standard_path_try_open(const char* basepath, const c
     fp = fopen(fullPath, flags);
     if (!fp && errno == ENOENT) {
         if (flag & FSPFT_Write) {
-            char* copyFullPath = strdup(fullPath);
+            char* copyFullPath = fcitx_utils_strdup(fullPath);
             char* dirName = dirname(copyFullPath);
             if (fcitx_utils_make_path(dirName)) {
                 fp = fopen(fullPath, flags);
@@ -174,7 +193,7 @@ FcitxStandardPathFile* fcitx_standard_path_locate(FcitxStandardPath* sp, FcitxSt
         }
         FcitxStandardPathFile* result = fcitx_utils_newv(FcitxStandardPathFile, 2);
         result[0].fp = fp;
-        result[0].path = strdup(path);
+        result[0].path = fcitx_utils_strdup(path);
         return result;
     }
 
@@ -228,6 +247,50 @@ FcitxStandardPathFile* fcitx_standard_path_locate(FcitxStandardPath* sp, FcitxSt
                 }
             }
         }
+    }
+
+    return result;
+}
+
+void fcitx_standard_path_mktemp(char* newPath, FcitxStandardPathFile* result)
+{
+    int fd = mkstemp(newPath);
+    if (fd < 0) {
+        free(newPath);
+        return;
+    }
+
+    FILE* fp = fdopen(fd , "w");
+    if (!fp) {
+        close(fd);
+        free(newPath);
+        return;
+    }
+    result->fp = fp;
+    result->path = newPath;
+}
+
+FCITX_EXPORT_API
+FcitxStandardPathFile fcitx_standard_path_create_tempfile(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path)
+{
+    FcitxStandardPathFile result = { NULL, NULL };
+    if (fcitx_utils_string_ends_with(path, "XXXXXX")) {
+        return result;
+    }
+
+    if (path[0] == '/') {
+        char* newPath = fcitx_utils_strdup(path);
+        fcitx_standard_path_mktemp(newPath, &result);
+        return result;
+    }
+
+    char* firstDir = NULL;
+    FcitxStringList* list = NULL;
+    fcitx_standard_path_get(sp, type, &firstDir, &list);
+
+    if (firstDir) {
+        char* fullPath = fcitx_standard_path_construct_path(firstDir, path);
+        fcitx_standard_path_mktemp(fullPath, &result);
     }
 
     return result;
@@ -352,12 +415,22 @@ void fcitx_standard_path_file_close(FcitxStandardPathFile* file)
 
     size_t idx = 0;
     while (file[idx].fp) {
-        fclose(file[idx].fp);
-        free(file[idx].path);
+        fcitx_standard_path_file_close_single(&file[idx]);
         idx++;
     }
     free(file);
 }
+
+FCITX_EXPORT_API
+void fcitx_standard_path_file_close_single(FcitxStandardPathFile* file)
+{
+    if (!file) {
+        return;
+    }
+    fclose(file->fp);
+    free(file->path);
+}
+
 
 void fcitx_standard_path_free(FcitxStandardPath* sp)
 {

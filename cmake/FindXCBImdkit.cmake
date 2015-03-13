@@ -1,60 +1,43 @@
-#.rst:
-# FindXCBImdkit
-# -----------
-#
-# Read-Only variables:
-#
-# ::
-#
-#   XCBIMDKIT_FOUND - system has the OpenSSL library
-#   XCBIMDKIT_INCLUDE_DIR - the OpenSSL include directory
-#   XCBIMDKIT_LIBRARIES - The libraries needed to use OpenSSL
-#   XCBIMDKIT_VERSION - This is set to $major.$minor.$revision
+find_package(PkgConfig)
 
-#=============================================================================
-# Copyright 2014-2014 Weng Xuetian <wengxt@gmail.com>
-#
+pkg_check_modules(PKG_XCBIMDKIT QUIET xcb-imdkit)
 
-find_package(PkgConfig QUIET)
-pkg_check_modules(PC_XCBIMDKIT QUIET xcb-imdkit)
-
+set(XCBIMDKIT_DEFINITIONS ${PKG_XCBIMDKIT_CFLAGS_OTHER})
+set(XCBIMDKIT_VERSION ${PKG_XCBIMDKIT_VERSION})
 
 find_path(XCBIMDKIT_INCLUDE_DIR
-  NAMES
-    xcb-imdkit/imdkit.h
-  HINTS
-    ${PC_XCBIMDKIT_INCLUDEDIR}
-    ${PC_XCBIMDKIT_INCLUDE_DIRS}
+    NAMES xcb-imdkit/imdkit.h
+    HINTS ${PKG_XCBIMDKIT_INCLUDE_DIRS}
 )
-
 find_library(XCBIMDKIT_LIBRARY
-  NAMES
-    xcb-imdkit
-  HINTS
-    ${PC_XCBIMDKIT_LIBDIR}
-    ${PC_XCBIMDKIT_LIBRARY_DIRS}
+    NAMES xcb-imdkit
+    HINTS ${PKG_XCBIMDKIT_LIBRARY_DIRS}
 )
-
-mark_as_advanced(XCBIMDKIT_LIBRARY)
-
-set(XCBIMDKIT_LIBRARIES ${XCBIMDKIT_LIBRARY})
-
-if (XCBIMDKIT_INCLUDE_DIR)
-  if (PC_XCBIMDKIT_VERSION)
-    set(XCBIMDKIT_VERSION "${PC_XCBIMDKIT_VERSION}")
-  endif ()
-endif ()
 
 include(FindPackageHandleStandardArgs)
-
 find_package_handle_standard_args(XCBImdkit
-  REQUIRED_VARS
-    XCBIMDKIT_LIBRARIES
-    XCBIMDKIT_INCLUDE_DIR
-  VERSION_VAR
-    XCBIMDKIT_VERSION
-  FAIL_MESSAGE
-    "Could NOT find xcb-imdkit"
+    FOUND_VAR
+        XCBIMDKIT_FOUND
+    REQUIRED_VARS
+        XCBIMDKIT_LIBRARY
+        XCBIMDKIT_INCLUDE_DIR
+    VERSION_VAR
+        XCBIMDKIT_VERSION
 )
 
-mark_as_advanced(XCBIMDKIT_INCLUDE_DIR XCBIMDKIT_LIBRARIES)
+if(XCBIMDKIT_FOUND AND NOT TARGET XCBImdkit::XCBImdkit)
+    add_library(XCBImdkit::XCBImdkit UNKNOWN IMPORTED)
+    set_target_properties(XCBImdkit::XCBImdkit PROPERTIES
+        IMPORTED_LOCATION "${XCBIMDKIT_LIBRARY}"
+        INTERFACE_COMPILE_OPTIONS "${XCBIMDKIT_DEFINITIONS}"
+        INTERFACE_INCLUDE_DIRECTORIES "${XCBIMDKIT_INCLUDE_DIR}"
+    )
+endif()
+
+mark_as_advanced(XCBIMDKIT_INCLUDE_DIR XCBIMDKIT_LIBRARY)
+
+include(FeatureSummary)
+set_package_properties(XCBIMDKIT PROPERTIES
+    URL "https://github.com/wengxt/xcb-imdkit"
+    DESCRIPTION "XCB based imdkit"
+)

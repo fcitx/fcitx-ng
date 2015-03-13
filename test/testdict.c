@@ -28,10 +28,10 @@ int main()
 {
     FcitxDict* dict = fcitx_dict_new(free);
 
-    assert(fcitx_dict_insert_by_str(dict, "A", strdup("B"), true));
-    assert(fcitx_dict_insert_by_str(dict, "B", strdup("C"), true));
-    assert(!fcitx_dict_insert_by_str(dict, "A", strdup("D"), false));
-    assert(fcitx_dict_insert_by_str(dict, "A", strdup("D"), true));
+    assert(fcitx_dict_insert_by_str(dict, "A", fcitx_utils_strdup("B"), true));
+    assert(fcitx_dict_insert_by_str(dict, "B", fcitx_utils_strdup("C"), true));
+    assert(!fcitx_dict_insert_by_str(dict, "A", fcitx_utils_strdup("D"), false));
+    assert(fcitx_dict_insert_by_str(dict, "A", fcitx_utils_strdup("D"), true));
 
     fcitx_dict_foreach(dict, foreach_func, NULL);
 
@@ -45,7 +45,7 @@ int main()
     assert(str && strcmp(str, "D") == 0);
     free(str);
 
-    assert(fcitx_dict_insert_by_str(dict, "C", strdup("E"), true));
+    assert(fcitx_dict_insert_by_str(dict, "C", fcitx_utils_strdup("E"), true));
     assert(fcitx_dict_size(dict) == 2);
     assert(!fcitx_dict_remove_by_str(dict, "D", NULL));
     assert(fcitx_dict_remove_by_str(dict, "C", NULL));
