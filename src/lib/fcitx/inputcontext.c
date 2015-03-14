@@ -42,6 +42,9 @@ typedef struct _FcitxInputContextManager
     FcitxInputContext* ics;
     FcitxInputContextFocusGroup* globalGroup;
     FcitxListHead groups;
+    FcitxDispatchEventCallback callback;
+    FcitxDestroyNotify destroyNotify;
+    void* userData;
 } FcitxInputContextManager;
 
 static FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager);
@@ -73,14 +76,31 @@ void fcitx_input_context_manager_free(FcitxInputContextManager* manager)
 
     while (manager->freeList) {
         FcitxInputContext* ic = manager->freeList;
-        // TODO: mind need to free more?
+        // mind need to free more?
         manager->freeList = manager->freeList->hh.next;
         free(ic);
     }
+
+    if (manager->destroyNotify) {
+        manager->destroyNotify(manager->userData);
+    }
+
     free(manager);
 }
 
 FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxInputContextManager, fcitx_input_context_manager);
+
+void fcitx_input_context_manager_set_event_dispatcher(FcitxInputContextManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData)
+{
+    if (manager->destroyNotify) {
+        manager->destroyNotify(manager->userData);
+    }
+
+    manager->callback = callback;
+    manager->destroyNotify = destroyNotify;
+    manager->userData = userData;
+}
+
 
 FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager)
 {
@@ -151,13 +171,14 @@ void fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContex
 
 
 FCITX_EXPORT_API
-FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager,
-                                                         FcitxInputContextFillDataCallback callback,
-                                                         void* userData)
+FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager, uint32_t frontend)
 {
     FcitxInputContext* ic = NULL;
     if (manager->freeList) {
         ic = manager->freeList;
+        uint32_t oldId = ic->id;
+        memset(ic, 0, sizeof(*ic));
+        ic->id = oldId;
         manager->freeList = ic->hh.next;
     } else {
         uint32_t newid;
@@ -168,15 +189,20 @@ FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManage
         }
         ic = fcitx_utils_new(FcitxInputContext);
         ic->id = newid;
-        ic->manager = manager;
     }
+    ic->manager = manager;
+    ic->frontend = frontend;
 
     uuid_generate(ic->uuid);
 
     HASH_ADD(hh, manager->ics, id, sizeof(uint32_t), ic);
 
-    if (callback) {
-        callback(ic, userData);
+    if (manager->callback) {
+        FcitxInputContextEvent event;
+        event.type = ET_InputContextCreated;
+        event.id = ic->id;
+        event.inputContext = ic;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
     }
 
     return ic;
@@ -196,44 +222,36 @@ void _fcitx_input_context_group_set_focus(FcitxInputContextFocusGroup* group, Fc
 }
 
 FCITX_EXPORT_API
-void fcitx_input_context_manager_focus_in(FcitxInputContextManager* manager, uint32_t id)
+void fcitx_input_context_focus_in(FcitxInputContext* inputContext)
 {
-    FcitxInputContext* ic = fcitx_input_context_manager_get_ic(manager, id);
-    if (!ic) {
-        return;
-    }
+    FcitxInputContextManager* manager = inputContext->manager;
 
-    if (ic->group == manager->globalGroup) {
+    if (inputContext->group == manager->globalGroup) {
         fcitx_list_entry_foreach(group, FcitxInputContextFocusGroup, &manager->groups, list) {
             _fcitx_input_context_group_set_focus(group, NULL);
         }
 
-        _fcitx_input_context_group_set_focus(manager->globalGroup, ic);
-    } else if (ic->group) {
+        _fcitx_input_context_group_set_focus(manager->globalGroup, inputContext);
+    } else if (inputContext->group) {
         _fcitx_input_context_group_set_focus(manager->globalGroup, NULL);
-        _fcitx_input_context_group_set_focus(ic->group, ic);
+        _fcitx_input_context_group_set_focus(inputContext->group, inputContext);
     } else {
-        if (!ic->focused) {
-            _fcitx_input_context_focus_in(ic);
+        if (!inputContext->focused) {
+            _fcitx_input_context_focus_in(inputContext);
         }
     }
 }
 
 FCITX_EXPORT_API
-void fcitx_input_context_manager_focus_out(FcitxInputContextManager* manager, uint32_t id)
+void fcitx_input_context_focus_out(FcitxInputContext* inputContext)
 {
-    FcitxInputContext* ic = fcitx_input_context_manager_get_ic(manager, id);
-    if (!ic) {
-        return;
-    }
-
-    if (ic->group) {
-        if (ic->group->focus == ic) {
-            _fcitx_input_context_group_set_focus(ic->group, NULL);
+    if (inputContext->group) {
+        if (inputContext->group->focus == inputContext) {
+            _fcitx_input_context_group_set_focus(inputContext->group, NULL);
         }
     } else {
-        if (ic->focused) {
-            _fcitx_input_context_focus_out(ic);
+        if (inputContext->focused) {
+            _fcitx_input_context_focus_out(inputContext);
         }
     }
 }
@@ -254,7 +272,7 @@ void fcitx_input_context_destroy(FcitxInputContext* inputContext)
         return;
     }
 
-    fcitx_input_context_manager_focus_out(manager, inputContext->id);
+    fcitx_input_context_focus_out(inputContext);
     _fcitx_input_context_destroy(inputContext);
     //inputContext->destroyNotify(inputContext->userData);
     HASH_DEL(manager->ics, inputContext);
@@ -270,15 +288,80 @@ uint32_t fcitx_input_context_get_id(FcitxInputContext* inputContext)
 }
 
 FCITX_EXPORT_API
-void fcitx_input_context_reset(FcitxInputContext* inputContext)
+void fcitx_input_context_get_uuid(FcitxInputContext* inputContext, uint8_t* uuid)
 {
-
+    memcpy(uuid, inputContext->uuid, sizeof(inputContext->uuid));
 }
 
 FCITX_EXPORT_API
-bool fcitx_input_context_process_event(FcitxInputContext* inputContext, FcitxKeyEvent* event)
+uint32_t fcitx_input_context_get_capability_flags(FcitxInputContext* inputContext)
 {
+    return inputContext->flags;
+}
 
+FCITX_EXPORT_API
+void fcitx_input_context_set_capability_flags(FcitxInputContext* inputContext, uint32_t flags)
+{
+    if (inputContext->flags != flags) {
+        inputContext->flags = flags;
+        FcitxInputContextManager* manager = inputContext->manager;
+        if (manager->callback) {
+            FcitxInputContextEvent event;
+            event.type = ET_InputContextCapabilityChanged;
+            event.id = inputContext->id;
+            event.inputContext = inputContext;
+            manager->callback(manager->userData, (FcitxEvent*) &event);
+        }
+    }
+}
+
+FCITX_EXPORT_API
+void fcitx_input_context_set_cursor_rect(FcitxInputContext* inputContext, FcitxRect rect)
+{
+    if (inputContext->rect.x1 != rect.x1 ||
+        inputContext->rect.x2 != rect.x2 ||
+        inputContext->rect.y1 != rect.y1 ||
+        inputContext->rect.y2 != rect.y2) {
+        inputContext->rect = rect;
+        FcitxInputContextManager* manager = inputContext->manager;
+        if (manager->callback) {
+            FcitxInputContextEvent event;
+            event.type = ET_InputContextCursorRectChanged;
+            event.id = inputContext->id;
+            event.inputContext = inputContext;
+            manager->callback(manager->userData, (FcitxEvent*) &event);
+        }
+    }
+}
+
+FCITX_EXPORT_API
+void fcitx_input_context_reset(FcitxInputContext* inputContext)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (manager->callback) {
+        FcitxInputContextEvent event;
+        event.type = ET_InputContextReset;
+        event.id = inputContext->id;
+        event.inputContext = inputContext;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
+}
+
+FCITX_EXPORT_API
+bool fcitx_input_context_process_key_event(FcitxInputContext* inputContext, FcitxKeyEvent* key)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (manager->callback) {
+        FcitxInputContextKeyEvent event;
+        event.type = ET_InputContextKeyEvent;
+        event.id = inputContext->id;
+        event.inputContext = inputContext;
+        event.detail = *key;
+        event.detail.key = fcitx_key_normalize(event.detail.rawKey);
+        return manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
+
+    return false;
 }
 
 FCITX_EXPORT_API
@@ -287,17 +370,156 @@ bool fcitx_input_context_is_focused(FcitxInputContext* inputContext)
     return inputContext->focused;
 }
 
+FCITX_EXPORT_API
+void fcitx_input_context_commit_string(FcitxInputContext* inputContext, const char* commitString)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (manager->callback) {
+        FcitxInputContextCommitStringEvent event;
+        event.type = ET_InputContextCommitString;
+        event.id = inputContext->id;
+        event.inputContext = inputContext;
+        event.commitString = commitString;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
+}
+
+FCITX_EXPORT_API
+bool fcitx_input_context_get_surrounding_text(FcitxInputContext* inputContext, const char** str, unsigned int* cursor, unsigned int* anchor)
+{
+    if (!(inputContext->flags & CAPABILITY_SURROUNDING_TEXT)) {
+        return false;
+    }
+
+    if (!inputContext->surroundingText) {
+        return false;
+    }
+
+    if (str) {
+        *str = inputContext->surroundingText;
+    }
+
+    if (cursor) {
+        *cursor = inputContext->cursor;
+    }
+
+    if (anchor) {
+        *anchor = inputContext->anchor;
+    }
+
+    return true;
+}
+
+FCITX_EXPORT_API
+void fcitx_input_context_set_surrounding_text(FcitxInputContext* inputContext, const char* str, unsigned int cursor, unsigned int anchor)
+{
+    if (!(inputContext->flags & CAPABILITY_SURROUNDING_TEXT)) {
+        return;
+    }
+
+    if (!inputContext->surroundingText || (str && strcmp(inputContext->surroundingText, str) != 0) || cursor != inputContext->cursor || anchor != inputContext->anchor) {
+        if (str) {
+            fcitx_utils_string_swap(&inputContext->surroundingText, str);
+        }
+        inputContext->cursor = cursor;
+        inputContext->anchor = anchor;
+
+        FcitxInputContextManager* manager = inputContext->manager;
+        if (manager->callback) {
+            FcitxInputContextEvent event;
+            event.type = ET_InputContextFocusIn;
+            event.id = inputContext->id;
+            event.inputContext = inputContext;
+            manager->callback(manager->userData, (FcitxEvent*) &event);
+        }
+    }
+}
+
+void fcitx_input_context_delete_surrounding_text(FcitxInputContext* inputContext, int offset, unsigned int length)
+{
+    /*
+     * do the real deletion here, and client might update it, but input method itself
+     * would expect a up to date value after this call.
+     *
+     * Make their life easier.
+     */
+    if (inputContext->surroundingText) {
+        int cursor_pos = inputContext->cursor + offset;
+        size_t len = fcitx_utf8_strlen (inputContext->surroundingText);
+        if (cursor_pos >= 0 && len - cursor_pos >= length) {
+            /*
+            * the original size must be larger, so we can do in-place copy here
+            * without alloc new string
+            */
+            char* start = fcitx_utf8_get_nth_char(inputContext->surroundingText, cursor_pos);
+            char* end = fcitx_utf8_get_nth_char(start, length);
+
+            int copylen = strlen(end);
+
+            memmove (start, end, sizeof(char) * copylen);
+            start[copylen] = 0;
+            inputContext->cursor = cursor_pos;
+        } else {
+            inputContext->surroundingText[0] = '\0';
+            inputContext->cursor = 0;
+        }
+        inputContext->anchor = inputContext->cursor;
+    }
+
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (manager->callback) {
+        FcitxInputContextDeleteSurroundingEvent event;
+        event.type = ET_InputContextDeleteSurroundingText;
+        event.id = inputContext->id;
+        event.inputContext = inputContext;
+        event.offset = offset;
+        event.length = length;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
+}
+
+FCITX_EXPORT_API
+FcitxRect fcitx_input_context_get_cursor_rect(FcitxInputContext* inputContext)
+{
+    return inputContext->rect;
+}
+
 void _fcitx_input_context_focus_in(FcitxInputContext* ic)
 {
     ic->focused = true;
+    FcitxInputContextManager* manager = ic->manager;
+    if (manager->callback) {
+        FcitxInputContextEvent event;
+        event.type = ET_InputContextFocusIn;
+        event.id = ic->id;
+        event.inputContext = ic;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
 }
 
 void _fcitx_input_context_focus_out(FcitxInputContext* ic)
 {
     ic->focused = false;
+    FcitxInputContextManager* manager = ic->manager;
+    if (manager->callback) {
+        FcitxInputContextEvent event;
+        event.type = ET_InputContextFocusOut;
+        event.id = ic->id;
+        event.inputContext = ic;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
 }
 
 void _fcitx_input_context_destroy(FcitxInputContext* ic)
 {
+    FcitxInputContextManager* manager = ic->manager;
+    if (manager->callback) {
+        FcitxInputContextEvent event;
+        event.type = ET_InputContextDestroyed;
+        event.id = ic->id;
+        event.inputContext = ic;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
 
+    free(ic->surroundingText);
 }

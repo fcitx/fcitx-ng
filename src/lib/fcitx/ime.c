@@ -25,17 +25,6 @@
 #include "ime-internal.h"
 #include "fcitx-utils/macro-internal.h"
 
-typedef struct _FcitxInputMethod
-{
-    char* uniqueName;
-    char* name;
-    char* iconName;
-    int priority;
-    char* langCode;
-    void* imclass;
-    bool (*handleEvent)(void*, const FcitxIMEvent*);
-} FcitxInputMethod;
-
 typedef struct _FcitxKeyboardLayoutInfo
 {
     char* layout;
@@ -45,6 +34,7 @@ typedef struct _FcitxKeyboardLayoutInfo
 typedef struct _FcitxInputMethodGroup
 {
     FcitxKeyboardLayoutInfo layoutInfo;
+    FcitxPtrArray* items;
 } FcitxInputMethodGroup;
 
 typedef struct _FcitxInputMethodItem
@@ -58,8 +48,10 @@ struct _FcitxInputMethodManager
     int refcount;
     FcitxDict* ims;
     int nextGroupId;
-    FcitxInputMethodGroup defaultGroup;
     FcitxPtrArray* groups;
+    FcitxDispatchEventCallback callback;
+    FcitxDestroyNotify destroyNotify;
+    void* userData;
 };
 
 void fcitx_input_method_free(FcitxInputMethod* im)
@@ -75,7 +67,16 @@ void fcitx_input_method_group_free(FcitxInputMethodGroup* group)
 {
     free(group->layoutInfo.layout);
     free(group->layoutInfo.variant);
+    fcitx_ptr_array_free(group->items);
     free(group);
+}
+
+void fcitx_input_method_item_free(FcitxInputMethodItem* item)
+{
+    free(item->name);
+    free(item->layoutInfo.layout);
+    free(item->layoutInfo.variant);
+    free(item);
 }
 
 FCITX_EXPORT_API
@@ -85,6 +86,7 @@ FcitxInputMethodManager* fcitx_input_method_manager_new()
     manager->ims = fcitx_dict_new((FcitxDestroyNotify) fcitx_input_method_free);
     manager->nextGroupId = 1;
     manager->groups = fcitx_ptr_array_new((FcitxDestroyNotify) fcitx_input_method_group_free);
+    fcitx_input_method_manager_create_group(manager, "layout", "us", NULL);
     return fcitx_input_method_manager_ref(manager);
 }
 
@@ -93,6 +95,10 @@ void fcitx_input_method_manager_free(FcitxInputMethodManager* manager)
 {
     fcitx_ptr_array_free(manager->groups);
     fcitx_dict_free(manager->ims);
+
+    if (manager->destroyNotify) {
+        manager->destroyNotify(manager->userData);
+    }
     free(manager);
 }
 
@@ -104,7 +110,7 @@ bool fcitx_input_method_manager_register(FcitxInputMethodManager* manager,
                                          const char* uniqueName,
                                          const char* name,
                                          const char* iconName,
-                                         bool (*handleEvent)(void*, const FcitxIMEvent*),
+                                         FcitxDispatchEventCallback handleEvent,
                                          int priority, const char* langCode)
 {
     FcitxInputMethod* im = NULL;
@@ -131,6 +137,7 @@ bool fcitx_input_method_manager_register(FcitxInputMethodManager* manager,
     return true;
 }
 
+FCITX_EXPORT_API
 int fcitx_input_method_manager_create_group(FcitxInputMethodManager* manager, ...)
 {
     va_list va;
@@ -138,9 +145,9 @@ int fcitx_input_method_manager_create_group(FcitxInputMethodManager* manager, ..
     const char *layout = NULL, *variant = NULL;
     char *name;
     while ((name = va_arg(va, char*))) {
-        if (strcmp(layout, "layout") == 0) {
+        if (strcmp(name, "layout") == 0) {
             layout = va_arg(va, char*);
-        } else if (strcmp(layout, "layout") == 0) {
+        } else if (strcmp(name, "variant") == 0) {
             variant = va_arg(va, char*);
         }
     }
@@ -154,19 +161,49 @@ int fcitx_input_method_manager_create_group(FcitxInputMethodManager* manager, ..
     FcitxInputMethodGroup* group = fcitx_utils_new(FcitxInputMethodGroup);
     group->layoutInfo.layout = fcitx_utils_strdup(layout);
     group->layoutInfo.variant = fcitx_utils_strdup(variant);
+    group->items = fcitx_ptr_array_new((FcitxDestroyNotify) fcitx_input_method_item_free);
     fcitx_ptr_array_append(manager->groups, group);
+    return fcitx_ptr_array_size(manager->groups) - 1;
+}
+
+FCITX_EXPORT_API
+void fcitx_input_method_manager_reset_group(FcitxInputMethodManager* manager)
+{
+    while (fcitx_ptr_array_size(manager->groups) > 1) {
+        fcitx_ptr_array_pop(manager->groups, NULL);
+    }
+
+    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, 0, FcitxInputMethodGroup*);
+    fcitx_ptr_array_clear(group->items);
+    fcitx_utils_string_swap(&group->layoutInfo.layout, "us");
+    fcitx_utils_string_swap(&group->layoutInfo.variant, NULL);
+}
+
+size_t fcitx_input_method_manager_group_count(FcitxInputMethodManager* manager)
+{
     return fcitx_ptr_array_size(manager->groups);
 }
 
+FCITX_EXPORT_API
+bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int group)
+{
+    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, group, FcitxInputMethodGroup*);
+
+    return fcitx_ptr_array_size(group->items) == 0;
+}
+
+
+FCITX_EXPORT_API
 void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* manager, int groupId, const char* const* ims)
 {
     if (groupId < 0 || groupId > (ssize_t) fcitx_ptr_array_size(manager->groups)) {
         return;
     }
 
-    FcitxInputMethodGroup* group = groupId == 0 ? (&manager->defaultGroup) : fcitx_ptr_array_index(manager->groups, groupId - 1, FcitxInputMethodGroup*);
+    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, groupId, FcitxInputMethodGroup*);
 
     FcitxInputMethodItem item;
+    memset(&item, 0, sizeof(item));
 
     for (size_t i = 0; ims[i]; i ++) {
         FcitxStringList* list = fcitx_utils_string_split(ims[i], ",");
@@ -187,9 +224,26 @@ void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* m
             }
         }
 
+        // validate data
         if (item.name) {
+            FcitxInputMethodItem* newItem = fcitx_utils_new(FcitxInputMethodItem);
+            newItem->name = fcitx_utils_strdup(item.name);
+            newItem->layoutInfo.layout = fcitx_utils_strdup(item.layoutInfo.layout);
+            newItem->layoutInfo.variant = fcitx_utils_strdup(item.layoutInfo.variant);
+            fcitx_ptr_array_append(group->items, newItem);
         }
 
         fcitx_utils_string_list_free(list);
     }
+}
+
+void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData)
+{
+    if (manager->destroyNotify) {
+        manager->destroyNotify(manager->userData);
+    }
+
+    manager->callback = callback;
+    manager->destroyNotify = destroyNotify;
+    manager->userData = userData;
 }

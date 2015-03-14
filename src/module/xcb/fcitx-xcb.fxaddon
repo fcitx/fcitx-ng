@@ -1,7 +1,8 @@
 [FcitxAddon]
 Name=fcitx-xcb
 Include/0=<xcb/xcb.h>
-Include/1=xcbmodule.h
+Include/1=<xkbcommon/xkbcommon.h>
+Include/2=xcbmodule.h
 Self.Type=FcitxXCB
 Function/0=GetConnection
 Function/1=OnConnectionCreated
@@ -9,6 +10,7 @@ Function/2=OnConnectionClosed
 Function/3=RemoveWatcher
 Function/4=AddEventFilter
 Function/5=GetXkbRulesNames
+Function/6=GetXkbState
 
 [GetConnection/Function]
 ReturnType=xcb_connection_t*
@@ -36,4 +38,9 @@ Arg/2=void*
 
 [GetXkbRulesNames/Function]
 ReturnType=char*
+Arg/0=const char*
+Arg/1=int*
+
+[GetXkbState/Function]
+ReturnType=struct xkb_state*
 Arg/0=const char*

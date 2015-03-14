@@ -33,13 +33,20 @@ FCITX_DECL_BEGIN
 
 typedef struct _FcitxInstance FcitxInstance;
 
+// control instance
 FcitxInstance* fcitx_instance_create(int argc, char* argv[]);
 int fcitx_instance_run(FcitxInstance* instance);
 FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance);
 bool fcitx_instance_get_try_replace(FcitxInstance* instance);
+void fcitx_instance_post_event(FcitxInstance* instance, FcitxEvent* event);
 void fcitx_instance_set_signal_pipe(FcitxInstance* instance, int fd);
 void fcitx_instance_shutdown(FcitxInstance* instance);
 void fcitx_instance_destroy(FcitxInstance* instance);
+
+// input method related
+void fcitx_instance_set_input_method_group(FcitxInstance* instance, int group);
+int fcitx_instance_get_input_method_group(FcitxInstance* instance);
+void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, const char* name, bool local);
 
 FCITX_DECL_END
 

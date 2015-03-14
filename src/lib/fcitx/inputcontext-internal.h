@@ -29,20 +29,22 @@
  **/
 struct _FcitxInputContext {
     uint32_t id;
-    FcitxCapabilityFlags flags; /**< input context capacity */
-    char* imname;
-    bool switchBySwitchKey;
-    UT_array* data;
-    char* prgname; /**< program name */
-    FcitxTriState mayUsePreedit;
+    uint32_t flags; /**< input context capacity */
+    uuid_t uuid;
     UT_hash_handle hh;
     FcitxInputContextManager* manager;
-    FcitxDestroyNotify destroyNotify;
-    uuid_t uuid;
     FcitxInputContextFocusGroup* group;
 
     FcitxListHead list;
     bool focused;
+    FcitxRect rect;
+
+    char* surroundingText;
+    unsigned int cursor;
+    unsigned int anchor;
+    uint32_t frontend;
+
+    
 };
 
 #endif // _FCITX_INPUTCONTEXT_INTERNAL_H_

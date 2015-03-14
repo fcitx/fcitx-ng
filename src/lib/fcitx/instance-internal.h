@@ -26,7 +26,7 @@
 #define _FCITX_INSTANCE_INTERNAL_H_
 #include "inputcontext.h"
 #include "addon.h"
-#include "fcitx-utils/dict.h"
+#include "ime.h"
 
 struct _FcitxInstance {
     FcitxMainLoop* mainloop;
@@ -40,6 +40,9 @@ struct _FcitxInstance {
     bool running;
     bool shutdown;
     FcitxInputContextManager* icManager;
+    FcitxInputMethodManager* imManager;
+    FcitxDict* icStates;
+    int group;
 };
 
 #endif

@@ -373,7 +373,7 @@ void* fcitx_dbus_init(FcitxAddonManager* manager, const FcitxAddonConfig* config
 
     bool request_retry;
     bool doReplace = fcitx_instance_get_try_replace(instance);
-    bool replaceCountdown = doReplace ? 3 : 0;
+    int replaceCountdown = doReplace ? 3 : 0;
 
     do {
         request_retry = false;

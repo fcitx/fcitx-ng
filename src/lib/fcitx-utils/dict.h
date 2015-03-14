@@ -74,6 +74,11 @@ static inline bool fcitx_dict_insert_by_str(FcitxDict* dict, const char* key, vo
     return fcitx_dict_insert(dict, key, strlen(key), value, replace);
 }
 
+static inline bool fcitx_dict_insert_by_data(FcitxDict* dict, intptr_t i, void* value, bool replace)
+{
+    return fcitx_dict_insert(dict, (char*) &i, sizeof(i), value, replace);
+}
+
 #define fcitx_dict_insert_data_by_str(DICT, KEY, VALUE, REPLACE) \
     fcitx_dict_insert_by_str(DICT, KEY, (void*)((intptr_t)(VALUE)), REPLACE);
 #define fcitx_dict_insert_data(DICT, KEY, KEYLEN, VALUE, REPLACE) \
@@ -81,6 +86,7 @@ static inline bool fcitx_dict_insert_by_str(FcitxDict* dict, const char* key, vo
 
 #define fcitx_dict_lookup(dict, key, keyLen, dataOut) _fcitx_dict_lookup(dict, key, keyLen, (void**) dataOut)
 #define fcitx_dict_lookup_by_str(dict, key, dataOut) _fcitx_dict_lookup_by_str(dict, key, (void**) dataOut)
+#define fcitx_dict_lookup_by_data(dict, key, dataOut) _fcitx_dict_lookup_by_data(dict, key, (void**) dataOut)
 
 bool _fcitx_dict_lookup(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
 static inline bool _fcitx_dict_lookup_by_str(FcitxDict* dict, const char* key, void** dataOut)
@@ -88,11 +94,21 @@ static inline bool _fcitx_dict_lookup_by_str(FcitxDict* dict, const char* key, v
     return _fcitx_dict_lookup(dict, key, strlen(key), dataOut);
 }
 
+static inline bool _fcitx_dict_lookup_by_data(FcitxDict* dict, intptr_t i, void** dataOut)
+{
+    return _fcitx_dict_lookup(dict, (char*) &i, sizeof(i), dataOut);
+}
+
 bool fcitx_dict_remove(FcitxDict* dict, const char* key, size_t keyLen, void** dataOut);
 
 static inline bool fcitx_dict_remove_by_str(FcitxDict* dict, const char* key, void** dataOut)
 {
     return fcitx_dict_remove(dict, key, strlen(key), dataOut);
+}
+
+static inline bool fcitx_dict_remove_by_data(FcitxDict* dict, intptr_t i, void** dataOut)
+{
+    return fcitx_dict_remove(dict, (char*) &i, sizeof(i), dataOut);
 }
 
 void fcitx_dict_sort(FcitxDict* dict, FcitxDictCompareFunc compare, void* userData);

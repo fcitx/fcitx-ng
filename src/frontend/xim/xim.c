@@ -20,6 +20,7 @@
 #include <xcb/xcb.h>
 #include <xcb/xcb_aux.h>
 #include <xcb-imdkit/imdkit.h>
+#include <xkbcommon/xkbcommon.h>
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
@@ -43,6 +44,7 @@ typedef struct _FcitxXIMServer
     int id;
     xcb_connection_t* conn;
     FcitxInputContextFocusGroup* group;
+    char* name;
 } FcitxXIMServer;
 
 
@@ -78,9 +80,11 @@ const char* guess_server_name()
 static void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_xim_destroy(void* data);
 
-FCITX_DEFINE_ADDON(fcitx_xim, frontend, FcitxAddonAPICommon) = {
-    .init = fcitx_xim_init,
-    .destroy = fcitx_xim_destroy
+FCITX_DEFINE_ADDON(fcitx_xim, frontend, FcitxAddonAPIFrontend) = {
+    .common = {
+        .init = fcitx_xim_init,
+        .destroy = fcitx_xim_destroy
+    }
 };
 
 
@@ -102,7 +106,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
 
     switch (hdr->major_opcode) {
         case XIM_CREATE_IC:
-            ic = fcitx_input_context_manager_create_ic(server->xim->icManager, NULL, NULL);
+            ic = fcitx_input_context_manager_create_ic(server->xim->icManager, fcitx_xim_frontend.frontendId);
             xcb_im_input_context_set_data(xic, ic, NULL);
             fcitx_input_context_set_focus_group(ic, FICFG_Local, server->group);
             break;
@@ -114,12 +118,18 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
             break;
         case XIM_FORWARD_EVENT:
         {
+            struct xkb_state* xkbState = fcitx_xcb_invoke_get_xkb_state(server->xim->manager, server->name);
+            if (!xkbState) {
+                break;
+            }
             xcb_key_press_event_t* xevent = arg;
             FcitxKeyEvent event;
             event.isRelease = (xevent->response_type & ~0x80) != XCB_KEY_RELEASE;
             event.keyCode = xevent->detail;
-            event.key = fcitx_key_normalize(event.rawKey);
-            if (!fcitx_input_context_process_event(ic, &event)) {
+            event.rawKey.sym = xkb_state_key_get_one_sym(xkbState, xevent->detail);
+            event.rawKey.state = xevent->state;
+            event.key = event.rawKey;
+            if (!fcitx_input_context_process_key_event(ic, &event)) {
                 xcb_im_forward_event(im, xic, xevent);
             }
             break;
@@ -128,10 +138,10 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
             fcitx_input_context_reset(ic);
             break;
         case XIM_SET_IC_FOCUS:
-            fcitx_input_context_manager_focus_in(server->xim->icManager, fcitx_input_context_get_id(ic));
+            fcitx_input_context_focus_in(ic);
             break;
         case XIM_UNSET_IC_FOCUS:
-            fcitx_input_context_manager_focus_out(server->xim->icManager, fcitx_input_context_get_id(ic));
+            fcitx_input_context_focus_out(ic);
             break;
     }
 }
@@ -162,6 +172,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name,
     server->window = w;
     server->xim = self;
     server->group = group;
+    server->name = strdup(name);
     server->im = xcb_im_create(conn,
                                defaultScreen,
                                w,
@@ -183,6 +194,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name,
     } else {
         xcb_im_destroy(server->im);
         xcb_destroy_window(conn, server->window);
+        free(server->name);
         free(server);
     }
 }

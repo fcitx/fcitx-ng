@@ -33,6 +33,7 @@ set_target_properties(fcitx-core
 configure_file(fcitx.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc)
 
 target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils LibFFI::FFI LibUUID::UUID DL::DL)
+target_include_directories(fcitx-core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 install(TARGETS fcitx-core LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc
   DESTINATION "${CMAKE_INSTALL_LIBDATADIR}/pkgconfig")

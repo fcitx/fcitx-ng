@@ -26,7 +26,12 @@
 #include "fcitx-utils/stringlist.h"
 #include "instance.h"
 #include "instance-internal.h"
+#include "ime-internal.h"
 #include "addon.h"
+#include "ime.h"
+#include "inputcontext-internal.h"
+#include "addon-internal.h"
+#include "frontend.h"
 
 typedef struct _FcitxInstanceArguments
 {
@@ -39,8 +44,16 @@ typedef struct _FcitxInstanceArguments
     bool runasdaemon;
 } FcitxInstanceArguments;
 
+typedef struct _FcitxInputContextState
+{
+} FcitxInputContextState;
+
 static void Usage();
 static void Version();
+
+static bool fcitx_instance_input_context_event_dispatch(void* self, FcitxEvent* event);
+static FcitxInputMethod*
+fcitx_instance_get_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic);
 
 /**
  * print usage
@@ -149,6 +162,13 @@ void fcitx_instance_arguments_free(FcitxInstanceArguments* arg)
     free(arg->uiname);
 }
 
+FcitxInputContextState* fcitx_input_context_state_new()
+{
+    FcitxInputContextState* state = fcitx_utils_new(FcitxInputContextState);
+
+    return state;
+}
+
 FCITX_EXPORT_API
 FcitxInstance* fcitx_instance_create(int argc, char* argv[])
 {
@@ -181,6 +201,9 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
     instance->standardPath = fcitx_standard_path_new();
     instance->addonManager = fcitx_addon_manager_new(instance->standardPath);
     instance->icManager = fcitx_input_context_manager_new();
+    fcitx_input_context_manager_set_event_dispatcher(instance->icManager, fcitx_instance_input_context_event_dispatch, NULL, instance);
+    instance->imManager = fcitx_input_method_manager_new();
+    instance->icStates = fcitx_dict_new(free);
 
     return instance;
 }
@@ -203,6 +226,7 @@ int fcitx_instance_run(FcitxInstance* instance)
 {
     fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
     fcitx_addon_manager_set_property(instance->addonManager, "icmanager", instance->icManager);
+    fcitx_addon_manager_set_property(instance->addonManager, "immanager", instance->imManager);
     fcitx_addon_manager_register_default_resolver(instance->addonManager, NULL);
     fcitx_addon_manager_set_override(instance->addonManager, instance->enableList, instance->disableList);
     fcitx_addon_manager_load(instance->addonManager);
@@ -250,12 +274,77 @@ bool fcitx_instance_get_try_replace(FcitxInstance* instance)
 FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)
 {
+    fcitx_dict_free(instance->icStates);
     fcitx_addon_manager_unref(instance->addonManager);
     fcitx_standard_path_unref(instance->standardPath);
     fcitx_mainloop_free(instance->mainloop);
+    fcitx_input_method_manager_unref(instance->imManager);
     fcitx_input_context_manager_unref(instance->icManager);
     free(instance->enableList);
     free(instance->disableList);
     free(instance->uiname);
     free(instance);
+}
+
+bool fcitx_instance_input_context_event_dispatch(void* self, FcitxEvent* event)
+{
+    FcitxInstance* instance = self;
+    FcitxInputContextEvent* icEvent = (FcitxInputContextEvent*) event;
+    if (event->type == ET_InputContextCreated) {
+        fcitx_dict_insert_by_data(instance->icStates, icEvent->id, fcitx_input_context_state_new(), false);
+    } else if (event->type == ET_InputContextDestroyed) {
+        fcitx_dict_remove_by_data(instance->icStates, icEvent->id, NULL);
+    }
+
+    // TODO, handle trigger key
+
+    if ((event->type & ET_EventTypeFlag) == ET_InputContextEventFlag) {
+        FcitxInputMethod* im = fcitx_instance_get_input_method_for_input_context(instance, icEvent->inputContext);
+        if (im) {
+            return im->handleEvent(im->imclass, event);
+        }
+    } else if ((event->type & ET_EventTypeFlag) == ET_InputMethodEventFlag) {
+        uint32_t frontend = icEvent->inputContext->frontend;
+        if (fcitx_ptr_array_size(instance->addonManager->frontends) > frontend) {
+            FcitxAddon* addon = fcitx_ptr_array_index(instance->addonManager->frontends, frontend, FcitxAddon*);
+
+            FcitxAddonAPIFrontend* apiFrontend = (FcitxAddonAPIFrontend*) (addon->inst.api);
+            return apiFrontend->handleEvent(addon->inst.data, event);
+        }
+    }
+
+    return false;
+}
+
+FCITX_EXPORT_API
+void fcitx_instance_post_event(FcitxInstance* instance, FcitxEvent* event)
+{
+    if (!event ||
+        (event->type & ET_EventTypeFlag) == ET_InputContextEventFlag ||
+        (event->type & ET_EventTypeFlag) == ET_InputMethodEventFlag) {
+        return;
+    }
+
+    // TODO
+}
+
+FcitxInputMethod* fcitx_instance_get_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic)
+{
+    // TODO
+    return NULL;
+}
+
+void fcitx_instance_set_input_method_group(FcitxInstance* instance, int group)
+{
+    instance->group = group;
+    // TODO notify
+}
+
+int fcitx_instance_get_input_method_group(FcitxInstance* instance)
+{
+    return instance->group;
+}
+
+void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, const char* name, bool local)
+{
 }

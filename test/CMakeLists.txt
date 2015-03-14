@@ -1,5 +1,3 @@
-include_directories(${PROJECT_BINARY_DIR}/src/lib/fcitx)
-
 set(FCITX_UTILS_TEST
     testarray
     testhandlertable

@@ -47,7 +47,7 @@ typedef struct _FcitxKeyboardLayout
 
 static void* fcitx_keyboard_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_keyboard_destroy(void* data);
-static bool fcitx_keyboard_handle_event(void* data, const FcitxIMEvent* event);
+static bool fcitx_keyboard_handle_event(void* data, FcitxEvent* event);
 static char* FcitxXkbFindXkbRulesFile(FcitxKeyboard* self);
 
 static void FcitxKeyboardLayoutCreate(FcitxKeyboard* keyboard,
@@ -210,16 +210,10 @@ void fcitx_keyboard_destroy(void* data)
     free(keyboard);
 }
 
-bool fcitx_keyboard_handle_event(void* data, const FcitxIMEvent* event)
+bool fcitx_keyboard_handle_event(void* data, FcitxEvent* event)
 {
     switch (event->type) {
-        case IET_Init:
-            break;
-        case IET_Keyboard:
-            break;
-        case IET_Reset:
-            break;
-        case IET_SurroundingTextUpdated:
+        default:
             break;
     }
     return false;
@@ -265,7 +259,7 @@ void FcitxKeyboardLayoutCreate(FcitxKeyboard* keyboard, const char* name, const 
 static char* FcitxXkbFindXkbRulesFile(FcitxKeyboard* self)
 {
     char *rulesFile = NULL;
-    char *rulesName = fcitx_xcb_invoke_get_xkb_rules_names(self->manager, NULL);
+    char *rulesName = fcitx_xcb_invoke_get_xkb_rules_names(self->manager, getenv("DISPLAY"), NULL);
 
     if (rulesName) {
         if (rulesName[0] == '/') {

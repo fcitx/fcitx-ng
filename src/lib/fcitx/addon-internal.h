@@ -49,6 +49,8 @@ struct _FcitxAddonMananger {
     FcitxPtrArray* loadedAddons;
     bool loaded;
     FcitxDict* properties;
+
+    FcitxPtrArray* frontends;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

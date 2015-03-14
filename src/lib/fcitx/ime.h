@@ -22,69 +22,6 @@
 #include "addon.h"
 #include "inputcontext.h"
 
-typedef enum _FcitxIMCloseEventType {
-    /**
-     * when user press inactivate key, default behavior is commit raw preedit.
-     * If you want to OVERRIDE this behavior, be sure to implement this function.
-     *
-     * in some case, your implementation of OnClose should respect the value of
-     * [Output/SendTextWhenSwitchEng], when this value is true, commit something you
-     * want.
-     *
-     * And no matter in which case, Reset will be called after that.
-     *
-     * CET_ChangeByUser will not be emitted once CET_ChangeByInactivate is emitted.
-     */
-    CET_ChangeByInactivate,
-    /**
-     * when using lost focus
-     * this might be variance case to case. the default behavior is to commit
-     * the preedit, and resetIM.
-     *
-     * Controlled by [Output/DontCommitPreeditWhenUnfocus], this option will not
-     * work for application switch doesn't support async commit.
-     *
-     * So OnClose is called when preedit IS committed (not like CET_ChangeByInactivate,
-     * this behavior cannot be overrided), it give im a chance to choose remember this
-     * word or not.
-     *
-     * Input method need to notice, that the commit is already DONE, do not do extra commit.
-     */
-    CET_LostFocus,
-    /**
-     * when user switch to a different input method by hand
-     * such as ctrl+shift by default, or by ui,
-     * default behavior is reset IM.
-     */
-    CET_SwitchIM,
-    CET_ChangeByUser = CET_SwitchIM, // the old name is not accurate, but keep for compatible.
-} FcitxIMCloseEventType;
-
-typedef enum _FcitxIMEventType
-{
-    IET_Init,
-    IET_Keyboard,
-    IET_Reset,
-    IET_SurroundingTextUpdated,
-} FcitxIMEventType;
-
-typedef struct _FcitxIMEvent {
-    FcitxIMEventType type;
-} FcitxIMEvent;
-
-typedef FcitxIMEvent FcitxIMInitEvent;
-typedef FcitxIMEvent FcitxIMSurroundingTextUpdatedEvent;
-
-typedef struct _FcitxIMKeyboardEvent {
-    FcitxIMEventType type;
-    FcitxKeyEvent key;
-} FcitxIMKeyboardEvent;
-
-typedef struct _FcitxIMResetEvent {
-    FcitxIMEventType type;
-    FcitxIMCloseEventType detail;
-} FcitxIMResetEvent;
-
 typedef struct _FcitxAddonAPIInputMethod
 {
     FcitxAddonAPICommon common;
@@ -101,7 +38,7 @@ bool fcitx_input_method_manager_register(FcitxInputMethodManager* manager,
                                          const char* uniqueName,
                                          const char* name,
                                          const char* iconName,
-                                         bool (*handleEvent)(void* arg, const FcitxIMEvent* event),
+                                         FcitxDispatchEventCallback handleEvent,
                                          int priority,
                                          const char *langCode);
 
@@ -130,7 +67,14 @@ bool fcitx_input_method_manager_register(FcitxInputMethodManager* manager,
  */
 int fcitx_input_method_manager_create_group(FcitxInputMethodManager* manager, ...);
 
+void fcitx_input_method_manager_reset_group(FcitxInputMethodManager* manager);
+
+size_t fcitx_input_method_manager_group_count(FcitxInputMethodManager* manager);
+
 void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* manager, int group, const char* const * ims);
 
+bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int group);
+
+void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData);
 
 #endif // _FCITX_IME_H_

@@ -58,6 +58,7 @@ typedef void* (*FcitxAddonInitFunc)(FcitxAddonManager* manager, const FcitxAddon
 typedef void (*FcitxAddonDestroyFunc)(void* addon);
 typedef void (*FcitxAddonReloadConfig)(void* addon);
 typedef FcitxDict* (*FcitxAddonRegisterCabllack)();
+
 typedef struct _FcitxStaticAddon {
     char* name;
     void* entry;
@@ -93,6 +94,7 @@ typedef struct _FcitxAddonAPICommon
     FcitxAddonDestroyFunc destroy;
     FcitxAddonReloadConfig reloadConfig;
     FcitxAddonRegisterCabllack registerCallback;
+
     void* padding1;
     void* padding2;
     void* padding3;
@@ -145,5 +147,7 @@ void fcitx_addon_manager_load(FcitxAddonManager* manager);
 void fcitx_addon_manager_unload(FcitxAddonManager* manager);
 void fcitx_addon_manager_invoke(FcitxAddonManager* manager, const char* addonName, const char* functionName, void* retVal, ...);
 FcitxStandardPath* fcitx_addon_manager_get_standard_path(FcitxAddonManager* manager);
+
+bool fcitx_addon_init_general(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager);
 
 #endif // __FCITX_ADDON_H__

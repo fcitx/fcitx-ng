@@ -21,11 +21,16 @@
 #define _FCITX_IME_INTERNAL_H_
 
 #include "ime.h"
-#include <fcitx-utils/utarray.h>
 
-struct _FcitxIMList
+typedef struct _FcitxInputMethod
 {
-    UT_array list;
-};
+    char* uniqueName;
+    char* name;
+    char* iconName;
+    int priority;
+    char* langCode;
+    void* imclass;
+    FcitxDispatchEventCallback handleEvent;
+} FcitxInputMethod;
 
 #endif // _FCITX_IME_INTERNAL_H_

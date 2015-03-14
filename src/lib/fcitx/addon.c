@@ -22,6 +22,7 @@
 #include <stdarg.h>
 #include "addon.h"
 #include "addon-internal.h"
+#include "frontend.h"
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/macro-internal.h"
 #include "fcitx-config/configuration.h"
@@ -42,6 +43,37 @@ static void fcitx_shared_library_unload(const FcitxAddonConfig* addonConfig, Fci
 static bool fcitx_static_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
 static void fcitx_static_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data);
 static void fcitx_static_library_resolver_free(void* data);
+
+FCITX_EXPORT_API
+bool fcitx_addon_init_general(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager)
+{
+    FcitxAddonAPICommon* apiCommon = addonInst->api;
+    if (!apiCommon->init && !apiCommon->destroy) {
+        return false;
+    }
+
+    if (addonConfig->addon.category == FAC_Frontend) {
+        FcitxAddonAPIFrontend* apiFrontend = addonInst->api;
+        apiFrontend->frontendId = fcitx_ptr_array_size(manager->frontends);
+    }
+
+    addonInst->data = apiCommon->init(manager, addonConfig);
+    if (!addonInst->data) {
+        return false;
+    }
+
+    if (addonConfig->addon.category == FAC_Frontend) {
+        FcitxAddon* addon = fcitx_container_of(addonInst, FcitxAddon, inst);
+        fcitx_ptr_array_append(manager->frontends, addon);
+    }
+
+    if (apiCommon->registerCallback) {
+        addonInst->functions = apiCommon->registerCallback(addonInst->data);
+    }
+
+    return true;
+}
+
 
 void* _fcitx_library_get_symbol(FcitxLibrary* library, const char* addonName, const char* symbolName)
 {
@@ -93,17 +125,8 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
             break;
         }
 
-        FcitxAddonAPICommon* apiCommon = addonInst->api;
-        if (!apiCommon->init && !apiCommon->destroy) {
+        if (!fcitx_addon_init_general(addonConfig, addonInst, manager)) {
             break;
-        }
-        addonInst->data = apiCommon->init(manager, addonConfig);
-        if (!addonInst->data) {
-            break;
-        }
-
-        if (apiCommon->registerCallback) {
-            addonInst->functions = apiCommon->registerCallback(addonInst->data);
         }
 
         addonInst->resolverData = library;
@@ -137,17 +160,8 @@ bool fcitx_static_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
             break;
         }
 
-        FcitxAddonAPICommon* apiCommon = addonInst->api;
-        if (!apiCommon->init && !apiCommon->destroy) {
+        if (!fcitx_addon_init_general(addonConfig, addonInst, manager)) {
             break;
-        }
-        addonInst->data = apiCommon->init(manager, addonConfig);
-        if (!addonInst->data) {
-            break;
-        }
-
-        if (apiCommon->registerCallback) {
-            addonInst->functions = apiCommon->registerCallback();
         }
 
         addonInst->resolverData = NULL;
@@ -204,6 +218,7 @@ FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath)
     manager->addons = fcitx_dict_new((FcitxDestroyNotify) fcitx_addon_free);
     manager->loadedAddons = fcitx_ptr_array_new(NULL);
     manager->properties = fcitx_dict_new(NULL);
+    manager->frontends = fcitx_ptr_array_new(NULL);
     return fcitx_addon_manager_ref(manager);
 }
 
@@ -212,6 +227,7 @@ void fcitx_addon_manager_free(FcitxAddonManager* manager)
     if (manager->loaded) {
         fcitx_addon_manager_unload(manager);
     }
+    fcitx_ptr_array_free(manager->frontends);
     fcitx_dict_free(manager->properties);
     fcitx_ptr_array_free(manager->loadedAddons);
     fcitx_standard_path_unref(manager->standardPath);
