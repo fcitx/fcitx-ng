@@ -273,7 +273,7 @@ void fcitx_xcb_open_connection(FcitxXCB* xcb, const char* name)
     fcitx_dict_insert_by_str(xcb->conns, name, fconn, false);
 
     // create a focus group for display server
-    FcitxInputContextFocusGroup* group = fcitx_input_context_manager_create_focus_group(xcb->icManager);
+    FcitxInputContextFocusGroup* group = fcitx_input_context_focus_group_new(xcb->icManager);
     fconn->group = group;
 
     fcitx_xcb_add_event_filter(xcb, name, fcitx_xcb_fitler_event, fconn);

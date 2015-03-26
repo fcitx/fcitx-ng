@@ -185,9 +185,9 @@ size_t fcitx_input_method_manager_group_count(FcitxInputMethodManager* manager)
 }
 
 FCITX_EXPORT_API
-bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int group)
+bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int groupId)
 {
-    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, group, FcitxInputMethodGroup*);
+    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, groupId, FcitxInputMethodGroup*);
 
     return fcitx_ptr_array_size(group->items) == 0;
 }

@@ -45,6 +45,7 @@ void fcitx_ptr_array_clear(FcitxPtrArray* array);
 
 void fcitx_ptr_array_remove(FcitxPtrArray* array, size_t position, void** steal);
 void fcitx_ptr_array_remove_fast(FcitxPtrArray* array, size_t position, void** steal);
+void fcitx_ptr_array_set(FcitxPtrArray* array, size_t index, void* data);
 
 static _FCITX_ALWAYS_INLINE_ size_t fcitx_ptr_array_size(FcitxPtrArray* array)
 {

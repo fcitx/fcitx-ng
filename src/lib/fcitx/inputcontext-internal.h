@@ -44,7 +44,8 @@ struct _FcitxInputContext {
     unsigned int anchor;
     uint32_t frontend;
 
-    
+    FcitxPtrArray* data;
+    FcitxPtrArray* properties;
 };
 
 #endif // _FCITX_INPUTCONTEXT_INTERNAL_H_

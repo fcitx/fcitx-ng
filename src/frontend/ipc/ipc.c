@@ -158,7 +158,7 @@ DBusHandlerResult fcitx_ipc_inputcontext_handler(DBusConnection *connection, DBu
             return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
         }
 
-        if (!(ic = fcitx_input_context_manager_get_ic(ipc->icManager, id))) {
+        if (!(ic = fcitx_input_context_manager_get_input_context(ipc->icManager, id))) {
             return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
         }
     }
@@ -274,7 +274,7 @@ DBusHandlerResult fcitx_ipc_inputmethod_handler(DBusConnection *connection, DBus
         reply = dbus_message_new_method_return(msg);
         dbus_message_append_args(reply, DBUS_TYPE_STRING, &inputmethod_introspection_xml, DBUS_TYPE_INVALID);
     } else if (dbus_message_is_method_call(msg, FCITX_INPUTMETHOD_DBUS_INTERFACE, "CreateIC")) {
-        FcitxInputContext* ic = fcitx_input_context_manager_create_ic(ipc->icManager, fcitx_ipc_frontend.frontendId);
+        FcitxInputContext* ic = fcitx_input_context_new(ipc->icManager, fcitx_ipc_frontend.frontendId);
         uint32_t icid = fcitx_input_context_get_id(ic);
 
         DBusObjectPathVTable controller_vtable = {NULL, &fcitx_ipc_inputcontext_handler, NULL, NULL, NULL, NULL };

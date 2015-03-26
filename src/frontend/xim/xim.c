@@ -106,7 +106,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
 
     switch (hdr->major_opcode) {
         case XIM_CREATE_IC:
-            ic = fcitx_input_context_manager_create_ic(server->xim->icManager, fcitx_xim_frontend.frontendId);
+            ic = fcitx_input_context_new(server->xim->icManager, fcitx_xim_frontend.frontendId);
             xcb_im_input_context_set_data(xic, ic, NULL);
             fcitx_input_context_set_focus_group(ic, FICFG_Local, server->group);
             break;

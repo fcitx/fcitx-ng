@@ -71,9 +71,9 @@ void fcitx_input_method_manager_reset_group(FcitxInputMethodManager* manager);
 
 size_t fcitx_input_method_manager_group_count(FcitxInputMethodManager* manager);
 
-void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* manager, int group, const char* const * ims);
+void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* manager, int groupId, const char* const * ims);
 
-bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int group);
+bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int groupId);
 
 void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData);
 

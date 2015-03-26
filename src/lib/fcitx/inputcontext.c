@@ -45,20 +45,74 @@ typedef struct _FcitxInputContextManager
     FcitxDispatchEventCallback callback;
     FcitxDestroyNotify destroyNotify;
     void* userData;
+    FcitxInputContextSharedStatePolicy* policy;
+    size_t policySlot;
+    FcitxPtrArray* policies;
+    int maxPropertyId;
+    FcitxDict* propertyNames;
+    FcitxPtrArray* propertySlots;
 } FcitxInputContextManager;
 
-static FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager);
+typedef struct _FcitxInputContextSharedStatePolicy
+{
+    FcitxInputContextManager* manager;
+    FcitxPolicyPropertyKey propertyKey;
+    FcitxDict* propertyDict;
+    FcitxDestroyNotify destroyNotify;
+    void* userData;
+    int32_t id;
+} FcitxInputContextSharedStatePolicy;
+
+typedef struct _FcitxInputContextPropertySlot
+{
+    FcitxSetPropertyCallback setProperty;
+    FcitxClosureFunc propertyDestroyNotify;
+    FcitxDestroyNotify destroyNotify;
+    void* userData;
+    FcitxInputContextManager* manager;
+    int32_t id;
+    FcitxInputContextSharedStatePolicy* policy;
+    FcitxSetPropertyCallback copyProperty;
+} FcitxInputContextPropertySlot;
+
+typedef struct _FcitxInputContextProperty
+{
+    void* data;
+    FcitxListHead* head;
+    FcitxListHead list;
+    FcitxInputContext* inputContext;
+    FcitxInputContextPropertySlot* slot;
+} FcitxInputContextProperty;
+
+typedef struct _FcitxInputContextStates
+{
+    void* userData;
+    void* (*constructor)(void* data);
+    void* (*destroyNotify)(void *state, void *data);
+    void (*copyToOtherState)(void *state, void *stateOther, void* data);
+} FcitxInputContextStates;
+
+
+
+static void fcitx_input_context_copy_state(FcitxInputContext* inputContext, FcitxInputContext* sourceInputContext, int32_t propertyId);
+static FcitxInputContextFocusGroup* _fcitx_input_context_focus_group_new(FcitxInputContextManager* manager);
 static void _fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContextFocusGroup* group);
 static void _fcitx_input_context_focus_in(FcitxInputContext* ic);
 static void _fcitx_input_context_focus_out(FcitxInputContext* ic);
 static void _fcitx_input_context_destroy(FcitxInputContext* ic);
+static void fcitx_input_context_policy_free(void*);
+static void fcitx_input_context_property_free(void*);
+static void fcitx_input_context_property_slot_free(void*);
 
 FCITX_EXPORT_API
 FcitxInputContextManager* fcitx_input_context_manager_new()
 {
     FcitxInputContextManager* manager = fcitx_utils_new(FcitxInputContextManager);
-    manager->globalGroup = _fcitx_input_context_manager_create_focus_group(manager);
+    manager->globalGroup = _fcitx_input_context_focus_group_new(manager);
     fcitx_list_init(&manager->groups);
+    manager->policies = fcitx_ptr_array_new(fcitx_input_context_policy_free);
+    manager->propertySlots = fcitx_ptr_array_new(fcitx_input_context_property_slot_free);
+    manager->propertyNames = fcitx_dict_new(NULL);
     return fcitx_input_context_manager_ref(manager);
 }
 
@@ -81,6 +135,10 @@ void fcitx_input_context_manager_free(FcitxInputContextManager* manager)
         free(ic);
     }
 
+    fcitx_dict_free(manager->propertyNames);
+    fcitx_ptr_array_free(manager->propertySlots);
+    fcitx_ptr_array_free(manager->policies);
+
     if (manager->destroyNotify) {
         manager->destroyNotify(manager->userData);
     }
@@ -102,7 +160,7 @@ void fcitx_input_context_manager_set_event_dispatcher(FcitxInputContextManager* 
 }
 
 
-FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager)
+FcitxInputContextFocusGroup* _fcitx_input_context_focus_group_new(FcitxInputContextManager* manager)
 {
     FcitxInputContextFocusGroup* group = fcitx_utils_new(FcitxInputContextFocusGroup);
     fcitx_list_init(&group->inputContexts);
@@ -112,9 +170,9 @@ FcitxInputContextFocusGroup* _fcitx_input_context_manager_create_focus_group(Fci
 
 }
 FCITX_EXPORT_API
-FcitxInputContextFocusGroup* fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager)
+FcitxInputContextFocusGroup* fcitx_input_context_focus_group_new(FcitxInputContextManager* manager)
 {
-    FcitxInputContextFocusGroup* group = _fcitx_input_context_manager_create_focus_group(manager);
+    FcitxInputContextFocusGroup* group = _fcitx_input_context_focus_group_new(manager);
     fcitx_list_append(&group->list, &manager->groups);
 
     return group;
@@ -169,9 +227,36 @@ void fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputContex
     _fcitx_input_context_set_focus_group(ic, group);
 }
 
+FCITX_EXPORT_API
+int32_t fcitx_input_context_manager_register_property(FcitxInputContextManager* manager, const char* name, FcitxSetPropertyCallback setProperty, FcitxSetPropertyCallback copyProperty, FcitxClosureFunc propertyDestroyNotify, FcitxDestroyNotify destroyNotify, void* userData)
+{
+    FcitxInputContextPropertySlot* slot = fcitx_utils_new(FcitxInputContextPropertySlot);
+    slot->manager = manager;
+    slot->propertyDestroyNotify = propertyDestroyNotify;
+    slot->setProperty = setProperty;
+    slot->copyProperty = copyProperty;
+    slot->destroyNotify = destroyNotify;
+    slot->userData = userData;
+    slot->id = fcitx_ptr_array_size(manager->propertySlots);
+    fcitx_ptr_array_append(manager->propertySlots, slot);
+
+    fcitx_dict_insert_data_by_str(manager->propertyNames, name, slot->id, false);
+
+    return slot->id;
+}
 
 FCITX_EXPORT_API
-FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager, uint32_t frontend)
+int32_t fcitx_input_context_manager_lookup_property(FcitxInputContextManager* manager, const char* name)
+{
+    intptr_t id = -1;
+    fcitx_dict_lookup_by_str(manager->propertyNames, name, &id);
+
+    return (int32_t) id;
+}
+
+
+FCITX_EXPORT_API
+FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, uint32_t frontend)
 {
     FcitxInputContext* ic = NULL;
     if (manager->freeList) {
@@ -192,6 +277,8 @@ FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManage
     }
     ic->manager = manager;
     ic->frontend = frontend;
+    ic->data = fcitx_ptr_array_new(NULL);
+    ic->properties = fcitx_ptr_array_new(fcitx_input_context_property_free);
 
     uuid_generate(ic->uuid);
 
@@ -257,7 +344,7 @@ void fcitx_input_context_focus_out(FcitxInputContext* inputContext)
 }
 
 FCITX_EXPORT_API
-FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* manager, uint32_t id)
+FcitxInputContext* fcitx_input_context_manager_get_input_context(FcitxInputContextManager* manager, uint32_t id)
 {
     FcitxInputContext* ic = NULL;
     HASH_FIND(hh, manager->ics, &id, sizeof(uint32_t), ic);
@@ -268,13 +355,13 @@ FCITX_EXPORT_API
 void fcitx_input_context_destroy(FcitxInputContext* inputContext)
 {
     FcitxInputContextManager* manager = inputContext->manager;
-    if (inputContext != fcitx_input_context_manager_get_ic(manager, inputContext->id)) {
+    if (inputContext != fcitx_input_context_manager_get_input_context(manager, inputContext->id)) {
         return;
     }
 
     fcitx_input_context_focus_out(inputContext);
     _fcitx_input_context_destroy(inputContext);
-    //inputContext->destroyNotify(inputContext->userData);
+
     HASH_DEL(manager->ics, inputContext);
 
     inputContext->hh.next = manager->freeList;
@@ -521,5 +608,204 @@ void _fcitx_input_context_destroy(FcitxInputContext* ic)
         manager->callback(manager->userData, (FcitxEvent*) &event);
     }
 
+    fcitx_ptr_array_free(ic->data);
+    fcitx_ptr_array_free(ic->properties);
     free(ic->surroundingText);
+}
+
+FCITX_EXPORT_API
+FcitxInputContextSharedStatePolicy* fcitx_input_context_shared_state_policy_new(FcitxInputContextManager* manager, int32_t propertyId, FcitxPolicyPropertyKey propertyKey, FcitxDestroyNotify destroyNotify, void* userData)
+{
+    if (propertyId < 0 || (size_t) propertyId >= fcitx_ptr_array_size(manager->propertySlots)) {
+        return NULL;
+    }
+
+    FcitxInputContextPropertySlot* slot = fcitx_ptr_array_index(manager->propertySlots, propertyId, FcitxInputContextPropertySlot*);
+    if (slot->policy) {
+        return NULL;
+    }
+
+    FcitxInputContextSharedStatePolicy* policy = fcitx_utils_new(FcitxInputContextSharedStatePolicy);
+    policy->manager = manager;
+    policy->propertyKey = propertyKey;
+    policy->destroyNotify = destroyNotify;
+    policy->userData = userData;
+    policy->id = propertyId;
+    policy->propertyDict = fcitx_dict_new(free);
+    fcitx_ptr_array_append(manager->policies, policy);
+
+    slot->policy = policy;
+
+    return policy;
+}
+
+void fcitx_input_context_property_slot_free(void* _slot)
+{
+    FcitxInputContextPropertySlot* slot = _slot;
+
+    if (slot->destroyNotify) {
+        slot->destroyNotify(slot->userData);
+    }
+
+    free(slot);
+}
+
+void fcitx_input_context_policy_free(void* _policy)
+{
+    FcitxInputContextSharedStatePolicy* policy = _policy;
+    fcitx_dict_free(policy->propertyDict);
+
+    if (policy->destroyNotify) {
+        policy->destroyNotify(policy->userData);
+    }
+
+    free(policy);
+}
+
+
+void fcitx_input_context_property_free(void* _property)
+{
+    FcitxInputContextProperty* property = _property;
+    if (!property) {
+        return;
+    }
+
+    FcitxInputContextPropertySlot* slot = property->slot;
+
+    if (property->head) {
+        fcitx_list_remove(&property->list);
+
+        FcitxInputContextSharedStatePolicy* policy = slot->policy;
+
+        if (fcitx_list_is_empty(property->head)) {
+            size_t len;
+            char* key = policy->propertyKey(property->data, &len, policy->userData);
+            fcitx_dict_remove(policy->propertyDict, key, len, NULL);
+        }
+
+    }
+
+    if (slot->propertyDestroyNotify) {
+        slot->propertyDestroyNotify(property->data, slot->userData);
+    }
+
+    free(property);
+}
+
+FCITX_EXPORT_API
+void fcitx_input_context_manager_set_shared_state_policy(FcitxInputContextManager* manager, FcitxInputContextSharedStatePolicy* policy)
+{
+    if (manager != policy->manager) {
+        return;
+    }
+
+    manager->policy = policy;
+}
+
+FcitxInputContextProperty* fcitx_input_context_get_property_entry(FcitxInputContext* inputContext, int32_t propertyId)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    while (fcitx_ptr_array_size(inputContext->properties) <= (size_t) propertyId) {
+        fcitx_ptr_array_append(inputContext->properties, NULL);
+    }
+
+    FcitxInputContextProperty* property = fcitx_ptr_array_index(inputContext->properties, propertyId, FcitxInputContextProperty*);
+    if (!property) {
+        property = fcitx_utils_new(FcitxInputContextProperty);
+        property->inputContext = inputContext;
+        property->slot = fcitx_ptr_array_index(manager->propertySlots, propertyId, FcitxInputContextPropertySlot*);
+        fcitx_ptr_array_set(inputContext->properties, propertyId, property);
+    }
+
+    return property;
+}
+
+FCITX_EXPORT_API
+void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t propertyId, void* data)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (propertyId < 0 || (size_t) propertyId >= fcitx_ptr_array_size(manager->propertySlots)) {
+        return;
+    }
+
+    FcitxInputContextProperty* property = fcitx_input_context_get_property_entry(inputContext, propertyId);
+    FcitxInputContextPropertySlot* slot = property->slot;
+    FcitxInputContextSharedStatePolicy* policy = slot->policy;
+
+    // maintain policy group
+    if (policy) {
+        if (property->head) {
+            fcitx_list_remove(&property->list);
+
+            if (fcitx_list_is_empty(property->head)) {
+                size_t len;
+                char* key = policy->propertyKey(property->data, &len, policy->userData);
+                fcitx_dict_remove(policy->propertyDict, key, len, NULL);
+            }
+            property->head = NULL;
+        }
+    }
+
+    property->data = slot->setProperty(property->data, data, slot->userData);
+
+    // maintain policy group
+    if (policy) {
+        size_t len;
+        char* key = policy->propertyKey(property->data, &len, policy->userData);
+        FcitxListHead* head = NULL;
+        if (!fcitx_dict_lookup(policy->propertyDict, key, len, &head)) {
+            head = fcitx_utils_new(FcitxListHead);
+            fcitx_list_init(head);
+            fcitx_dict_insert(policy->propertyDict, key, len, head, false);
+        }
+        fcitx_list_append(&property->list, head);
+        property->head = head;
+    }
+
+    // if manager has a policy
+    if (manager->policy) {
+        property = fcitx_ptr_array_index(inputContext->properties, manager->policy->id, FcitxInputContextProperty*);
+        if (property && property->head) {
+            FcitxListHead* head = property->head;
+            fcitx_list_entry_foreach(key, FcitxInputContextProperty, head, list) {
+                if (key->inputContext != inputContext) {
+                    fcitx_input_context_copy_state(key->inputContext, inputContext, propertyId == manager->policy->id ? -1 : propertyId);
+                }
+            }
+        }
+    }
+}
+
+FCITX_EXPORT_API
+void* fcitx_input_context_get_property(FcitxInputContext* inputContext, int32_t propertyId)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+    if (propertyId < 0 || (size_t) propertyId >= fcitx_ptr_array_size(manager->propertySlots)) {
+        return NULL;
+    }
+
+    FcitxInputContextProperty* property = fcitx_ptr_array_index(inputContext->properties, propertyId, FcitxInputContextProperty*);
+
+    return property ? property->data : NULL;
+}
+
+void fcitx_input_context_copy_state(FcitxInputContext* inputContext, FcitxInputContext* sourceInputContext, int32_t propertyId)
+{
+    if (inputContext->manager != sourceInputContext->manager) {
+        return;
+    }
+
+    FcitxInputContextManager* manager = inputContext->manager;
+
+    size_t start = propertyId < 0 ? 0 : propertyId;
+    size_t end = propertyId < 0 ? fcitx_ptr_array_size(manager->propertySlots) : ((size_t) (propertyId + 1));
+
+    for (size_t i = start; i < end; i++) {
+        FcitxInputContextProperty* sourceProperty = fcitx_ptr_array_index(sourceInputContext->properties, i, FcitxInputContextProperty*);
+        if (sourceProperty) {
+            FcitxInputContextProperty* property = fcitx_input_context_get_property_entry(inputContext, i);
+            FcitxInputContextPropertySlot* slot = property->slot;
+            property->data = slot->copyProperty(property->data, sourceProperty->data, slot->userData);
+        }
+    }
 }

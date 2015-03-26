@@ -170,3 +170,22 @@ void fcitx_ptr_array_free(FcitxPtrArray* array)
     free(array->data);
     free(array);
 }
+
+FCITX_EXPORT_API
+void fcitx_ptr_array_set(FcitxPtrArray* array, size_t index, void* data)
+{
+    if (index >= array->len) {
+        return;
+    }
+
+    FcitxPtrArrayPrivate* priv = FCITX_GET_PRIVATE(array, FcitxPtrArray);
+    if (priv->destoryNotify2) {
+        priv->destoryNotify2(array->data[index], priv->userData);
+    }
+
+    if (priv->freeFunc) {
+        priv->freeFunc(array->data[index]);
+    }
+
+    array->data[index] = data;
+}

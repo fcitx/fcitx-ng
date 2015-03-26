@@ -15,6 +15,11 @@ typedef enum _FcitxInputContextFocusGroupType
 } FcitxInputContextFocusGroupType;
 
 typedef struct _FcitxInputContextFocusGroup FcitxInputContextFocusGroup;
+typedef struct _FcitxInputContextSharedStatePolicy FcitxInputContextSharedStatePolicy;
+
+
+typedef void* (*FcitxSetPropertyCallback)(void* oldValue, void* newValue, void* userData);
+typedef char* (*FcitxPolicyPropertyKey)(void* value, size_t* len, void* userData);
 
 /** fcitx input context capability flags */
 typedef enum _FcitxCapabilityFlag {
@@ -86,7 +91,6 @@ typedef struct _FcitxInputContextKeyEvent
 } FcitxInputContextKeyEvent;
 
 typedef struct _FcitxInputContextManager FcitxInputContextManager;
-typedef void (*FcitxInputContextFillDataCallback)(FcitxInputContext* context, void* userData);
 
 FcitxInputContextManager* fcitx_input_context_manager_new();
 FcitxInputContextManager* fcitx_input_context_manager_ref(FcitxInputContextManager* manager);
@@ -94,10 +98,20 @@ void fcitx_input_context_manager_unref(FcitxInputContextManager* manager);
 
 void fcitx_input_context_manager_set_event_dispatcher(FcitxInputContextManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData);
 
-FcitxInputContextFocusGroup* fcitx_input_context_manager_create_focus_group(FcitxInputContextManager* manager);
+FcitxInputContextFocusGroup* fcitx_input_context_focus_group_new(FcitxInputContextManager* manager);
 void fcitx_input_context_focus_group_free(FcitxInputContextFocusGroup* group);
 
-FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManager* manager, uint32_t frontend);
+FcitxInputContextSharedStatePolicy* fcitx_input_context_shared_state_policy_new(FcitxInputContextManager* manager, int32_t propertyId, FcitxPolicyPropertyKey propertyKey, FcitxDestroyNotify destroyNotify, void* userData);
+
+void fcitx_input_context_manager_set_shared_state_policy(FcitxInputContextManager* manager, FcitxInputContextSharedStatePolicy* policy);
+
+#define FCITX_INVALID_IC_PROPERTY_ID -1
+
+int32_t fcitx_input_context_manager_register_property(FcitxInputContextManager* manager, const char* name, FcitxSetPropertyCallback setProperty, FcitxSetPropertyCallback copyProperty, FcitxClosureFunc propertyDestroyNotify, FcitxDestroyNotify destroyNotify, void* userData);
+
+int32_t fcitx_input_context_manager_lookup_property(FcitxInputContextManager* manager, const char* name);
+
+FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, uint32_t frontend);
 
 #define FCITX_INVALID_IC 0
 
@@ -108,7 +122,7 @@ FcitxInputContext* fcitx_input_context_manager_create_ic(FcitxInputContextManage
  * @param id 0 for current ic
  * @return FcitxInputContext*
  */
-FcitxInputContext* fcitx_input_context_manager_get_ic(FcitxInputContextManager* manager, uint32_t id);
+FcitxInputContext* fcitx_input_context_manager_get_input_context(FcitxInputContextManager* manager, uint32_t id);
 
 void fcitx_input_context_focus_in(FcitxInputContext* inputContext);
 void fcitx_input_context_focus_out(FcitxInputContext* inputContext);
@@ -129,5 +143,8 @@ void fcitx_input_context_set_surrounding_text(FcitxInputContext* inputContext, c
 
 FcitxRect fcitx_input_context_get_cursor_rect(FcitxInputContext* inputContext);
 bool fcitx_input_context_is_focused(FcitxInputContext* inputContext);
+
+void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t id, void* data);
+void* fcitx_input_context_get_property(FcitxInputContext* inputContext, int32_t id);
 
 #endif // __FCITX_INPUTCONTEXT_H__
