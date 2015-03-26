@@ -18,7 +18,6 @@
  */
 
 #include <libxml/parser.h>
-#include <fcitx/fcitx.h>
 
 #include "rules.h"
 #define XMLCHAR_CAST (const char*)
