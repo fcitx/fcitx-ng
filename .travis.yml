@@ -2,5 +2,10 @@ language: c
 compiler:
     - gcc
     - clang
+install:
+    - sudo apt-get install libffi-dev
 script:
-    mkdir build && cd build && cmake .. && make
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
