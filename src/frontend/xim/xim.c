@@ -147,7 +147,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
 }
 
 bool fcitx_xim_xcb_event_fitler(xcb_connection_t* conn, xcb_generic_event_t* event, void* data)
-{
+{BAD
     FCITX_UNUSED(conn);
     FcitxXIMServer* server = data;
     return xcb_im_filter_event(server->im, event);
