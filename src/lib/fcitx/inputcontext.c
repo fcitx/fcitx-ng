@@ -148,6 +148,7 @@ void fcitx_input_context_manager_free(FcitxInputContextManager* manager)
 
 FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxInputContextManager, fcitx_input_context_manager);
 
+FCITX_EXPORT_API
 void fcitx_input_context_manager_set_event_dispatcher(FcitxInputContextManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData)
 {
     if (manager->destroyNotify) {
@@ -522,6 +523,7 @@ void fcitx_input_context_set_surrounding_text(FcitxInputContext* inputContext, c
     }
 }
 
+FCITX_EXPORT_API
 void fcitx_input_context_delete_surrounding_text(FcitxInputContext* inputContext, int offset, unsigned int length)
 {
     /*
@@ -803,9 +805,11 @@ void fcitx_input_context_copy_state(FcitxInputContext* inputContext, FcitxInputC
     for (size_t i = start; i < end; i++) {
         FcitxInputContextProperty* sourceProperty = fcitx_ptr_array_index(sourceInputContext->properties, i, FcitxInputContextProperty*);
         if (sourceProperty) {
-            FcitxInputContextProperty* property = fcitx_input_context_get_property_entry(inputContext, i);
-            FcitxInputContextPropertySlot* slot = property->slot;
-            property->data = slot->copyProperty(property->data, sourceProperty->data, slot->userData);
+            if (sourceProperty->slot->copyProperty) {
+                FcitxInputContextProperty* property = fcitx_input_context_get_property_entry(inputContext, i);
+                FcitxInputContextPropertySlot* slot = property->slot;
+                property->data = slot->copyProperty(property->data, sourceProperty->data, slot->userData);
+            }
         }
     }
 }

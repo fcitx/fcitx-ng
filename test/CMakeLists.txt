@@ -55,6 +55,8 @@ add_subdirectory(addon)
 
 add_executable(testinputcontext testinputcontext.c)
 target_link_libraries(testinputcontext Fcitx::Core)
+add_test(NAME testinputcontext COMMAND testinputcontext)
 
 add_executable(testinputmethod testinputmethod.c)
 target_link_libraries(testinputmethod Fcitx::Core)
+add_test(NAME testinputmethod COMMAND testinputmethod)

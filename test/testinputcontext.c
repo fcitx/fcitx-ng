@@ -9,6 +9,9 @@
         } \
     } while(0)
 
+
+static uint32_t flag;
+
 void* set_string_property(void* old, void* newValue, void* userData)
 {
     FCITX_UNUSED(userData);
@@ -29,9 +32,20 @@ void string_free(void* data, void* userData)
     free(data);
 }
 
+bool dispatch_ic_event(void* data, FcitxEvent* event)
+{
+    if (event->type == ET_InputContextCapabilityChanged) {
+        FcitxInputContextEvent* icEvent = (FcitxInputContextEvent*) event;
+        flag = fcitx_input_context_get_capability_flags(icEvent->inputContext);
+    }
+    return true;
+}
+
 int main()
 {
     FcitxInputContextManager* manager = fcitx_input_context_manager_new();
+
+    fcitx_input_context_manager_set_event_dispatcher(manager, dispatch_ic_event, NULL, NULL);
     FcitxInputContext *ic[] = { fcitx_input_context_new(manager, 0),
                                 fcitx_input_context_new(manager, 0),
                                 fcitx_input_context_new(manager, 0),
@@ -40,6 +54,9 @@ int main()
                                 fcitx_input_context_new(manager, 0),
                                 fcitx_input_context_new(manager, 0),
                                 fcitx_input_context_new(manager, 0) };
+
+    fcitx_input_context_destroy(ic[7]);
+    ic[7] = fcitx_input_context_new(manager, 0);
 
     FcitxInputContextFocusGroup* group = fcitx_input_context_focus_group_new(manager);
     FcitxInputContextFocusGroup* group2 = fcitx_input_context_focus_group_new(manager);
@@ -78,6 +95,10 @@ int main()
     testValue = fcitx_input_context_get_property(ic[0], id2);
     assert(testValue && strcmp(testValue, "Test") == 0);
 
+
+    fcitx_input_context_set_property(ic[1], id, "Chrome");
+    fcitx_input_context_set_property(ic[0], id, "Chrome");
+
     fcitx_input_context_set_focus_group(ic[0], FICFG_Global, NULL);
     fcitx_input_context_set_focus_group(ic[1], FICFG_Global, NULL);
     fcitx_input_context_set_focus_group(ic[2], FICFG_Local, group);
@@ -106,6 +127,32 @@ int main()
     TEST_FOCUS(false, true, false, false, false, false, true, true);
     fcitx_input_context_focus_in(ic[5]);
     TEST_FOCUS(false, false, false, false, false, true, true, true);
+
+    fcitx_input_context_set_capability_flags(ic[1], CAPABILITY_DIGIT);
+    assert(flag == CAPABILITY_DIGIT);
+    flag = 0;
+    fcitx_input_context_set_capability_flags(ic[1], CAPABILITY_DIGIT);
+    assert(flag == 0);
+
+    // surroundingText
+    fcitx_input_context_set_capability_flags(ic[0], CAPABILITY_SURROUNDING_TEXT);
+    fcitx_input_context_set_surrounding_text(ic[0], "abcd", 1, 1);
+    const char* surroundingText;
+    unsigned int anchor, cursor;
+    assert(fcitx_input_context_get_surrounding_text(ic[0], &surroundingText, &anchor, &cursor));
+    assert(strcmp(surroundingText, "abcd") == 0);
+    assert(anchor == 1 && cursor == 1);
+
+    fcitx_input_context_delete_surrounding_text(ic[0], -1, 2);
+    assert(fcitx_input_context_get_surrounding_text(ic[0], &surroundingText, &anchor, &cursor));
+    assert(strcmp(surroundingText, "cd") == 0);
+    assert(anchor == 0 && cursor == 0);
+
+    // cursor rect
+    FcitxRect rect = {0, 0, 1, 1}, rect2;
+    fcitx_input_context_set_cursor_rect(ic[2], rect);
+    rect2 = fcitx_input_context_get_cursor_rect(ic[2]);
+    assert(rect.x1 == rect2.x1 && rect.x2 == rect2.x2 && rect.y1 == rect2.y1 && rect.y2 == rect2.y2);
 
     fcitx_input_context_manager_unref(manager);
 
