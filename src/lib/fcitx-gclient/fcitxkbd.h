@@ -72,11 +72,9 @@ GType fcitx_layout_item_get_type() G_GNUC_CONST;
 FcitxKbd*
 fcitx_kbd_new(GBusType             bus_type,
               GDBusProxyFlags      flags,
-              gint                 display_number,
               GCancellable        *cancellable,
               GError             **error);
 GPtrArray*   fcitx_kbd_get_layouts(FcitxKbd* kbd);
-GPtrArray*   fcitx_kbd_get_layouts_nofree(FcitxKbd* kbd);
 void        fcitx_kbd_get_layout_for_im(FcitxKbd* kbd, const gchar* imname, gchar** layout, gchar** variant);
 void         fcitx_kbd_set_layout_for_im(FcitxKbd* kbd, const gchar* imname, const gchar* layout, const gchar* variant);
 void         fcitx_kbd_set_default_layout(FcitxKbd* kbd, const gchar* layout, const gchar* variant);

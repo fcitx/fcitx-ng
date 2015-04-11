@@ -85,7 +85,7 @@ char* fcitx_text_to_string(FcitxText* text)
 {
     size_t length = 0;
     for (size_t i = 0; i < utarray_len(&text->strings); i++) {
-        const char *str = ((FcitxTextString*) utarray_eltptr(&text->strings, index))->string;
+        const char *str = ((FcitxTextString*) utarray_eltptr(&text->strings, i))->string;
         length += strlen(str);
     }
 
@@ -93,7 +93,7 @@ char* fcitx_text_to_string(FcitxText* text)
     char* p = str;
 
     for (size_t i = 0; i < utarray_len(&text->strings); i++) {
-        const char *str = ((FcitxTextString*) utarray_eltptr(&text->strings, index))->string;
+        const char *str = ((FcitxTextString*) utarray_eltptr(&text->strings, i))->string;
         p = stpcpy(p, str);
     }
 

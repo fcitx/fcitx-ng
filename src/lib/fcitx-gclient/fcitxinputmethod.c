@@ -17,7 +17,7 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#include "fcitx/fcitx.h"
+#include "fcitx-utils/utils.h"
 #include "fcitxinputmethod.h"
 
 /**
@@ -135,31 +135,17 @@ fcitx_input_method_init(FcitxInputMethod *im)
 }
 
 /**
- * fcitx_input_method_get_imlist: (skip)
- **/
-FCITX_EXPORT_API
-GPtrArray*
-fcitx_input_method_get_imlist(FcitxInputMethod* im)
-{
-    GPtrArray *array = fcitx_input_method_get_imlist_nofree(im);
-    if (array)
-        g_ptr_array_set_free_func(array, (GDestroyNotify)fcitx_im_item_free);
-    return array;
-}
-
-/**
- * fcitx_input_method_get_imlist_nofree:
+ * fcitx_input_method_get_imlist:
  * @im: A #FcitxInputMethod
  *
  * Get Fcitx all im list
  *
  * Returns: (transfer full) (element-type FcitxIMItem): A #FcitxIMItem List
  *
- * Rename to: fcitx_input_method_get_imlist
  **/
 FCITX_EXPORT_API
 GPtrArray*
-fcitx_input_method_get_imlist_nofree(FcitxInputMethod* im)
+fcitx_input_method_get_imlist(FcitxInputMethod* im)
 {
     GPtrArray *array = NULL;
     GVariant* value;
@@ -380,7 +366,6 @@ fcitx_input_method_class_init(FcitxInputMethodClass *klass)
  * fcitx_input_method_new:
  * @bus_type: #GBusType
  * @flags:  #GDBusProxyFlags
- * @display_number: display_number
  * @cancellable: A #GCancellable or %NULL
  * @error: Error or %NULL
  *
@@ -392,7 +377,6 @@ FCITX_EXPORT_API
 FcitxInputMethod*
 fcitx_input_method_new(GBusType             bus_type,
                            GDBusProxyFlags      flags,
-                           gint                 display_number,
                            GCancellable        *cancellable,
                            GError             **error)
 {

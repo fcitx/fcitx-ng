@@ -103,7 +103,6 @@ fcitx_kbd_class_init(FcitxKbdClass *klass)
  * fcitx_kbd_new:
  * @bus_type: #GBusType
  * @flags:  #GDBusProxyFlags
- * @display_number: display_number
  * @cancellable: A #GCancellable or %NULL
  * @error: Error or %NULL
  *
@@ -115,7 +114,6 @@ FCITX_EXPORT_API
 FcitxKbd*
 fcitx_kbd_new(GBusType             bus_type,
               GDBusProxyFlags      flags,
-              gint                 display_number,
               GCancellable        *cancellable,
               GError             **error)
 {
@@ -133,16 +131,15 @@ fcitx_kbd_new(GBusType             bus_type,
 }
 
 /**
- * fcitx_kbd_get_layouts_nofree:
+ * fcitx_kbd_get_layouts:
  * @kbd: A #FcitxKbd
  *
  * Get Fcitx all im list
  *
  * Returns: (transfer full) (element-type FcitxLayoutItem): A #FcitxLayoutItem List
- * Rename to: fcitx_kbd_get_layouts
  **/
 FCITX_EXPORT_API
-GPtrArray* fcitx_kbd_get_layouts_nofree(FcitxKbd* kbd)
+GPtrArray* fcitx_kbd_get_layouts(FcitxKbd* kbd)
 {
     GError* error = NULL;
     GVariant* variant = g_dbus_proxy_call_sync(G_DBUS_PROXY(kbd),
@@ -174,18 +171,6 @@ GPtrArray* fcitx_kbd_get_layouts_nofree(FcitxKbd* kbd)
         g_variant_iter_free(iter);
     }
 
-    return array;
-}
-
-/**
- * fcitx_kbd_get_layouts: (skip)
- **/
-FCITX_EXPORT_API
-GPtrArray* fcitx_kbd_get_layouts(FcitxKbd* kbd)
-{
-    GPtrArray* array = fcitx_kbd_get_layouts_nofree(kbd);
-    if (array)
-        g_ptr_array_set_free_func(array, fcitx_layout_item_free);
     return array;
 }
 
@@ -281,10 +266,10 @@ static FcitxLayoutItem*
 fcitx_layout_item_copy(FcitxLayoutItem* item)
 {
     FcitxLayoutItem* new_item = g_malloc0(sizeof(FcitxLayoutItem));
-    new_item->layout = strdup(item->layout);
-    new_item->variant = strdup(item->variant);
-    new_item->name = strdup(item->name);
-    new_item->langcode = strdup(item->langcode);
+    new_item->layout = g_strdup(item->layout);
+    new_item->variant = g_strdup(item->variant);
+    new_item->name = g_strdup(item->name);
+    new_item->langcode = g_strdup(item->langcode);
     return new_item;
 }
 
