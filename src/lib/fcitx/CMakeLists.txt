@@ -8,11 +8,14 @@ set(LIBFCITX_SOURCES
   inputcontext.c
   inputdevice.c
   ime.c
+  ui.c
   )
 
 set(FCITX_HEADERS
     addon.h
     instance.h
+    inputcontext.h
+    ui.h
   )
 
 set(FCITX_INTERNAL_HEADERS

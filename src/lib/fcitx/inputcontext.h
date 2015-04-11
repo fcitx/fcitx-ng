@@ -2,8 +2,9 @@
 #define __FCITX_INPUTCONTEXT_H__
 
 #include <fcitx-utils/utils.h>
-#include "event.h"
 #include <sys/types.h>
+#include "event.h"
+#include "ui.h"
 
 typedef struct _FcitxInputContext FcitxInputContext;
 
@@ -17,7 +18,7 @@ typedef enum _FcitxInputContextFocusGroupType
 typedef struct _FcitxInputContextFocusGroup FcitxInputContextFocusGroup;
 typedef struct _FcitxInputContextSharedStatePolicy FcitxInputContextSharedStatePolicy;
 
-
+typedef bool (*FcitxForeachInputContextCallback)(FcitxInputContext* ic, void* userData);
 typedef void* (*FcitxSetPropertyCallback)(void* oldValue, void* newValue, void* userData);
 typedef char* (*FcitxPolicyPropertyKey)(void* value, size_t* len, void* userData);
 
@@ -48,6 +49,8 @@ typedef enum _FcitxCapabilityFlag {
     CAPABILITY_ALPHA = (1 << 21),
     CAPABILITY_NAME = (1 << 22)
 } FcitxCapabilityFlag;
+
+typedef uint32_t FcitxCapabilityFlags;
 
 typedef struct _FcitxKeyEvent
 {
@@ -90,6 +93,8 @@ typedef struct _FcitxInputContextKeyEvent
     FcitxKeyEvent detail;
 } FcitxInputContextKeyEvent;
 
+#define FCITX_FRONTEND_DATA_PROPERTY "frontend-data"
+
 typedef struct _FcitxInputContextManager FcitxInputContextManager;
 
 FcitxInputContextManager* fcitx_input_context_manager_new();
@@ -110,6 +115,8 @@ void fcitx_input_context_manager_set_shared_state_policy(FcitxInputContextManage
 int32_t fcitx_input_context_manager_register_property(FcitxInputContextManager* manager, const char* name, FcitxSetPropertyCallback setProperty, FcitxSetPropertyCallback copyProperty, FcitxClosureFunc propertyDestroyNotify, FcitxDestroyNotify destroyNotify, void* userData);
 
 int32_t fcitx_input_context_manager_lookup_property(FcitxInputContextManager* manager, const char* name);
+
+void fcitx_input_context_manager_foreach(FcitxInputContextManager* manager, FcitxForeachInputContextCallback callback, void* userData);
 
 FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, uint32_t frontend);
 
@@ -137,6 +144,9 @@ void fcitx_input_context_set_cursor_rect(FcitxInputContext* inputContext, FcitxR
 bool fcitx_input_context_process_key_event(FcitxInputContext* inputContext, FcitxKeyEvent* key);
 void fcitx_input_context_commit_string(FcitxInputContext* inputContext, const char* commitString);
 void fcitx_input_context_delete_surrounding_text(FcitxInputContext* inputContext, int offset, unsigned int size);
+void fcitx_input_context_update_preedit(FcitxInputContext* inputContext);
+void fcitx_input_context_forward_key(FcitxInputContext* inputContext, FcitxKeyEvent* key);
+FcitxText* fcitx_input_context_get_preedit(FcitxInputContext* inputContext);
 
 bool fcitx_input_context_get_surrounding_text(FcitxInputContext* inputContext, const char** str, unsigned int* cursor, unsigned int* anchor);
 void fcitx_input_context_set_surrounding_text(FcitxInputContext* inputContext, const char* str, unsigned int cursor, unsigned int anchor);

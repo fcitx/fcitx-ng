@@ -28,6 +28,7 @@
 #include <string.h>
 #include <stddef.h>
 #include <malloc.h>
+#include <stdarg.h>
 #include "macro.h"
 #include "types.h"
 
@@ -330,6 +331,25 @@ fcitx_utils_malloc_with_str(size_t base_size, const char *extra_str)
 {
     return fcitx_utils_malloc_with_data(base_size, (const void*)extra_str,
                                         strlen(extra_str) + 1);
+}
+
+static inline int fcitx_vasprintf(char **ret, const char *format, va_list va)
+{
+    int done = vasprintf(ret, format, va);
+    if (done == -1) {
+        abort();
+    }
+    return done;
+}
+
+FCITX_PRINTF(2, 3)
+static inline int fcitx_asprintf(char **ret, const char *format, ...)
+{
+    va_list va;
+    va_start(va, format);
+    int done = fcitx_vasprintf(ret, format, va);
+    va_end(va);
+    return done;
 }
 
 #define fcitx_utils_new_with_data(TYPE, data, size)                     \

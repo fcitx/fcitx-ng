@@ -48,17 +48,21 @@ FcitxPtrArray* fcitx_ptr_array_new_full(FcitxPtrArraySizeGrowFunc sizeGrowFunc, 
     return array;
 }
 
-FCITX_EXPORT_API
-void fcitx_ptr_array_resize(FcitxPtrArray* array)
+void _fcitx_ptr_array_grow(FcitxPtrArray* array, size_t target)
 {
     FcitxPtrArrayPrivate* priv = FCITX_GET_PRIVATE(array, FcitxPtrArray);
-    if (priv->sizeGrowFunc) {
-         priv->size = priv->sizeGrowFunc(array, priv->size, priv->userData);
-    } else {
-        priv->size = priv->size ? priv->size * 2 : 1;
+    size_t oldSize = priv->size;
+    while (priv->size < target) {
+        if (priv->sizeGrowFunc) {
+            priv->size = priv->sizeGrowFunc(array, priv->size, priv->userData);
+        } else {
+            priv->size = priv->size ? priv->size * 2 : 1;
+        }
     }
-    
-    array->data = fcitx_utils_realloc(array->data, priv->size * sizeof(void*));
+
+    if (oldSize != priv->size) {
+        array->data = fcitx_utils_realloc(array->data, priv->size * sizeof(void*));
+    }
 }
 
 FCITX_EXPORT_API
@@ -70,7 +74,7 @@ void fcitx_ptr_array_insert(FcitxPtrArray* array, void* data, size_t position)
     }
     
     if (priv->size < array->len + 1) {
-        fcitx_ptr_array_resize(array);
+        _fcitx_ptr_array_grow(array, array->len + 1);
     }
 
     for (size_t i = array->len ; i -- > position; ) {
@@ -146,17 +150,7 @@ void fcitx_ptr_array_sort_r(FcitxPtrArray* array, FcitxCompareClosureFunc compar
 FCITX_EXPORT_API
 void fcitx_ptr_array_clear(FcitxPtrArray* array)
 {
-    FcitxPtrArrayPrivate* priv = FCITX_GET_PRIVATE(array, FcitxPtrArray);
-    for (size_t i = 0 ; i < array->len; i ++) {
-        if (priv->destoryNotify2) {
-            priv->destoryNotify2(array->data[i], priv->userData);
-        }
-        if (priv->freeFunc) {
-            priv->freeFunc(array->data[i]);
-        }
-    }
-
-    array->len = 0;
+    fcitx_ptr_array_resize(array, 0, NULL, NULL);
 }
 
 FCITX_EXPORT_API
@@ -188,4 +182,19 @@ void fcitx_ptr_array_set(FcitxPtrArray* array, size_t index, void* data)
     }
 
     array->data[index] = data;
+}
+
+FCITX_EXPORT_API
+void fcitx_ptr_array_resize(FcitxPtrArray* array, size_t size, FcitxPtrArrayInitElementCallback callback, void* userData)
+{
+    while (size < array->len) {
+        fcitx_ptr_array_pop(array, NULL);
+    }
+
+    _fcitx_ptr_array_grow(array, size);
+
+    while (size > array->len) {
+        void* newItem = callback ? callback(array->len, userData) : NULL;
+        fcitx_ptr_array_append(array, newItem);
+    }
 }

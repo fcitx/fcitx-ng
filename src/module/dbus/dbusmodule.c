@@ -26,7 +26,7 @@
 #include "dbusmodule.h"
 #include "fcitx-dbus-internal.h"
 
-#define FCITX_CONTROLLER_DBUS_INTERFACE "org.fcitx.Fcitx.Controller"
+#define FCITX_CONTROLLER_DBUS_INTERFACE "org.fcitx.Fcitx.Controller1"
 
 const char * controller_introspection_xml =
     "<!DOCTYPE node PUBLIC \"-//freedesktop//DTD D-BUS Object Introspection 1.0//EN\" "

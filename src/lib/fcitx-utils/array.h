@@ -28,6 +28,7 @@
 
 typedef struct _FcitxPtrArray FcitxPtrArray;
 typedef size_t (*FcitxPtrArraySizeGrowFunc)(FcitxPtrArray* array, size_t oldSize, void* userData);
+typedef void* (*FcitxPtrArrayInitElementCallback)(size_t index, void* userData);
 
 struct _FcitxPtrArray
 {
@@ -46,6 +47,7 @@ void fcitx_ptr_array_clear(FcitxPtrArray* array);
 void fcitx_ptr_array_remove(FcitxPtrArray* array, size_t position, void** steal);
 void fcitx_ptr_array_remove_fast(FcitxPtrArray* array, size_t position, void** steal);
 void fcitx_ptr_array_set(FcitxPtrArray* array, size_t index, void* data);
+void fcitx_ptr_array_resize(FcitxPtrArray* array, size_t size, FcitxPtrArrayInitElementCallback callback, void* userData);
 
 static _FCITX_ALWAYS_INLINE_ size_t fcitx_ptr_array_size(FcitxPtrArray* array)
 {

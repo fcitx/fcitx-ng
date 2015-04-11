@@ -41,7 +41,7 @@ void remove_invalid_char(char* str)
 char* type_name(const char* prefix, const char* groupName)
 {
     char* fullName = NULL;
-    asprintf(&fullName, "%s%sGroup", prefix, groupName);
+    fcitx_asprintf(&fullName, "%s%sGroup", prefix, groupName);
     remove_invalid_char(fullName);
     return fullName;
 }

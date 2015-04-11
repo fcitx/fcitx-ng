@@ -146,9 +146,9 @@ void print_option_info(FcitxConfiguration* config, const char* type, const char*
         if (!typeName) {
             structName = type_name(prefix, subType);
             underscoreName = format_underscore_name(structName, false);
-            asprintf(&structFreeFunc, "%s_free", underscoreName);
-            asprintf(&structLoadFunc, "%s_load", underscoreName);
-            asprintf(&structStoreFunc, "%s_store", underscoreName);
+            fcitx_asprintf(&structFreeFunc, "%s_free", underscoreName);
+            fcitx_asprintf(&structLoadFunc, "%s_load", underscoreName);
+            fcitx_asprintf(&structStoreFunc, "%s_store", underscoreName);
             typeName = structName;
             freeFunc = structFreeFunc;
             storeFunc = structStoreFunc;
@@ -274,7 +274,7 @@ void compile_to_c_source(FcitxConfiguration* config, FcitxDescription* desc, con
 {
     // print top level struct
     char* fullName = NULL;
-    asprintf(&fullName, "%s%s", prefix, name);
+    fcitx_asprintf(&fullName, "%s%s", prefix, name);
     char* underscoreFullName = format_underscore_name(fullName, false);
 
     fprintf(fout, "#include <fcitx-config/helper.h>\n");

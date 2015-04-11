@@ -34,7 +34,7 @@ void print_includes(const char* includes)
 void print_header_guard(const char* name, const char* prefix)
 {
     char* fullName = NULL;
-    asprintf(&fullName, "%s%s", prefix, name);
+    fcitx_asprintf(&fullName, "%s%s", prefix, name);
     char* uName = format_underscore_name(fullName, true);
 
     fprintf(fout, "#ifndef _%s_H_\n", uName);
@@ -110,7 +110,7 @@ void compile_to_c_header(FcitxConfiguration* config, FcitxDescription* desc, con
 
     // print top level struct, forward declaration
     char* fullName = NULL;
-    asprintf(&fullName, "%s%s", prefix, name);
+    fcitx_asprintf(&fullName, "%s%s", prefix, name);
     fprintf(fout, "typedef struct _%s %s;\n", fullName, fullName);
     fcitx_dict_foreach(desc->structs, print_forward_decl, (void*) prefix);
 

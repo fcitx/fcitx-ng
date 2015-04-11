@@ -52,3 +52,4 @@
 #include "utf8.h"
 
 #endif // _FCITX_UTILS_UTILS_H_
+    

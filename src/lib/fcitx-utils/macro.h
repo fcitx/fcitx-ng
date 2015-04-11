@@ -87,4 +87,10 @@
 
 #define FCITX_GET_PRIVATE(p, TYPE) ((TYPE##Private*) (((char*) p) + sizeof(TYPE)))
 
+#if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
+#define FCITX_PRINTF(format_idx, arg_idx) __attribute__((__format__ (__printf__, format_idx, arg_idx)))
+#else
+#define FCITX_PRINTF(format_idx, arg_idx)
+#endif
+
 #endif

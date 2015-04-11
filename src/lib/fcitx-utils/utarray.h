@@ -182,7 +182,10 @@ static _FCITX_ALWAYS_INLINE_ void utarray_extend_back(UT_array* a) {
     (a)->i++;
 }
 
-#define utarray_len(a) ((a)->i)
+static _FCITX_ALWAYS_INLINE_ size_t utarray_len(const UT_array* a)
+{
+    return ((a)->i);
+}
 
 static _FCITX_ALWAYS_INLINE_ void utarray_push_front(UT_array* a, void* p)
 {

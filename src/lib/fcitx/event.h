@@ -34,6 +34,7 @@ typedef enum _FcitxEventType
     ET_InputContextEventFlag = 0x0001000,
     ET_InputMethodEventFlag = 0x0002000,
     ET_InstanceEventFlag = 0x0003000,
+    ET_InputMethodManagerEventFlag = 0x0004000,
     // send by frontend, captured by core, input method, or module
     ET_InputContextCreated = ET_InputContextEventFlag | 0x1,
     ET_InputContextDestroyed = ET_InputContextEventFlag | 0x2,
@@ -85,6 +86,11 @@ typedef enum _FcitxEventType
      * This would also trigger ET_InputContextSwitchInputMethod afterwards.
      */
     ET_InputMethodGroupChanged = ET_InstanceEventFlag | 0x1,
+
+    ET_InputMethodGroupAboutToReset = ET_InputMethodManagerEventFlag | 0x1,
+    ET_InputMethodGroupReset = ET_InputMethodManagerEventFlag | 0x2,
+    ET_NewInputMethodGroup = ET_InputMethodManagerEventFlag | 0x3,
+    ET_InputMethodInitFailed = ET_InputMethodManagerEventFlag | 0x4,
 } FcitxEventType;
 
 typedef struct _FcitxEvent {

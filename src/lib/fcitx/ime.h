@@ -27,6 +27,17 @@ typedef struct _FcitxAddonAPIInputMethod
     FcitxAddonAPICommon common;
 } FcitxAddonAPIInputMethod;
 
+typedef enum _FcitxInputMethodItemProperty
+{
+    FIMIP_Name = 0x1,
+    FIMIP_Layout = 0x2,
+    FIMIP_Variant = 0x3,
+
+    FIMIP_None = 0x0
+} FcitxInputMethodItemProperty;
+
+typedef struct _FcitxInputMethodItem FcitxInputMethodItem;
+
 typedef struct _FcitxInputMethodManager FcitxInputMethodManager;
 
 FcitxInputMethodManager* fcitx_input_method_manager_new();
@@ -75,6 +86,12 @@ void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* m
 
 bool fcitx_input_method_manager_is_group_empty(FcitxInputMethodManager* manager, int groupId);
 
+FcitxInputMethodItem* fcitx_input_method_manager_get_group_item(FcitxInputMethodManager* manager, int groupId, size_t index);
+
+size_t fcitx_input_method_manager_get_group_size(FcitxInputMethodManager* manager, int groupId);
+
 void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData);
+
+void fcitx_input_method_item_get_property(FcitxInputMethodItem* item, ...);
 
 #endif // _FCITX_IME_H_

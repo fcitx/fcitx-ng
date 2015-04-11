@@ -37,11 +37,13 @@ typedef struct _FcitxInputMethodGroup
     FcitxPtrArray* items;
 } FcitxInputMethodGroup;
 
-typedef struct _FcitxInputMethodItem
+struct _FcitxInputMethodItem
 {
     FcitxKeyboardLayoutInfo layoutInfo;
     char* name;
-} FcitxInputMethodItem;
+    size_t index;
+    FcitxInputMethodGroup* group;
+};
 
 struct _FcitxInputMethodManager
 {
@@ -230,6 +232,8 @@ void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* m
             newItem->name = fcitx_utils_strdup(item.name);
             newItem->layoutInfo.layout = fcitx_utils_strdup(item.layoutInfo.layout);
             newItem->layoutInfo.variant = fcitx_utils_strdup(item.layoutInfo.variant);
+            newItem->index = fcitx_ptr_array_size(group->items);
+            newItem->group = group;
             fcitx_ptr_array_append(group->items, newItem);
         }
 
@@ -237,6 +241,31 @@ void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* m
     }
 }
 
+FCITX_EXPORT_API
+FcitxInputMethodItem* fcitx_input_method_manager_get_group_item(FcitxInputMethodManager* manager, int groupId, size_t index)
+{
+    if (groupId < 0 || groupId > (ssize_t) fcitx_ptr_array_size(manager->groups)) {
+        return NULL;
+    }
+
+    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, groupId, FcitxInputMethodGroup*);
+
+    return fcitx_ptr_array_index(group->items, index, FcitxInputMethodItem*);
+}
+
+FCITX_EXPORT_API
+size_t fcitx_input_method_manager_get_group_size(FcitxInputMethodManager* manager, int groupId)
+{
+    if (groupId < 0 || groupId > (ssize_t) fcitx_ptr_array_size(manager->groups)) {
+        return 0;
+    }
+
+    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, groupId, FcitxInputMethodGroup*);
+
+    return fcitx_ptr_array_size(group->items);
+}
+
+FCITX_EXPORT_API
 void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData)
 {
     if (manager->destroyNotify) {
@@ -246,4 +275,31 @@ void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* ma
     manager->callback = callback;
     manager->destroyNotify = destroyNotify;
     manager->userData = userData;
+}
+
+void fcitx_input_method_item_get_property(FcitxInputMethodItem* item, ...)
+{
+    va_list va;
+    va_start(va, item);
+    FcitxInputMethodItemProperty property;
+    while ((property = va_arg(va, FcitxInputMethodItemProperty))) {
+        switch (property) {
+            case FIMIP_Name: {
+                char** name = va_arg(va, char**);
+                *name = item->name;
+            }
+            case FIMIP_Layout: {
+                char** name = va_arg(va, char**);
+                *name = item->layoutInfo.layout;
+            }
+            case FIMIP_Variant: {
+                char** name = va_arg(va, char**);
+                *name = item->layoutInfo.variant;
+            }
+            break;
+            default:
+                break;
+        }
+    }
+    va_end(va);
 }

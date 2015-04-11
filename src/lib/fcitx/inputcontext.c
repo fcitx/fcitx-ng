@@ -113,6 +113,9 @@ FcitxInputContextManager* fcitx_input_context_manager_new()
     manager->policies = fcitx_ptr_array_new(fcitx_input_context_policy_free);
     manager->propertySlots = fcitx_ptr_array_new(fcitx_input_context_property_slot_free);
     manager->propertyNames = fcitx_dict_new(NULL);
+
+    fcitx_input_context_manager_register_property(manager, FCITX_FRONTEND_DATA_PROPERTY, NULL, NULL, NULL, NULL, NULL);
+
     return fcitx_input_context_manager_ref(manager);
 }
 
@@ -160,6 +163,18 @@ void fcitx_input_context_manager_set_event_dispatcher(FcitxInputContextManager* 
     manager->userData = userData;
 }
 
+FCITX_EXPORT_API
+void fcitx_input_context_manager_foreach(FcitxInputContextManager* manager, FcitxForeachInputContextCallback callback, void* userData)
+{
+    FcitxInputContext* ic = manager->ics;
+    while (ic) {
+        if (!callback(ic, userData)) {
+            break;
+        }
+
+        ic = ic->hh.next;
+    }
+}
 
 FcitxInputContextFocusGroup* _fcitx_input_context_focus_group_new(FcitxInputContextManager* manager)
 {
@@ -280,6 +295,7 @@ FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, ui
     ic->frontend = frontend;
     ic->data = fcitx_ptr_array_new(NULL);
     ic->properties = fcitx_ptr_array_new(fcitx_input_context_property_free);
+    ic->preedit = fcitx_text_new();
 
     uuid_generate(ic->uuid);
 
@@ -610,6 +626,7 @@ void _fcitx_input_context_destroy(FcitxInputContext* ic)
         manager->callback(manager->userData, (FcitxEvent*) &event);
     }
 
+    fcitx_text_unref(ic->preedit);
     fcitx_ptr_array_free(ic->data);
     fcitx_ptr_array_free(ic->properties);
     free(ic->surroundingText);
@@ -748,7 +765,11 @@ void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t p
         }
     }
 
-    property->data = slot->setProperty(property->data, data, slot->userData);
+    if (slot->setProperty) {
+        property->data = slot->setProperty(property->data, data, slot->userData);
+    } else {
+        property->data = data;
+    }
 
     // maintain policy group
     if (policy) {
@@ -811,5 +832,37 @@ void fcitx_input_context_copy_state(FcitxInputContext* inputContext, FcitxInputC
                 property->data = slot->copyProperty(property->data, sourceProperty->data, slot->userData);
             }
         }
+    }
+}
+
+FcitxText* fcitx_input_context_get_preedit(FcitxInputContext* inputContext)
+{
+    return inputContext->preedit;
+}
+
+void fcitx_input_context_update_preedit(FcitxInputContext* inputContext)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+
+    if (manager->callback) {
+        FcitxInputContextEvent event;
+        event.type = ET_InputContextUpdatePreedit;
+        event.id = inputContext->id;
+        event.inputContext = inputContext;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
+    }
+}
+
+void fcitx_input_context_forward_key(FcitxInputContext* inputContext, FcitxKeyEvent* key)
+{
+    FcitxInputContextManager* manager = inputContext->manager;
+
+    if (manager->callback) {
+        FcitxInputContextKeyEvent event;
+        event.type = ET_InputContextForwardKey;
+        event.id = inputContext->id;
+        event.inputContext = inputContext;
+        event.detail = *key;
+        manager->callback(manager->userData, (FcitxEvent*) &event);
     }
 }

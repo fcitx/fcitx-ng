@@ -23,9 +23,6 @@ foreach(TESTCASE ${FCITX_UTILS_TEST})
              COMMAND ${TESTCASE})
 endforeach()
 
-add_executable(testcomposetable testcomposetable.c)
-target_link_libraries(testcomposetable Fcitx::ComposeTable)
-
 add_executable(testconfiguration testconfiguration.c)
 target_link_libraries(testconfiguration Fcitx::Config)
 add_test(NAME testconfiguration COMMAND testconfiguration)
@@ -53,10 +50,14 @@ add_test(NAME testaddon COMMAND testaddon ${CMAKE_CURRENT_SOURCE_DIR}/addon ${CM
 
 add_subdirectory(addon)
 
-add_executable(testinputcontext testinputcontext.c)
-target_link_libraries(testinputcontext Fcitx::Core)
-add_test(NAME testinputcontext COMMAND testinputcontext)
+set(FCITX_UTILS_TEST
+    testinputcontext
+    testinputmethod
+    testtext)
 
-add_executable(testinputmethod testinputmethod.c)
-target_link_libraries(testinputmethod Fcitx::Core)
-add_test(NAME testinputmethod COMMAND testinputmethod)
+foreach(TESTCASE ${FCITX_CORE_TEST})
+    add_executable(${TESTCASE} ${TESTCASE}.c)
+    target_link_libraries(${TESTCASE} Fcitx::Core)
+    add_test(NAME ${TESTCASE}
+             COMMAND ${TESTCASE})
+endforeach()

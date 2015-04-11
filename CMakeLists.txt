@@ -13,6 +13,20 @@ option(ENABLE_TEST "Build Test" On)
 option(ENABLE_COVERAGE "Enable coverage" Off)
 option(ENABLE_BACKTRACE "Build with backtrace support" On)
 option(ENABLE_LIBXML2 "Build with libxml" On)
+option(ENABLE_GIR "Build with Gir" On)
+option(ENABLE_GTK2_IM_MODULE "Enable GTK2 IM Module" ON)
+option(ENABLE_GTK3_IM_MODULE "Enable GTK3 IM Module" OFF)
+
+
+if(NOT NO_SNOOPER_APPS)
+  set(NO_SNOOPER_APPS ".*chrome.*,.*chromium.*,firefox.*,Do.*"
+    CACHE STRING "Disable Key Snooper for following app")
+endif()
+
+if(NOT NO_PREEDIT_APPS)
+  set(NO_PREEDIT_APPS "gvim"
+    CACHE STRING "Disable Preedit for the following apps")
+endif()
 
 set_property(GLOBAL PROPERTY "__FCITX_INTERNAL_BUILD" On)
 
@@ -90,6 +104,14 @@ endif (ENABLE_LIBXML2)
 # xkbcommon
 find_package(XKBCommon REQUIRED)
 
+find_package(GLib2 REQUIRED)
+find_package(Gio2 REQUIRED)
+find_package(GObject2 REQUIRED)
+
+if (ENABLE_GTK2_IM_MODULE)
+find_package(GTK2 REQUIRED gtk)
+endif()
+
 if (RT_FOUND)
     set(HAVE_CLOCK_GETTIME 1)
 else()
@@ -132,3 +154,5 @@ add_subdirectory(tools)
 add_subdirectory(data)
 
 add_subdirectory(po)
+
+add_subdirectory(client)

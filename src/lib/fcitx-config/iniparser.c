@@ -74,7 +74,7 @@ FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
 
             if (currentGroup) {
                 char* path = NULL;
-                asprintf(&path, "%s/%s", currentGroup, name);
+                fcitx_asprintf(&path, "%s/%s", currentGroup, name);
                 fcitx_configuration_set_value_by_path(config, path, value);
                 free(path);
             } else {

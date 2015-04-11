@@ -78,7 +78,7 @@ void fcitx_utils_string_list_printf_append(FcitxStringList* list, const char* fm
     char* buffer;
     va_list ap;
     va_start(ap, fmt);
-    vasprintf(&buffer, fmt, ap);
+    fcitx_vasprintf(&buffer, fmt, ap);
     va_end(ap);
     fcitx_utils_string_list_append_no_copy(list, buffer);
 }

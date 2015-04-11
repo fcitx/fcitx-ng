@@ -41,8 +41,9 @@ struct _FcitxInstance {
     bool shutdown;
     FcitxInputContextManager* icManager;
     FcitxInputMethodManager* imManager;
-    FcitxDict* icStates;
     int group;
+    int32_t inputMethodStateId;
+    FcitxPtrArray* globalInputMethod;
 };
 
 #endif

@@ -209,7 +209,7 @@ bool set_i18n_string_foreach(const char* key, size_t keyLen, void** data, void* 
     set_i18n_string_foreach_context* context = arg;
     if (keyLen) {
         char* path = NULL;
-        asprintf(&path, "%s[%s]", context->path, key);
+        fcitx_asprintf(&path, "%s[%s]", context->path, key);
         fcitx_configuration_set_value_by_path(context->config, path, (char*) *data);
         free(path);
     } else {

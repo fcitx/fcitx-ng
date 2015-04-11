@@ -63,13 +63,13 @@ void struct_attribute_foreach(FcitxConfiguration* config, const char* path, void
 
     const char* type = fcitx_configuration_get_value_by_path(config, "Type");
     if (!type) {
-        asprintf(&desc->errorMessage, "%s misses Type.", path);
+        fcitx_asprintf(&desc->errorMessage, "%s misses Type.", path);
         desc->error = true;
         return;
     }
 
     if (!is_builtin_type(type)) {
-        asprintf(&desc->errorMessage, "Invalide Type.");
+        fcitx_asprintf(&desc->errorMessage, "Invalide Type.");
         desc->error = true;
         return;
     }
@@ -77,19 +77,19 @@ void struct_attribute_foreach(FcitxConfiguration* config, const char* path, void
     if (strcmp(type, "List") == 0) {
         const char* subType = fcitx_configuration_get_value_by_path(config, "SubType");
         if (!subType) {
-            asprintf(&desc->errorMessage, "%s misses SubType.", path);
+            fcitx_asprintf(&desc->errorMessage, "%s misses SubType.", path);
             desc->error = true;
             return;
         }
 
         if (strcmp(subType, "List") == 0) {
-            asprintf(&desc->errorMessage, "Recursive List is not allowed.");
+            fcitx_asprintf(&desc->errorMessage, "Recursive List is not allowed.");
             desc->error = true;
             return;
         }
 
         if (!is_builtin_type(subType) && !fcitx_string_hashset_contains(desc->structs, subType)) {
-            asprintf(&desc->errorMessage, "Invalide SubType.");
+            fcitx_asprintf(&desc->errorMessage, "Invalide SubType.");
             desc->error = true;
             return;
         }

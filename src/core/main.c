@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
     bind_textdomain_codeset("fcitx", "UTF-8");
     textdomain("fcitx");
 
-    instance = fcitx_instance_create(argc, argv);
+    instance = fcitx_instance_new(argc, argv);
     fcitx_instance_set_signal_pipe(instance, selfpipe[0]);
     int result = fcitx_instance_run(instance);
     fcitx_instance_destroy(instance);

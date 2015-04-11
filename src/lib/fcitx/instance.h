@@ -28,13 +28,14 @@
 
 #include <fcitx-utils/utils.h>
 #include <fcitx/inputcontext.h>
+#include "ime.h"
 
 FCITX_DECL_BEGIN
 
 typedef struct _FcitxInstance FcitxInstance;
 
 // control instance
-FcitxInstance* fcitx_instance_create(int argc, char* argv[]);
+FcitxInstance* fcitx_instance_new(int argc, char* argv[]);
 int fcitx_instance_run(FcitxInstance* instance);
 FcitxMainLoop* fcitx_instance_get_mainloop(FcitxInstance* instance);
 bool fcitx_instance_get_try_replace(FcitxInstance* instance);
@@ -46,7 +47,7 @@ void fcitx_instance_destroy(FcitxInstance* instance);
 // input method related
 void fcitx_instance_set_input_method_group(FcitxInstance* instance, int group);
 int fcitx_instance_get_input_method_group(FcitxInstance* instance);
-void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, const char* name, bool local);
+void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, FcitxInputMethodItem* item, bool local);
 
 FCITX_DECL_END
 

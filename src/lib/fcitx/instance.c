@@ -33,6 +33,23 @@
 #include "addon-internal.h"
 #include "frontend.h"
 
+typedef enum _FcitxInputMethodStateUpdateType
+{
+    UpdateType_SetInputMethod,
+} FcitxInputMethodStateUpdateType;
+
+typedef struct _FcitxInputMethodStateUpdate
+{
+    FcitxInputMethodStateUpdateType type;
+
+    union {
+        struct {
+            bool local;
+            FcitxInputMethodItem* imItem;
+        } setIM;
+    };
+} FcitxInputMethodStateUpdate;
+
 typedef struct _FcitxInstanceArguments
 {
     bool tryReplace;
@@ -44,16 +61,16 @@ typedef struct _FcitxInstanceArguments
     bool runasdaemon;
 } FcitxInstanceArguments;
 
-typedef struct _FcitxInputContextState
+typedef struct _FcitxInputMethodState
 {
-} FcitxInputContextState;
+    
+    FcitxPtrArray* localInputMethod;
+} FcitxInputMethodState;
 
 static void Usage();
 static void Version();
 
-static bool fcitx_instance_input_context_event_dispatch(void* self, FcitxEvent* event);
-static FcitxInputMethod*
-fcitx_instance_get_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic);
+static bool fcitx_instance_event_dispatch(void* self, FcitxEvent* event);
 
 /**
  * print usage
@@ -162,15 +179,8 @@ void fcitx_instance_arguments_free(FcitxInstanceArguments* arg)
     free(arg->uiname);
 }
 
-FcitxInputContextState* fcitx_input_context_state_new()
-{
-    FcitxInputContextState* state = fcitx_utils_new(FcitxInputContextState);
-
-    return state;
-}
-
 FCITX_EXPORT_API
-FcitxInstance* fcitx_instance_create(int argc, char* argv[])
+FcitxInstance* fcitx_instance_new(int argc, char* argv[])
 {
     FcitxInstanceArguments arguments;
     memset(&arguments, 0, sizeof(arguments));
@@ -201,9 +211,10 @@ FcitxInstance* fcitx_instance_create(int argc, char* argv[])
     instance->standardPath = fcitx_standard_path_new();
     instance->addonManager = fcitx_addon_manager_new(instance->standardPath);
     instance->icManager = fcitx_input_context_manager_new();
-    fcitx_input_context_manager_set_event_dispatcher(instance->icManager, fcitx_instance_input_context_event_dispatch, NULL, instance);
+    fcitx_input_context_manager_set_event_dispatcher(instance->icManager, fcitx_instance_event_dispatch, NULL, instance);
     instance->imManager = fcitx_input_method_manager_new();
-    instance->icStates = fcitx_dict_new(free);
+    fcitx_input_method_manager_set_event_dispatcher(instance->imManager, fcitx_instance_event_dispatch, NULL, instance);
+    instance->globalInputMethod = fcitx_ptr_array_new(NULL);
 
     return instance;
 }
@@ -221,9 +232,86 @@ void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int fla
     }
 }
 
+void* fcitx_input_context_input_method_state_set(void* data, void* value, void* userData)
+{
+    FcitxInputMethodState* state = data;
+    if (!data) {
+        state = fcitx_utils_new(FcitxInputMethodState);
+    }
+
+    FcitxInstance* instance = userData;
+    FcitxInputMethodStateUpdate* update = (FcitxInputMethodStateUpdate*) value;
+
+    switch (update->type) {
+        case UpdateType_SetInputMethod:
+            if (update->setIM.local) {
+                if (!state->localInputMethod) {
+                    state->localInputMethod = fcitx_ptr_array_new(NULL);
+                    fcitx_ptr_array_resize(state->localInputMethod, fcitx_ptr_array_size(instance->globalInputMethod), NULL, NULL);
+                }
+                fcitx_ptr_array_set(state->localInputMethod, instance->group, update->setIM.imItem);
+            } else {
+                if (fcitx_ptr_array_size(instance->globalInputMethod)) {
+                    fcitx_ptr_array_set(instance->globalInputMethod, instance->group, update->setIM.imItem);
+                }
+            }
+            break;
+        default:
+            break;
+    }
+
+    return state;
+}
+
+void fcitx_input_context_input_method_state_free(void* data, void* userData)
+{
+    FCITX_UNUSED(userData);
+    if (!data) {
+        return;
+    }
+    FcitxInputMethodState* state = data;
+    fcitx_ptr_array_free(state->localInputMethod);
+    free(state);
+}
+
+void* fcitx_input_context_input_method_state_copy(void* dst, void* src, void* userData)
+{
+    if (!src) {
+        fcitx_input_context_input_method_state_free(dst, userData);
+        return NULL;
+    }
+
+    FcitxInputMethodState* srcState = src;
+    FcitxInputMethodState* state = dst;
+    if (!state) {
+        state = fcitx_utils_new(FcitxInputMethodState);
+    }
+
+    if (srcState->localInputMethod) {
+        if (!state->localInputMethod) {
+            state->localInputMethod = fcitx_ptr_array_new(NULL);
+            fcitx_ptr_array_resize(state->localInputMethod, fcitx_ptr_array_size(srcState->localInputMethod), NULL, NULL);
+            for (size_t i = 0; i < fcitx_ptr_array_size(srcState->localInputMethod); i++) {
+                fcitx_ptr_array_set(state->localInputMethod, i, fcitx_ptr_array_index(srcState->localInputMethod, i, FcitxInputMethodItem*));
+            }
+        }
+    } else {
+        fcitx_ptr_array_free(state->localInputMethod);
+        state->localInputMethod = NULL;
+    }
+
+    return state;
+}
+
 FCITX_EXPORT_API
 int fcitx_instance_run(FcitxInstance* instance)
 {
+    instance->inputMethodStateId = fcitx_input_context_manager_register_property(instance->icManager,
+                                                                                 "inputMethodState",
+                                                                                 fcitx_input_context_input_method_state_set,
+                                                                                 fcitx_input_context_input_method_state_copy,
+                                                                                 fcitx_input_context_input_method_state_free,
+                                                                                 NULL, instance);
     fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
     fcitx_addon_manager_set_property(instance->addonManager, "icmanager", instance->icManager);
     fcitx_addon_manager_set_property(instance->addonManager, "immanager", instance->imManager);
@@ -274,7 +362,6 @@ bool fcitx_instance_get_try_replace(FcitxInstance* instance)
 FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)
 {
-    fcitx_dict_free(instance->icStates);
     fcitx_addon_manager_unref(instance->addonManager);
     fcitx_standard_path_unref(instance->standardPath);
     fcitx_mainloop_free(instance->mainloop);
@@ -286,20 +373,27 @@ void fcitx_instance_destroy(FcitxInstance* instance)
     free(instance);
 }
 
-bool fcitx_instance_input_context_event_dispatch(void* self, FcitxEvent* event)
+bool fcitx_instance_input_method_group_reset_foreach(FcitxInputContext* ic, void* userData)
+{
+    FcitxInstance* instance = userData;
+    FcitxInputMethodState* state = fcitx_input_context_get_property(ic, instance->inputMethodStateId);
+    if (state && state->localInputMethod) {
+        fcitx_ptr_array_clear(state->localInputMethod);
+    }
+
+    return true;
+}
+
+bool fcitx_instance_event_dispatch(void* self, FcitxEvent* event)
 {
     FcitxInstance* instance = self;
     FcitxInputContextEvent* icEvent = (FcitxInputContextEvent*) event;
-    if (event->type == ET_InputContextCreated) {
-        fcitx_dict_insert_by_data(instance->icStates, icEvent->id, fcitx_input_context_state_new(), false);
-    } else if (event->type == ET_InputContextDestroyed) {
-        fcitx_dict_remove_by_data(instance->icStates, icEvent->id, NULL);
-    }
 
     // TODO, handle trigger key
 
     if ((event->type & ET_EventTypeFlag) == ET_InputContextEventFlag) {
-        FcitxInputMethod* im = fcitx_instance_get_input_method_for_input_context(instance, icEvent->inputContext);
+        // TODO
+        FcitxInputMethod* im = NULL;
         if (im) {
             return im->handleEvent(im->imclass, event);
         }
@@ -310,6 +404,26 @@ bool fcitx_instance_input_context_event_dispatch(void* self, FcitxEvent* event)
 
             FcitxAddonAPIFrontend* apiFrontend = (FcitxAddonAPIFrontend*) (addon->inst.api);
             return apiFrontend->handleEvent(addon->inst.data, event);
+        }
+    } else if ((event->type & ET_EventTypeFlag) == ET_InputMethodManagerEventFlag) {
+        switch (event->type) {
+            case ET_InputMethodGroupAboutToReset:
+                // TODO save global configuration here
+                break;
+            case ET_InputMethodGroupReset:
+                fcitx_ptr_array_clear(instance->globalInputMethod);
+                fcitx_input_context_manager_foreach(instance->icManager, fcitx_instance_input_method_group_reset_foreach, instance);
+                fcitx_instance_set_input_method_group(instance, -1);
+                break;
+            case ET_NewInputMethodGroup:
+                // TODO apply configuration
+                fcitx_ptr_array_append(instance->globalInputMethod, NULL);
+                if (instance->group < 0) {
+                    fcitx_instance_set_input_method_group(instance, 0);
+                }
+                break;
+            default:
+                break;
         }
     }
 
@@ -328,16 +442,16 @@ void fcitx_instance_post_event(FcitxInstance* instance, FcitxEvent* event)
     // TODO
 }
 
-FcitxInputMethod* fcitx_instance_get_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic)
-{
-    // TODO
-    return NULL;
-}
-
 void fcitx_instance_set_input_method_group(FcitxInstance* instance, int group)
 {
-    instance->group = group;
-    // TODO notify
+    if (group >= 0 && (size_t) group >= fcitx_ptr_array_size(instance->globalInputMethod)) {
+        return;
+    }
+
+    if (instance->group != group) {
+        instance->group = group;
+        // TODO notify
+    }
 }
 
 int fcitx_instance_get_input_method_group(FcitxInstance* instance)
@@ -345,6 +459,12 @@ int fcitx_instance_get_input_method_group(FcitxInstance* instance)
     return instance->group;
 }
 
-void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, const char* name, bool local)
+FCITX_EXPORT_API
+void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, FcitxInputMethodItem* item, bool local)
 {
+    FcitxInputMethodStateUpdate update;
+    update.type = UpdateType_SetInputMethod;
+    update.setIM.imItem = item;
+    update.setIM.local = local;
+    fcitx_input_context_set_property(ic, instance->inputMethodStateId, &update);
 }

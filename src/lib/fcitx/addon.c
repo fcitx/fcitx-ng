@@ -97,7 +97,7 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
     char* toFree = NULL;
     const char* libraryName = NULL;
     if (!fcitx_utils_string_ends_with(addonConfig->addon.library, FCITX_LIBRARY_SUFFIX)) {
-        asprintf(&toFree, "%s%s", addonConfig->addon.library, FCITX_LIBRARY_SUFFIX);
+        fcitx_asprintf(&toFree, "%s%s", addonConfig->addon.library, FCITX_LIBRARY_SUFFIX);
         libraryName = toFree;
     } else {
         libraryName = addonConfig->addon.library;

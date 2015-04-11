@@ -65,7 +65,7 @@ FcitxDict* scan_po_files(const char* path)
         }
 
         char* fullpath = NULL;
-        asprintf(&fullpath, "%s/%s", path, dp->d_name);
+        fcitx_asprintf(&fullpath, "%s/%s", path, dp->d_name);
 
         if (!fullpath) {
             break;
@@ -101,7 +101,7 @@ void translate_callback (FcitxConfiguration* config,
     const char* value = fcitx_configuration_get_value(config);
     if (name[0] == '_') {
         char* fullpath = NULL;
-        asprintf(&fullpath ,"%.*s/%s", (int)(strlen(path) - strlen(name) - 1), path, name + 1);
+        fcitx_asprintf(&fullpath ,"%.*s/%s", (int)(strlen(path) - strlen(name) - 1), path, name + 1);
         fcitx_configuration_set_value_by_path(newconfig, fullpath, value);
         free(fullpath);
         for (FcitxDictData* data = fcitx_dict_first(poDict); data; data = fcitx_dict_data_next(data)) {
@@ -116,7 +116,7 @@ void translate_callback (FcitxConfiguration* config,
             }
 
             char* fullpath = NULL;
-            asprintf(&fullpath ,"%.*s/%s[%s]", (int)(strlen(path) - strlen(name) - 1), path, name + 1, data->key);
+            fcitx_asprintf(&fullpath ,"%.*s/%s[%s]", (int)(strlen(path) - strlen(name) - 1), path, name + 1, data->key);
             if (!fullpath) {
                 break;
             }

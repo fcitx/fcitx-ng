@@ -46,6 +46,7 @@ struct _FcitxInputContext {
 
     FcitxPtrArray* data;
     FcitxPtrArray* properties;
+    FcitxText* preedit;
 };
 
 #endif // _FCITX_INPUTCONTEXT_INTERNAL_H_

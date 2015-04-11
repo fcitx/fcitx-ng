@@ -33,4 +33,5 @@ typedef struct _FcitxInputMethod
     FcitxDispatchEventCallback handleEvent;
 } FcitxInputMethod;
 
+
 #endif // _FCITX_IME_INTERNAL_H_

@@ -67,7 +67,7 @@ configure_file(fcitx-utils.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx-utils.pc)
 
 install(TARGETS fcitx-utils LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx-utils.pc
-  DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+  DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 install(FILES ${FCITX_UTILS_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fcitx-utils")
 
 add_library(Fcitx::Utils ALIAS fcitx-utils)

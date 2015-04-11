@@ -48,10 +48,10 @@ char* fcitx_standard_default_path_construct(const char* env, const char* default
         // caller need to ensure HOME is not empty;
         if (defaultPath[0] != '/') {
             const char* home = getenv("HOME");
-            asprintf(&dir, "%s/%s", home, defaultPath);
+            fcitx_asprintf(&dir, "%s/%s", home, defaultPath);
         } else {
             if (strcmp(env, "XDG_RUNTIME_DIR") == 0) {
-                asprintf(&dir, "%s/fcitx-runtime-%u", defaultPath, geteuid());
+                fcitx_asprintf(&dir, "%s/fcitx-runtime-%u", defaultPath, geteuid());
                 if (!fcitx_utils_isdir(dir)) {
                     if (mkdir(dir, 0700) != 0) {
                         free(dir);
@@ -147,7 +147,7 @@ char* fcitx_standard_path_construct_path(const char* basepath, const char* path)
         return NULL;
     }
     char* result = NULL;
-    asprintf(&result, "%s/%s", basepath, path);
+    fcitx_asprintf(&result, "%s/%s", basepath, path);
     if (result) {
         fcitx_utils_clean_path(result, result);
     }
@@ -308,7 +308,7 @@ bool fcitx_standard_path_foreach_func(const char* key, size_t keyLen, void** dat
     FCITX_UNUSED(keyLen);
     fcitx_standard_path_foreach_context* context = userData;
     char* fullPath = NULL;
-    asprintf(&fullPath, "%s%s%s", context->path, context->path[0] ? "/" : "", key);
+    fcitx_asprintf(&fullPath, "%s%s%s", context->path, context->path[0] ? "/" : "", key);
     *data = fcitx_standard_path_locate(context->sp, context->type, fullPath, context->flag);
     free(fullPath);
     return false;
