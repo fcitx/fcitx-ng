@@ -740,11 +740,11 @@ FcitxInputContextProperty* fcitx_input_context_get_property_entry(FcitxInputCont
 }
 
 FCITX_EXPORT_API
-void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t propertyId, void* data)
+void* fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t propertyId, void* data)
 {
     FcitxInputContextManager* manager = inputContext->manager;
     if (propertyId < 0 || (size_t) propertyId >= fcitx_ptr_array_size(manager->propertySlots)) {
-        return;
+        return NULL;
     }
 
     FcitxInputContextProperty* property = fcitx_input_context_get_property_entry(inputContext, propertyId);
@@ -787,9 +787,9 @@ void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t p
 
     // if manager has a policy
     if (manager->policy) {
-        property = fcitx_ptr_array_index(inputContext->properties, manager->policy->id, FcitxInputContextProperty*);
-        if (property && property->head) {
-            FcitxListHead* head = property->head;
+        FcitxInputContextProperty* policyProperty = fcitx_ptr_array_index(inputContext->properties, manager->policy->id, FcitxInputContextProperty*);
+        if (policyProperty && policyProperty->head) {
+            FcitxListHead* head = policyProperty->head;
             fcitx_list_entry_foreach(key, FcitxInputContextProperty, head, list) {
                 if (key->inputContext != inputContext) {
                     fcitx_input_context_copy_state(key->inputContext, inputContext, propertyId == manager->policy->id ? -1 : propertyId);
@@ -797,6 +797,8 @@ void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t p
             }
         }
     }
+
+    return property->data;
 }
 
 FCITX_EXPORT_API

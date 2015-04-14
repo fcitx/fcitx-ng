@@ -1,5 +1,5 @@
 #include <assert.h>
-#include <ffi.h>
+// #include <ffi.h>
 #include "fcitx/addon.h"
 #include "fcitx/addon-internal.h"
 #include "fcitx/ime.h"

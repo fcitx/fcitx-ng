@@ -23,8 +23,6 @@ set(FCITX_GCLIENT_BUILT_HEADERS
 pkg_check_variable(GLIB2_GLIB_GENMARSHAL "glib-2.0" "glib_genmarshal")
 find_program(GLIB_GENMARSHAL ${GLIB2_GLIB_GENMARSHAL})
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 add_custom_command(OUTPUT marshall.c
   COMMAND ${GLIB_GENMARSHAL} --body --prefix=fcitx_marshall
   ${CMAKE_CURRENT_SOURCE_DIR}/marshall.list > marshall.c
@@ -36,12 +34,14 @@ add_custom_command(OUTPUT marshall.h
 
 add_library(fcitx-gclient SHARED ${FCITX_GCLIENT_SOURCES}
   ${FCITX_GCLIENT_BUILT_SOURCES} ${FCITX_GCLIENT_BUILT_HEADERS})
+add_library(Fcitx::GClient ALIAS fcitx-gclient)
 set_target_properties(fcitx-gclient
   PROPERTIES VERSION 0.1
   SOVERSION 1
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined")
 target_link_libraries(fcitx-gclient GLib2::GLib GObject2::GObject Gio2::Gio Fcitx::Utils)
+target_include_directories(fcitx-gclient PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..> PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 configure_file(fcitx-gclient.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx-gclient.pc)
 
 install(TARGETS fcitx-gclient LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")

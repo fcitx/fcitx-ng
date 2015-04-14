@@ -70,7 +70,7 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         fcitx_function_signature_info_load(sig, subConfig);
         char* actualReturnType = strchr(sig->function.returnType, '*') ? "void*" : sig->function.returnType;
         char sigchar = get_sigchar_from_string(actualReturnType);
-        if (!actualReturnType) {
+        if (!sigchar) {
             continue;
         }
 

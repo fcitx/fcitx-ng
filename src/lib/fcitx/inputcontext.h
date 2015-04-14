@@ -154,7 +154,7 @@ void fcitx_input_context_set_surrounding_text(FcitxInputContext* inputContext, c
 FcitxRect fcitx_input_context_get_cursor_rect(FcitxInputContext* inputContext);
 bool fcitx_input_context_is_focused(FcitxInputContext* inputContext);
 
-void fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t id, void* data);
+void* fcitx_input_context_set_property(FcitxInputContext* inputContext, int32_t id, void* data);
 void* fcitx_input_context_get_property(FcitxInputContext* inputContext, int32_t id);
 
 #endif // __FCITX_INPUTCONTEXT_H__

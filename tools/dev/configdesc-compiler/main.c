@@ -22,7 +22,7 @@
 #include <stdio.h>
 #include "fcitx-config/configuration.h"
 #include "fcitx-config/iniparser.h"
-#include <fcitx-config/description.h>
+#include "fcitx-config/description.h"
 #include "common.h"
 #include "main.h"
 

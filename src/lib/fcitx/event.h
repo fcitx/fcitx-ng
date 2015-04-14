@@ -81,6 +81,8 @@ typedef enum _FcitxEventType
     ET_InputContextDeleteSurroundingText = ET_InputMethodEventFlag | 0x3,
     ET_InputContextUpdatePreedit = ET_InputMethodEventFlag | 0x4,
 
+    // send by im or module, captured by ui TODO
+
     /**
      * captured by everything
      * This would also trigger ET_InputContextSwitchInputMethod afterwards.

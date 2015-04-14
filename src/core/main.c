@@ -37,10 +37,13 @@ int main(int argc, char* argv[])
 
     SetMyExceptionHandler();
 
-    fcntl(selfpipe[0], F_SETFL, O_NONBLOCK);
-    fcntl(selfpipe[0], F_SETFD, FD_CLOEXEC);
-    fcntl(selfpipe[1], F_SETFL, O_NONBLOCK);
-    fcntl(selfpipe[1], F_SETFD, FD_CLOEXEC);
+    if (fcntl(selfpipe[0], F_SETFL, O_NONBLOCK) == -1
+     || fcntl(selfpipe[0], F_SETFD, FD_CLOEXEC) == -1
+     || fcntl(selfpipe[1], F_SETFL, O_NONBLOCK) == -1
+     || fcntl(selfpipe[1], F_SETFD, FD_CLOEXEC)) {
+        fprintf(stderr, "fcntl failed.\n");
+        exit(1);
+    }
 
     char* localedir = fcitx_utils_get_fcitx_path("localedir");
     setlocale(LC_ALL, "");

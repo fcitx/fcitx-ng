@@ -288,10 +288,12 @@ void fcitx_input_method_item_get_property(FcitxInputMethodItem* item, ...)
                 char** name = va_arg(va, char**);
                 *name = item->name;
             }
+            break;
             case FIMIP_Layout: {
                 char** name = va_arg(va, char**);
                 *name = item->layoutInfo.layout;
             }
+            break;
             case FIMIP_Variant: {
                 char** name = va_arg(va, char**);
                 *name = item->layoutInfo.variant;

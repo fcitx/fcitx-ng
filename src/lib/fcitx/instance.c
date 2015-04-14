@@ -33,6 +33,16 @@
 #include "addon-internal.h"
 #include "frontend.h"
 
+typedef enum {
+    LRK_None,
+    LRK_Trigger,
+    LRK_TriggerAlt,
+    LRK_ScrollForward,
+    LRK_ScrollBackward,
+    LRK_Activate,
+    LRK_Deactivate,
+} FcitxLastReleasedKey;
+
 typedef enum _FcitxInputMethodStateUpdateType
 {
     UpdateType_SetInputMethod,
@@ -49,6 +59,13 @@ typedef struct _FcitxInputMethodStateUpdate
         } setIM;
     };
 } FcitxInputMethodStateUpdate;
+
+typedef struct _FcitxInputMethodPrivateState
+{
+
+    uint64_t lastKeyPressedTime;
+    FcitxLastReleasedKey releasedKey;
+} FcitxInputMethodPrivateState;
 
 typedef struct _FcitxInstanceArguments
 {
@@ -96,6 +113,12 @@ void Usage()
 void Version()
 {
     printf("fcitx version: %s\n", FCITX_VERSION);
+}
+
+static inline
+FcitxInputMethodPrivateState* _fcitx_instance_input_context_get_private_state(FcitxInstance* instance, FcitxInputContext* ic)
+{
+    return fcitx_input_context_set_property(ic, instance->inputMethodPrivateStateId, NULL);
 }
 
 void fcitx_instance_arugment_parse(FcitxInstanceArguments* arg, int argc, char* argv[])
@@ -161,6 +184,7 @@ void fcitx_instance_arugment_parse(FcitxInstanceArguments* arg, int argc, char* 
         case 'h':
             arg->quietQuit = true;
             Usage();
+            break;
         case 'v':
             arg->quietQuit = true;
             Version();
@@ -215,6 +239,7 @@ FcitxInstance* fcitx_instance_new(int argc, char* argv[])
     instance->imManager = fcitx_input_method_manager_new();
     fcitx_input_method_manager_set_event_dispatcher(instance->imManager, fcitx_instance_event_dispatch, NULL, instance);
     instance->globalInputMethod = fcitx_ptr_array_new(NULL);
+    instance->globalConfig = fcitx_global_config_new();
 
     return instance;
 }
@@ -230,6 +255,18 @@ void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int fla
             fcitx_instance_shutdown(instance);
         }
     }
+}
+
+void* fcitx_input_context_input_method_private_state_set(void* data, void* value, void* userData)
+{
+    FCITX_UNUSED(userData);
+    FCITX_UNUSED(value);
+    FcitxInputMethodPrivateState* state = data;
+    if (!data) {
+        state = fcitx_utils_new(FcitxInputMethodPrivateState);
+    }
+
+    return state;
 }
 
 void* fcitx_input_context_input_method_state_set(void* data, void* value, void* userData)
@@ -312,6 +349,14 @@ int fcitx_instance_run(FcitxInstance* instance)
                                                                                  fcitx_input_context_input_method_state_copy,
                                                                                  fcitx_input_context_input_method_state_free,
                                                                                  NULL, instance);
+    // this part of state is not shared, only used to instance
+    instance->inputMethodPrivateStateId =
+        fcitx_input_context_manager_register_property(instance->icManager,
+                                                      "inputMethodPrivateState",
+                                                      fcitx_input_context_input_method_private_state_set,
+                                                      NULL,
+                                                      fcitx_utils_closure_free,
+                                                      NULL, instance);
     fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
     fcitx_addon_manager_set_property(instance->addonManager, "icmanager", instance->icManager);
     fcitx_addon_manager_set_property(instance->addonManager, "immanager", instance->imManager);
@@ -362,6 +407,7 @@ bool fcitx_instance_get_try_replace(FcitxInstance* instance)
 FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)
 {
+    fcitx_global_config_free(instance->globalConfig);
     fcitx_addon_manager_unref(instance->addonManager);
     fcitx_standard_path_unref(instance->standardPath);
     fcitx_mainloop_free(instance->mainloop);
@@ -384,15 +430,83 @@ bool fcitx_instance_input_method_group_reset_foreach(FcitxInputContext* ic, void
     return true;
 }
 
+
 bool fcitx_instance_event_dispatch(void* self, FcitxEvent* event)
 {
     FcitxInstance* instance = self;
     FcitxInputContextEvent* icEvent = (FcitxInputContextEvent*) event;
 
-    // TODO, handle trigger key
-
     if ((event->type & ET_EventTypeFlag) == ET_InputContextEventFlag) {
-        // TODO
+        if (event->type == ET_InputContextKeyEvent) {
+            bool hasMoreThanOneIM = fcitx_input_method_manager_get_group_size(instance->imManager, instance->group) > 0;
+
+            struct {
+                FcitxLastReleasedKey releasedKey;
+                FcitxKeyList* keyList;
+                void (*callback)(FcitxInstance* instance, FcitxInputContext* ic);
+                bool valid;
+            } keyHandle[] = {
+                {LRK_Trigger, instance->globalConfig->hotkey.triggerKey, NULL, hasMoreThanOneIM},
+                {LRK_TriggerAlt, instance->globalConfig->hotkey.triggerKey, NULL, hasMoreThanOneIM},
+                {LRK_ScrollForward, instance->globalConfig->hotkey.triggerKey, NULL, hasMoreThanOneIM},
+                {LRK_ScrollBackward, instance->globalConfig->hotkey.triggerKey, NULL, hasMoreThanOneIM},
+                {LRK_Activate, instance->globalConfig->hotkey.triggerKey, NULL, hasMoreThanOneIM},
+                {LRK_Deactivate, instance->globalConfig->hotkey.triggerKey, NULL, hasMoreThanOneIM},
+            };
+
+            FcitxInputContextKeyEvent* keyEvent = (FcitxInputContextKeyEvent*) event;
+            bool isModifier = fcitx_key_is_modifier(keyEvent->detail.key);
+
+            FcitxInputMethodPrivateState* privState = _fcitx_instance_input_context_get_private_state(instance, icEvent->inputContext);
+            if (!keyEvent->detail.isRelease) {
+                privState->lastKeyPressedTime = keyEvent->detail.time;
+                bool handled = false;
+                for (size_t i = 0; i < FCITX_ARRAY_SIZE(keyHandle); i ++) {
+                    if (privState->releasedKey == keyHandle[i].releasedKey
+                        && keyHandle[i].valid
+                        && fcitx_key_list_check(keyHandle[i].keyList, keyEvent->detail.key)) {
+                        handled = true;
+                        if (isModifier) {
+                            privState->releasedKey = keyHandle[i].releasedKey;
+                        } else {
+                            keyHandle[i].callback(instance, keyEvent->inputContext);
+                        }
+                        break;
+                    }
+                }
+
+                if (handled) {
+                    return true;
+                } else {
+                    privState->releasedKey = LRK_None;
+                }
+            } else {
+                bool handled = false;
+                if (isModifier && (keyEvent->detail.time < privState->lastKeyPressedTime + 500)) {
+                    for (size_t i = 0; i < FCITX_ARRAY_SIZE(keyHandle); i ++) {
+                        if (privState->releasedKey == keyHandle[i].releasedKey
+                            && keyHandle[i].valid
+                            && fcitx_key_list_check(keyHandle[i].keyList, keyEvent->detail.key)) {
+                            handled = true;
+                            keyHandle[i].callback(instance, keyEvent->inputContext);
+                            break;
+                        }
+                    }
+                }
+                privState->releasedKey = LRK_None;
+                if (handled) {
+                    return true;
+                }
+            }
+
+            if (fcitx_key_list_check(instance->globalConfig->hotkey.triggerKey, keyEvent->detail.key)) {
+                if (fcitx_input_method_manager_get_group_size(instance->imManager, instance->group)) {
+                } else {
+                    return false;
+                }
+            }
+        }
+
         FcitxInputMethod* im = NULL;
         if (im) {
             return im->handleEvent(im->imclass, event);
@@ -468,3 +582,14 @@ void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, 
     update.setIM.local = local;
     fcitx_input_context_set_property(ic, instance->inputMethodStateId, &update);
 }
+
+FCITX_EXPORT_API
+void fcitx_instance_toggle_input_context(FcitxInstance* instance, FcitxInputContext* ic, bool quickSwitch)
+{
+    // TODO
+}
+
+void fcitx_instance_scroll_input_method(FcitxInstance* instance, FcitxInputContext* ic, bool forward);
+
+void fcitx_instance_switch_input_method_group(FcitxInstance* instance, FcitxInputContext* ic, bool forward);
+

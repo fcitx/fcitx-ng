@@ -48,7 +48,7 @@ FCITX_EXPORT_API
 bool fcitx_addon_init_general(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager)
 {
     FcitxAddonAPICommon* apiCommon = addonInst->api;
-    if (!apiCommon->init && !apiCommon->destroy) {
+    if (!apiCommon->init || !apiCommon->destroy) {
         return false;
     }
 
@@ -342,20 +342,16 @@ bool _fcitx_addon_load_metadata(const char* key, size_t keyLen, void** data, voi
             fcitx_dict_insert_by_str(manager->addons, addon->config->addon.name, addon, false);
         }
 
-        if (addon) {
-            // free old one
-            fcitx_string_hashset_free(addon->dependencies);
-            addon->dependencies = fcitx_string_hashset_parse(addon->config->addon.dependency, ',');
-        }
+        // free old one
+        fcitx_string_hashset_free(addon->dependencies);
+        addon->dependencies = fcitx_string_hashset_parse(addon->config->addon.dependency, ',');
 
-        if (addon &&
-            (manager->disabledAllAddons ||
-             (manager->disabledAddons && fcitx_string_hashset_contains(manager->disabledAddons, addon->config->addon.name)))) {
+        if (manager->disabledAllAddons ||
+            (manager->disabledAddons && fcitx_string_hashset_contains(manager->disabledAddons, addon->config->addon.name))) {
             addon->config->addon.enabled = false;
         }
 
-        if (addon &&
-            (manager->enabledAddons && fcitx_string_hashset_contains(manager->enabledAddons, addon->config->addon.name))) {
+        if (manager->enabledAddons && fcitx_string_hashset_contains(manager->enabledAddons, addon->config->addon.name)) {
             addon->config->addon.enabled = true;
         }
 
@@ -538,7 +534,7 @@ void fcitx_addon_manager_invoke(FcitxAddonManager* manager, const char* addonNam
     }
 
     // bad addon!
-    if (!entry->function || !entry->signature) {
+    if (!entry->function) {
         return;
     }
 

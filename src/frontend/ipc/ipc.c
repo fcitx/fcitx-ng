@@ -21,7 +21,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <assert.h>
-#include "module/dbus/fcitx-dbus.h"
+#include "fcitx-dbus.h"
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
@@ -249,8 +249,6 @@ DBusHandlerResult fcitx_ipc_inputcontext_handler(DBusConnection *connection, DBu
         } else {
             reply = dbus_message_new_error(msg, DBUS_ERROR_INVALID_ARGS, "");
         }
-
-        reply = dbus_message_new_method_return(msg);
     }
 
     dbus_error_free(&error);

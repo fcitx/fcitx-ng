@@ -27,8 +27,6 @@ add_executable(testconfiguration testconfiguration.c)
 target_link_libraries(testconfiguration Fcitx::Config)
 add_test(NAME testconfiguration COMMAND testconfiguration)
 
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 # test desc compiler
 set(TEST_DESC_COMPILE_SOURCE
   ${CMAKE_CURRENT_BINARY_DIR}/test-config.c
@@ -37,6 +35,7 @@ set(TEST_DESC_COMPILE_SOURCE
   )
 
 add_executable(testdesccompile ${TEST_DESC_COMPILE_SOURCE})
+target_include_directories(testdesccompile PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(testdesccompile Fcitx::Config)
 
 fcitx5_generate_config_source(${CMAKE_CURRENT_SOURCE_DIR}/test.desc test-config TestConfig Fcitx)
@@ -45,6 +44,7 @@ add_test(NAME testdesccompile COMMAND testdesccompile)
 # test addon
 add_executable(testaddon testaddon.c)
 add_dependencies(testaddon testim.h.target)
+target_include_directories(testaddon PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_link_libraries(testaddon Fcitx::Core testim)
 add_test(NAME testaddon COMMAND testaddon ${CMAKE_CURRENT_SOURCE_DIR}/addon ${CMAKE_CURRENT_BINARY_DIR}/addon)
 

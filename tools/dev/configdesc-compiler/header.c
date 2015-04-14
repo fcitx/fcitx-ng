@@ -27,6 +27,7 @@ void print_includes(const char* includes)
         utarray_foreach(includeFile, includeFiles, char*) {
             fprintf(fout, "#include <%s>\n", *includeFile);
         }
+        fcitx_utils_string_list_free(includeFiles);
     }
 }
 

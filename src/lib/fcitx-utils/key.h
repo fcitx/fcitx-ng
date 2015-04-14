@@ -84,6 +84,8 @@ FcitxKeySym fcitx_keysym_from_unicode (uint32_t wc);
  **/
 uint32_t fcitx_keysym_to_unicode (FcitxKeySym keyval);
 
+FcitxKeyStates fcitx_keysym_to_state(FcitxKeySym sym);
+
 FCITX_DECL_END
 
 #endif //  _FCITX_UTILS_KEY_H_

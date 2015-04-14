@@ -7,6 +7,10 @@ find_package(ECM 0.0.11 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
 
+include(FeatureSummary)
+include(ECMSetupVersion)
+include(ECMGenerateHeaders)
+
 include(FcitxMacros)
 
 option(ENABLE_TEST "Build Test" On)
@@ -49,21 +53,13 @@ if(NOT CMAKE_INSTALL_LIBDATADIR)
   mark_as_advanced(CMAKE_INSTALL_LIBDATADIR)
 endif()
 
-macro(MAKE_INSTALL_PATH_ABSOLUTE out in)
-   if (IS_ABSOLUTE "${in}")    # IS_ABSOLUTE is new since cmake 2.4.8
-      set(${out} "${in}")
-   else()
-      set(${out} "${CMAKE_INSTALL_PREFIX}/${in}")
-   endif()
-endmacro()
-
-make_install_path_absolute(FCITX_INSTALL_LIBDIR ${CMAKE_INSTALL_LIBDIR})
-make_install_path_absolute(FCITX_INSTALL_LIBDATADIR ${CMAKE_INSTALL_LIBDATADIR})
-make_install_path_absolute(FCITX_INSTALL_DATADIR ${CMAKE_INSTALL_DATADIR})
-make_install_path_absolute(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_DATADIR}/fcitx")
-make_install_path_absolute(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_BINDIR})
-make_install_path_absolute(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_LOCALEDIR})
-make_install_path_absolute(FCITX_INSTALL_ADDONDIR "${CMAKE_INSTALL_LIBDIR}/fcitx")
+set(FCITX_INSTALL_LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR})
+set(FCITX_INSTALL_LIBDATADIR ${CMAKE_INSTALL_FULL_LIBDATADIR})
+set(FCITX_INSTALL_DATADIR ${CMAKE_INSTALL_FULL_DATADIR})
+set(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_FULL_DATADIR}/fcitx")
+set(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_FULL_BINDIR})
+set(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_FULL_LOCALEDIR})
+set(FCITX_INSTALL_ADDONDIR "${CMAKE_INSTALL_FULL_LIBDIR}/fcitx")
 
 # TODO mac/win
 set(FCITX_LIBRARY_SUFFIX ".so")
@@ -74,7 +70,7 @@ list(FIND CMAKE_CXX_IMPLICIT_LINK_DIRECTORIES "${FCITX_INSTALL_LIBDIR}" _isSyste
 if("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STREQUAL "-1")
     set(CMAKE_SKIP_BUILD_RPATH  FALSE)
     set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-    set(CMAKE_INSTALL_RPATH "${FCITX_INSTALL_LIBDIR}")
+    set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STREQUAL "-1")
 
@@ -137,10 +133,37 @@ if (ENABLE_COVERAGE)
                       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
 endif()
 
-include_directories(src/lib)
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
+
+ecm_setup_version(${FCITX_VERSION} VARIABLE_PREFIX KCONFIG
+                        VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h"
+                        PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake"
+                        SOVERSION 5)
+
+# create a Config.cmake and a ConfigVersion.cmake file and install them
+set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/fcitx")
+
+include(ECMPackageConfigHelpers)
+
+ecm_configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/FcitxConfig.cmake.in"
+                              "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
+                              INSTALL_DESTINATION  ${CMAKECONFIG_INSTALL_DIR}
+                              )
+
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
+               "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake"
+               "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FcitxMacros.cmake"
+        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
+        COMPONENT Devel )
+
+
+install(EXPORT FcitxTargets DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
+        FILE FcitxTargets.cmake NAMESPACE Fcitx:: COMPONENT Devel)
+
+
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Devel )
 
 add_subdirectory(src)
 
@@ -156,3 +179,5 @@ add_subdirectory(data)
 add_subdirectory(po)
 
 add_subdirectory(client)
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

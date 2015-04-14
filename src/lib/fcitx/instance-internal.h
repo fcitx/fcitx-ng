@@ -24,6 +24,8 @@
 
 #ifndef _FCITX_INSTANCE_INTERNAL_H_
 #define _FCITX_INSTANCE_INTERNAL_H_
+
+#include "global-config.h"
 #include "inputcontext.h"
 #include "addon.h"
 #include "ime.h"
@@ -44,6 +46,8 @@ struct _FcitxInstance {
     int group;
     int32_t inputMethodStateId;
     FcitxPtrArray* globalInputMethod;
+    FcitxGlobalConfig* globalConfig;
+    int32_t inputMethodPrivateStateId;
 };
 
 #endif

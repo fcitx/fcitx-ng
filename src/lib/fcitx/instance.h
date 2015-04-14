@@ -48,6 +48,7 @@ void fcitx_instance_destroy(FcitxInstance* instance);
 void fcitx_instance_set_input_method_group(FcitxInstance* instance, int group);
 int fcitx_instance_get_input_method_group(FcitxInstance* instance);
 void fcitx_instance_set_input_method_for_input_context(FcitxInstance* instance, FcitxInputContext* ic, FcitxInputMethodItem* item, bool local);
+void fcitx_instance_toggle_input_context(FcitxInstance* instance, FcitxInputContext* ic, bool quickSwitch);
 
 FCITX_DECL_END
 

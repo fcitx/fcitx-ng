@@ -26,7 +26,7 @@
 #include "fcitx/ime.h"
 #include "isocodes.h"
 #include "rules.h"
-#include "module/xcb/fcitx-xcb.h"
+#include "fcitx-xcb.h"
 
 #define XKB_RULES_XML_FILE XKEYBOARDCONFIG_XKBBASE "/rules/evdev.xml"
 

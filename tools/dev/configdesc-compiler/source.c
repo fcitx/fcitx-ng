@@ -166,6 +166,7 @@ void print_option_info(FcitxConfiguration* config, const char* type, const char*
                       "    info.list.storeFunc = (FcitxConfigurationSetFunc) %s;\n"
                       "    info.list.freeFunc = (FcitxDestroyNotify) %s;\n", typeName, loadFunc, storeFunc, freeFunc);
         print_option_info(config, subType, prefix);
+        free(underscoreName);
         free(structLoadFunc);
         free(structFreeFunc);
         free(structName);

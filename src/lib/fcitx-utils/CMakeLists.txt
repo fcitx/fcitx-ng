@@ -61,11 +61,14 @@ set_target_properties(fcitx-utils
   COMPILE_FLAGS "-fvisibility=hidden"
   LINK_FLAGS "-Wl,--no-undefined"
   )
-target_link_libraries(fcitx-utils DL::DL RT::RT)
+target_include_directories(fcitx-utils PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>)
+target_link_libraries(fcitx-utils
+    PRIVATE
+        DL::DL RT::RT)
 
 configure_file(fcitx-utils.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx-utils.pc)
 
-install(TARGETS fcitx-utils LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(TARGETS fcitx-utils EXPORT FcitxTargets LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx-utils.pc
   DESTINATION "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
 install(FILES ${FCITX_UTILS_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fcitx-utils")

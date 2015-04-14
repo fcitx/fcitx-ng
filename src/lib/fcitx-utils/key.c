@@ -152,6 +152,16 @@ char* fcitx_key_to_string(FcitxKey hotkey)
 FCITX_EXPORT_API
 bool fcitx_key_check(FcitxKey toCheck, FcitxKey key)
 {
+    bool isModifier = fcitx_key_is_modifier(key);
+    if (isModifier) {
+        FcitxKey keyAlt = key;
+        key.state &= ~fcitx_keysym_to_state(key.sym);
+        keyAlt.state |= fcitx_keysym_to_state(key.state);
+
+        return (toCheck.sym == key.sym && toCheck.state == key.state) ||
+               (toCheck.sym == keyAlt.sym && toCheck.state == keyAlt.state);
+    }
+
     toCheck.state &= FcitxKeyState_Ctrl_Alt_Shift | FcitxKeyState_Super;
     return (toCheck.sym == key.sym && toCheck.state == key.state);
 }
@@ -304,7 +314,8 @@ FCITX_EXPORT_API
 bool fcitx_key_list_check(FcitxKeyList* keyList, FcitxKey key)
 {
     utarray_foreach(curKey, &keyList->list, FcitxKey) {
-        if (fcitx_key_check(*curKey, key)) {
+
+        if (fcitx_key_check(key, *curKey)) {
             return true;
         }
     }
@@ -463,4 +474,29 @@ fcitx_keysym_from_unicode (uint32_t wc)
     * (a convention introduced in the UTF-8 work on xterm).
     */
     return wc | 0x01000000;
+}
+
+FCITX_EXPORT_API
+FcitxKeyStates fcitx_keysym_to_state(FcitxKeySym sym)
+{
+    switch (sym) {
+        case FcitxKey_Control_L:
+        case FcitxKey_Control_R:
+            return FcitxKeyState_Ctrl;
+        case FcitxKey_Alt_L:
+        case FcitxKey_Alt_R:
+            return FcitxKeyState_Alt;
+        case FcitxKey_Shift_L:
+        case FcitxKey_Shift_R:
+            return FcitxKeyState_Shift;
+        case FcitxKey_Super_L:
+        case FcitxKey_Super_R:
+            return FcitxKeyState_Super;
+        case FcitxKey_Hyper_L:
+        case FcitxKey_Hyper_R:
+            return FcitxKeyState_Hyper;
+        default:
+            return 0;
+    }
+    return 0;
 }

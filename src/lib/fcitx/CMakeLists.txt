@@ -1,9 +1,9 @@
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-
 set(LIBFCITX_SOURCES
   instance.c
   ${CMAKE_CURRENT_BINARY_DIR}/addon-config.c
   ${CMAKE_CURRENT_BINARY_DIR}/addon-config.h
+  ${CMAKE_CURRENT_BINARY_DIR}/global-config.c
+  ${CMAKE_CURRENT_BINARY_DIR}/global-config.h
   addon.c
   inputcontext.c
   inputdevice.c
@@ -23,6 +23,7 @@ set(FCITX_INTERNAL_HEADERS
   )
 
 fcitx5_generate_config_source(${PROJECT_SOURCE_DIR}/data/addon.desc addon-config AddonConfig Fcitx)
+fcitx5_generate_config_source(${PROJECT_SOURCE_DIR}/data/config.desc global-config GlobalConfig Fcitx)
 
 link_directories(${DL_LIBRARY_DIRS} ${PTHREAD_LIBRARY_DIRS})
 
@@ -35,9 +36,14 @@ set_target_properties(fcitx-core
 
 configure_file(fcitx.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc)
 
-target_link_libraries(fcitx-core Fcitx::Config Fcitx::Utils LibFFI::FFI LibUUID::UUID DL::DL)
+target_link_libraries(fcitx-core
+    PUBLIC
+        Fcitx::Config Fcitx::Utils
+    PRIVATE
+        LibFFI::FFI LibUUID::UUID DL::DL)
+target_include_directories(fcitx-core PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
 target_include_directories(fcitx-core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
-install(TARGETS fcitx-core LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+install(TARGETS fcitx-core EXPORT FcitxTargets LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc
   DESTINATION "${CMAKE_INSTALL_LIBDATADIR}/pkgconfig")
 install(FILES ${FCITX_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fcitx")

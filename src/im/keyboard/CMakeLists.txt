@@ -1,9 +1,3 @@
-include_directories (
-  ${LIBINTL_INCLUDE_DIR}
-  ${LIBICONV_INCLUDE_DIR}
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${XKBCOMMON_INCLUDE_DIRS}
-  )
 set(FCITX_KEYBOARD_LINK_LIBS)
 if(ENABLE_LIBXML2)
   set(FCITX_KEYBOARD_LINK_LIBS XKBCommon::XKBCommon LibXml2::LibXml)
@@ -20,5 +14,6 @@ if(ENABLE_LIBXML2)
 endif()
 
 add_library(fcitx-keyboard MODULE ${FCITX_KEYBOARD_SOURCES})
-target_link_libraries(fcitx-keyboard ${FCITX_KEYBOARD_LINK_LIBS} Fcitx::Core)
+target_include_directories(fcitx-keyboard PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
+target_link_libraries(fcitx-keyboard ${FCITX_KEYBOARD_LINK_LIBS} Fcitx::Core fcitx-xcb-interface)
 set_target_properties(fcitx-keyboard PROPERTIES PREFIX "")

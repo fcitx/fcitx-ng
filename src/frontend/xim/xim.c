@@ -25,7 +25,7 @@
 #include "fcitx/addon.h"
 #include "fcitx/frontend.h"
 #include "fcitx/instance.h"
-#include "module/xcb/fcitx-xcb.h"
+#include "fcitx-xcb.h"
 #include "xim-config.h"
 
 typedef struct _FcitxXIM
@@ -114,7 +114,10 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
 
     FcitxXIMServer* server = user_data;
     FcitxInputContext* ic = NULL;
-    if (xic && hdr->major_opcode != XCB_XIM_CREATE_IC) {
+    if (!xic) {
+        return;
+    }
+    if (hdr->major_opcode != XCB_XIM_CREATE_IC) {
         FcitxXIMICData* icData = xcb_im_input_context_get_data(xic);
         ic = icData->ic;
     }
@@ -125,7 +128,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
             FcitxXIMICData* icData = fcitx_utils_new(FcitxXIMICData);
             icData->ic = ic;
             icData->server = server;
-            xcb_im_input_context_set_data(xic, ic, free);
+            xcb_im_input_context_set_data(xic, icData, free);
             fcitx_input_context_set_property(ic, server->xim->frontendDataId, xic);
             fcitx_input_context_set_focus_group(ic, FICFG_Local, server->group);
             break;
@@ -148,6 +151,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
             event.rawKey.sym = xkb_state_key_get_one_sym(xkbState, xevent->detail);
             event.rawKey.state = xevent->state;
             event.key = event.rawKey;
+            event.time = xevent->time;
             if (!fcitx_input_context_process_key_event(ic, &event)) {
                 xcb_im_forward_event(im, xic, xevent);
             }
@@ -364,6 +368,10 @@ bool fcitx_xim_handle_event(void* data, FcitxEvent* _event)
                         }
                     }
 
+                    while (utarray_len(&server->xim->feedbackBuffer) > 0 && *((uint32_t*) utarray_back(&server->xim->feedbackBuffer)) == 0) {
+                        utarray_pop_back(&server->xim->feedbackBuffer);
+                    }
+
                     xcb_im_preedit_draw_fr_t frame;
                     memset(&frame, 0, sizeof(xcb_im_preedit_draw_fr_t));
                     frame.caret = 0;// TODO caret
@@ -378,7 +386,7 @@ bool fcitx_xim_handle_event(void* data, FcitxEvent* _event)
                     frame.preedit_string = (uint8_t*) compoundText;
                     frame.feedback_array.size = utarray_len(&server->xim->feedbackBuffer);
                     frame.feedback_array.items = server->xim->feedbackBuffer.d;
-                    frame.status = preeditLength ? (frame.feedback_array.size ? 0 : 2) : 1;
+                    frame.status = frame.feedback_array.size ? 0 : 2;
                     icData->lastPreeditLength = utf8Length;
                     xcb_im_preedit_draw_callback(server->im, xic, &frame);
                 }

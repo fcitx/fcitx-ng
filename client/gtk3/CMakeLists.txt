@@ -10,16 +10,9 @@ if (NOT DEFINED GTK3_IM_MODULEDIR)
     set(GTK3_IM_MODULEDIR "${CMAKE_INSTALL_LIBDIR}/gtk-3.0/${GTK3_BINARY_VERSION}/immodules" CACHE PATH "Gtk3 im module directory")
 endif()
 
-include_directories(${GTK3_INCLUDE_DIRS})
-include_directories(${CMAKE_CURRENT_BINARY_DIR})
-link_directories(${GTK3_LIBRARY_DIRS})
-
-include_directories(${GIO2_INCLUDE_DIRS})
-link_directories(${GIO2_LIBRARY_DIRS})
-
 set(FCITX_GTK3_IM_MODULE_SOURCES
     fcitxim.c
-    fcitximcontext-gio.c)
+    fcitximcontext.c)
 
 add_library(im-fcitx-gtk3 MODULE ${FCITX_GTK3_IM_MODULE_SOURCES})
 set_target_properties( im-fcitx-gtk3 PROPERTIES PREFIX ""

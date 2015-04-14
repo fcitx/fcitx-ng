@@ -129,6 +129,7 @@ bool fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* ma
     }
 
     void* needfree = NULL;
+    bool result = false;
     do {
         struct stat statbuf;
         int statresult = fstat(fd, &statbuf);
@@ -136,7 +137,8 @@ bool fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* ma
             fcitx_utils_string_swap(&lib->errorString, strerror(errno));
             break;
         }
-        void* data = mmap(0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+        void* needunmap = NULL;
+        void* data = needunmap = mmap(0, statbuf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
         if (!data) {
             data = malloc(statbuf.st_size);
             needfree = data;
@@ -153,16 +155,16 @@ bool fcitx_library_find_data(FcitxLibrary* lib, const char* slug, const char* ma
         if (parser) {
             parser(pos, arg);
         }
-        return true;
+        result = true;
+        if (needunmap) {
+            munmap(needunmap, statbuf.st_size);
+        }
     } while(0);
 
     close(fd);
+    free(needfree);
 
-    if (needfree) {
-        free(needfree);
-    }
-
-    return false;
+    return result;
 }
 
 FCITX_EXPORT_API
