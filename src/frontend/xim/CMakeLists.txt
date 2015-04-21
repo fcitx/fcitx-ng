@@ -1,7 +1,7 @@
-if (NOT TARGET XCBImdkit::XCBImdkit AND
-    NOT TARGET fcitx-xcb-interface AND
-    NOT TARGET XCB::XCB AND
-    NOT TARGET XCB::AUX AND
+if (NOT TARGET XCBImdkit::XCBImdkit OR
+    NOT TARGET fcitx-xcb-interface OR
+    NOT TARGET XCB::XCB OR
+    NOT TARGET XCB::AUX OR
     NOT TARGET XKBCommon::XKBCommon)
 return()
 endif()
