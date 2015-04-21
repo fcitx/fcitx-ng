@@ -4,6 +4,19 @@ Include/0=<dbus/dbus.h>
 Include/0="dbusmodule.h"
 Self.Type=FcitxDBus
 Function/0=GetConnection
+Function/1=WatchName
+Function/2=RemoveWatch
 
 [GetConnection/Function]
 ReturnType=DBusConnection*
+
+[WatchName/Function]
+ReturnType=int
+Arg/0=const char*
+Arg/1=void*
+Arg/2=void*
+Arg/3=void*
+
+[RemoveWatch/Function]
+ReturnType=void
+Arg/0=int

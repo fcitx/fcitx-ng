@@ -12,8 +12,8 @@ int main()
     utarray_init(&array, &ut_int_icd);
     int test[] = {3, 1, 2};
     int test2[] = {1, 2, 3};
-    FCITXGCLIENT_UNUSED(test);
-    FCITXGCLIENT_UNUSED(test2);
+    FCITX_UNUSED(test);
+    FCITX_UNUSED(test2);
     int i;
     i = 1;
     utarray_push_back(&array, &i);

@@ -14,21 +14,21 @@ static uint32_t flag;
 
 void* set_string_property(void* old, void* newValue, void* userData)
 {
-    FCITXGCLIENT_UNUSED(userData);
+    FCITX_UNUSED(userData);
     free(old);
     return fcitx_utils_strdup(newValue);
 }
 
 char* application_name_property_key(void* data, size_t* len, void* userData)
 {
-    FCITXGCLIENT_UNUSED(userData);
+    FCITX_UNUSED(userData);
     *len = strlen(data);
     return data;
 }
 
 void string_free(void* data, void* userData)
 {
-    FCITXGCLIENT_UNUSED(userData);
+    FCITX_UNUSED(userData);
     free(data);
 }
 

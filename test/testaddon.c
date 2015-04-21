@@ -9,9 +9,9 @@ extern FcitxAddonAPIInputMethod testim_inputmethod;
 
 bool _fcitx_addon_dump(const char* key, size_t keyLen, void** data, void* arg)
 {
-    FCITXGCLIENT_UNUSED(key);
-    FCITXGCLIENT_UNUSED(keyLen);
-    FCITXGCLIENT_UNUSED(arg);
+    FCITX_UNUSED(key);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(arg);
     FcitxAddon* addon = *(FcitxAddon**) data;
     printf("%s\n", addon->config->addon.name);
 

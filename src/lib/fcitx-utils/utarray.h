@@ -402,7 +402,7 @@ utarray_prev(UT_array *a, void *e)
     return _utarray_eltptr(a, idx);
 }
 
-static const UT_icd ut_int_icd _FCITXGCLIENT_UNUSED_ = {
+static const UT_icd ut_int_icd _FCITX_UNUSED_ = {
     sizeof(int), NULL, NULL, NULL
 };
 

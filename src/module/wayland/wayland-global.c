@@ -133,7 +133,7 @@ static void
 FxWaylandGlobalHandlerFree(void *p)
 {
     FcitxWaylandGlobalHandler *handler = p;
-    FCITXGCLIENT_UNUSED(handler);
+    FCITX_UNUSED(handler);
 }
 
 static void

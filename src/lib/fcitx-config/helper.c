@@ -44,7 +44,7 @@ void fcitx_configuration_get_string(FcitxConfiguration* config, const char* path
 FCITX_EXPORT_API
 void fcitx_configuration_set_string(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, char** str)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     if (!*str) {
         return;
     }
@@ -66,7 +66,7 @@ void fcitx_configuration_get_integer(FcitxConfiguration* config, const char* pat
 FCITX_EXPORT_API
 void fcitx_configuration_set_integer(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, const int* integer)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     char buf[64];
     sprintf(buf, "%d", *integer);
     fcitx_configuration_set_value_by_path(config, path, buf);
@@ -82,7 +82,7 @@ void fcitx_configuration_get_boolean(FcitxConfiguration* config, const char* pat
 FCITX_EXPORT_API
 void fcitx_configuration_set_boolean(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, const bool* b)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     fcitx_configuration_set_value_by_path(config, path, *b ? "True" : "False");
 }
 
@@ -96,7 +96,7 @@ void fcitx_configuration_get_char(FcitxConfiguration* config, const char* path, 
 FCITX_EXPORT_API
 void fcitx_configuration_set_char(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, const char* chr)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     char buf[2] = {*chr, '\0'};
     fcitx_configuration_set_value_by_path(config, path, buf);
 }
@@ -115,7 +115,7 @@ void fcitx_configuration_get_color(FcitxConfiguration* config, const char* path,
 FCITX_EXPORT_API
 void fcitx_configuration_set_color(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, const FcitxColor* color)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     char buf[FCITX_COLOR_STRING_LENGTH];
     fcitx_color_to_string(color, buf);
     fcitx_configuration_set_value_by_path(config, path, buf);
@@ -136,7 +136,7 @@ void fcitx_configuration_get_key(FcitxConfiguration* config, const char* path, F
 FCITX_EXPORT_API
 void fcitx_configuration_set_key(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, FcitxKeyList** keyList)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     if (!*keyList) {
         return;
     }
@@ -221,7 +221,7 @@ bool set_i18n_string_foreach(const char* key, size_t keyLen, void** data, void* 
 FCITX_EXPORT_API
 void fcitx_configuration_set_i18n_string(FcitxConfiguration* config, const char* path, FcitxConfigurationOptionInfo* info, FcitxI18NString** str)
 {
-    FCITXGCLIENT_UNUSED(info);
+    FCITX_UNUSED(info);
     if (!*str) {
         return;
     }

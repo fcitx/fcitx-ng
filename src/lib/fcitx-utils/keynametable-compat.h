@@ -25,7 +25,7 @@
 static const struct KeyNameListCompat {
     char         *name;
     FcitxKeySym   sym;
-} keyNameListCompat[] _FCITXGCLIENT_UNUSED_ = {
+} keyNameListCompat[] _FCITX_UNUSED_ = {
     {"ACCESSXENABLE", FcitxKey_AccessX_Enable },
     {"ACCESSXFEEDBACKENABLE", FcitxKey_AccessX_Feedback_Enable },
     {"ARABICHEH", FcitxKey_Arabic_heh },

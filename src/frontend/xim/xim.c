@@ -106,11 +106,11 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
               const xcb_im_packet_header_fr_t* hdr,
               void* frame, void* arg, void* user_data)
 {
-    FCITXGCLIENT_UNUSED(im);
-    FCITXGCLIENT_UNUSED(client);
-    FCITXGCLIENT_UNUSED(hdr);
-    FCITXGCLIENT_UNUSED(frame);
-    FCITXGCLIENT_UNUSED(arg);
+    FCITX_UNUSED(im);
+    FCITX_UNUSED(client);
+    FCITX_UNUSED(hdr);
+    FCITX_UNUSED(frame);
+    FCITX_UNUSED(arg);
 
     FcitxXIMServer* server = user_data;
     FcitxInputContext* ic = NULL;
@@ -124,7 +124,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
 
     switch (hdr->major_opcode) {
         case XCB_XIM_CREATE_IC:
-            ic = fcitx_input_context_new(server->xim->icManager, fcitx_xim_frontend.frontendId);
+            ic = fcitx_input_context_new(server->xim->icManager, fcitx_xim_frontend.frontendId, NULL, NULL);
             FcitxXIMICData* icData = fcitx_utils_new(FcitxXIMICData);
             icData->ic = ic;
             icData->server = server;
@@ -171,7 +171,7 @@ void callback(xcb_im_t* im, xcb_im_client_t* client, xcb_im_input_context_t* xic
 
 bool fcitx_xim_xcb_event_fitler(xcb_connection_t* conn, xcb_generic_event_t* event, void* data)
 {
-    FCITXGCLIENT_UNUSED(conn);
+    FCITX_UNUSED(conn);
     FcitxXIMServer* server = data;
     return xcb_im_filter_event(server->im, event);
 }
@@ -225,7 +225,7 @@ void fcitx_xim_on_xcb_connection_created(const char* name,
 
 void fcitx_xim_on_xcb_connection_closed(const char* name, xcb_connection_t* conn, void* data)
 {
-    FCITXGCLIENT_UNUSED(conn);
+    FCITX_UNUSED(conn);
     FcitxXIM* self = data;
     FcitxXIMServer* server = NULL;
     if (fcitx_dict_lookup_by_str(self->connFilterId, name, &server)) {
@@ -247,16 +247,17 @@ void fcitx_xim_server_destroy(void* data)
     if (server->conn) {
         xcb_destroy_window(server->conn, server->window);
     }
+    free(server->name);
     free(server);
 }
 
-static const UT_icd ut_feedback_icd _FCITXGCLIENT_UNUSED_ = {
+static const UT_icd ut_feedback_icd _FCITX_UNUSED_ = {
     sizeof(uint32_t), NULL, NULL, NULL
 };
 
 void* fcitx_xim_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITXGCLIENT_UNUSED(config);
+    FCITX_UNUSED(config);
     FcitxXIM* xim = fcitx_utils_new(FcitxXIM);
     FcitxInputContextManager* icmanager = fcitx_addon_manager_get_property(manager, "icmanager");
 

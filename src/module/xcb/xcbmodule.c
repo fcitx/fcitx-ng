@@ -99,9 +99,9 @@ FCITX_DEFINE_ADDON(fcitx_xcb, module, FcitxAddonAPICommon) = {
 
 void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITXGCLIENT_UNUSED(_event);
-    FCITXGCLIENT_UNUSED(fd);
-    FCITXGCLIENT_UNUSED(flag);
+    FCITX_UNUSED(_event);
+    FCITX_UNUSED(fd);
+    FCITX_UNUSED(flag);
 
     FcitxXCBConnection* fconn = data;
     xcb_generic_event_t* event;
@@ -143,6 +143,10 @@ void fcitx_xcb_connection_close(void* data)
     fconn->group = NULL;
     fcitx_input_context_focus_group_free(group);
 
+    xkb_context_unref(fconn->context);
+    xkb_keymap_unref(fconn->keymap);
+    xkb_state_unref(fconn->state);
+
     FcitxXCB* xcb = fconn->xcb;
     FcitxMainLoop* mainloop = fcitx_instance_get_mainloop(xcb->instance);
     fcitx_mainloop_remove_io_event(mainloop, fconn->event);
@@ -154,7 +158,7 @@ void fcitx_xcb_connection_close(void* data)
 
 void* fcitx_xcb_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITXGCLIENT_UNUSED(config);
+    FCITX_UNUSED(config);
     FcitxXCB* xcb = fcitx_utils_new(FcitxXCB);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     FcitxInputContextManager* icManager = fcitx_addon_manager_get_property(manager, "icmanager");
@@ -421,11 +425,21 @@ char* fcitx_xcb_get_xkb_rules_names(FcitxXCB* self, const char* display, int* pL
 
 bool fcitx_xcb_fitler_event(xcb_connection_t* conn, xcb_generic_event_t* event, void* data)
 {
-    FCITXGCLIENT_UNUSED(conn);
+    FCITX_UNUSED(conn);
     FcitxXCBConnection* fconn = data;
 
     uint8_t response_type = event->response_type & ~0x80;
-    if (response_type == fconn->xkbFirstEvent) {
+    if (response_type == XCB_CLIENT_MESSAGE) {
+        xcb_client_message_event_t* client_message = (xcb_client_message_event_t*) event;
+        if (client_message->window == fconn->server_window &&
+            client_message->format == 8 &&
+            client_message->type == fconn->atom) {
+            FcitxInputContext* ic = fcitx_input_context_manager_get_input_context_by_uuid(fconn->xcb->icManager, client_message->data.data8);
+            if (ic) {
+                fcitx_input_context_set_focus_group(ic, FICFG_Local, fconn->group);
+            }
+        }
+    } else if (response_type == fconn->xkbFirstEvent) {
         _xkb_event* xkbEvent = (_xkb_event*) event;
         if (xkbEvent->any.deviceID == fconn->coreDeviceId) {
             switch(xkbEvent->any.xkbType) {
@@ -513,9 +527,9 @@ void fcitx_xcb_update_keymap(FcitxXCBConnection* fconn)
             fconn->keymap = xkb_keymap_new_from_names(fconn->context, &xkbNames, XKB_KEYMAP_COMPILE_NO_FLAGS);
         }
 
-    }
-    if (fconn->keymap) {
-        new_state = xkb_state_new(fconn->keymap);
+        if (fconn->keymap) {
+            new_state = xkb_state_new(fconn->keymap);
+        }
     }
 
     xkb_state_unref(fconn->state);

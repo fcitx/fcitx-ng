@@ -86,7 +86,7 @@ void print_c_header(FcitxFunctionInfo* functionInfo, FcitxConfiguration* config)
         fprintf(fout, "FcitxAddonManager* manager");
         for (uint32_t j = 0; j < sig->function.arg->len; j++) {
             char* typename = *fcitx_ptr_array_index(sig->function.arg, j, char**);
-            char* type = strchr(typename, '*') ? "void*" : typename;
+            char* type = typename;
             fprintf(fout, ", %s arg%d", type, j);
         }
         fprintf(fout, ")\n");

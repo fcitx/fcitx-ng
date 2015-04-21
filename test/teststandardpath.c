@@ -2,8 +2,8 @@
 
 bool foreach_func(const char* path, size_t keyLen, void** data, void* userData)
 {
-    FCITXGCLIENT_UNUSED(keyLen);
-    FCITXGCLIENT_UNUSED(userData);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(userData);
     printf("%s\n", path);
     FcitxStandardPathFile* files = *data;
     while (files->fp) {

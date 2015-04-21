@@ -49,8 +49,8 @@ void print_header_guard(const char* name, const char* prefix)
 
 bool print_forward_decl(const char* key, size_t keyLen, void** data, void* userData)
 {
-    FCITXGCLIENT_UNUSED(keyLen);
-    FCITXGCLIENT_UNUSED(data);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     const char* prefix = userData;
     char* fullName = type_name(prefix, key);
     fprintf(fout, "typedef struct _%s %s;\n", fullName, fullName);
@@ -60,8 +60,8 @@ bool print_forward_decl(const char* key, size_t keyLen, void** data, void* userD
 
 void print_struct_attribute(FcitxConfiguration* config, const char* path, void* userData)
 {
-    FCITXGCLIENT_UNUSED(path);
-    FCITXGCLIENT_UNUSED(userData);
+    FCITX_UNUSED(path);
+    FCITX_UNUSED(userData);
     const char* type = fcitx_configuration_get_value_by_path(config, "Type");
     if (!type) {
         return;
@@ -76,8 +76,8 @@ void print_struct_attribute(FcitxConfiguration* config, const char* path, void* 
 
 bool print_struct_forward_decl(const char* key, size_t keyLen, void** data, void* userData)
 {
-    FCITXGCLIENT_UNUSED(keyLen);
-    FCITXGCLIENT_UNUSED(data);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     print_struct_definition_context* context = userData;
     const char* prefix = context->prefix;
     char* fullName = type_name(prefix, key);
@@ -90,8 +90,8 @@ bool print_struct_forward_decl(const char* key, size_t keyLen, void** data, void
 
 bool print_top_level_struct_attribute(const char* key, size_t keyLen, void** data, void* userData)
 {
-    FCITXGCLIENT_UNUSED(keyLen);
-    FCITXGCLIENT_UNUSED(data);
+    FCITX_UNUSED(keyLen);
+    FCITX_UNUSED(data);
     const char* prefix = userData;
     char* fullName = type_name(prefix, key);
     char* name = format_first_lower_name(key);

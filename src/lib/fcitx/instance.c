@@ -247,8 +247,8 @@ FcitxInstance* fcitx_instance_new(int argc, char* argv[])
 
 void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITXGCLIENT_UNUSED(_event);
-    FCITXGCLIENT_UNUSED(flag);
+    FCITX_UNUSED(_event);
+    FCITX_UNUSED(flag);
     FcitxInstance* instance = data;
     uint8_t signo = 0;
     while (read(fd, &signo, sizeof(signo)) > 0) {
@@ -260,8 +260,8 @@ void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int fla
 
 void* fcitx_input_context_input_method_private_state_set(void* data, void* value, void* userData)
 {
-    FCITXGCLIENT_UNUSED(userData);
-    FCITXGCLIENT_UNUSED(value);
+    FCITX_UNUSED(userData);
+    FCITX_UNUSED(value);
     FcitxInputMethodPrivateState* state = data;
     if (!data) {
         state = fcitx_utils_new(FcitxInputMethodPrivateState);
@@ -303,7 +303,7 @@ void* fcitx_input_context_input_method_state_set(void* data, void* value, void* 
 
 void fcitx_input_context_input_method_state_free(void* data, void* userData)
 {
-    FCITXGCLIENT_UNUSED(userData);
+    FCITX_UNUSED(userData);
     if (!data) {
         return;
     }
@@ -414,6 +414,7 @@ void fcitx_instance_destroy(FcitxInstance* instance)
     fcitx_mainloop_free(instance->mainloop);
     fcitx_input_method_manager_unref(instance->imManager);
     fcitx_input_context_manager_unref(instance->icManager);
+    fcitx_ptr_array_free(instance->globalInputMethod);
     free(instance->enableList);
     free(instance->disableList);
     free(instance->uiname);

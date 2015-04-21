@@ -218,10 +218,10 @@ typedef struct {
 
 int _fcitx_configuration_compare(const char* keyA, size_t keyALen, const void* dataA, const char* keyB, size_t keyBLen, const void* dataB, void* userData)
 {
-    FCITXGCLIENT_UNUSED(keyA);
-    FCITXGCLIENT_UNUSED(keyALen);
-    FCITXGCLIENT_UNUSED(keyB);
-    FCITXGCLIENT_UNUSED(keyBLen);
+    FCITX_UNUSED(keyA);
+    FCITX_UNUSED(keyALen);
+    FCITX_UNUSED(keyB);
+    FCITX_UNUSED(keyBLen);
     fcitx_configuration_compare_context* context = userData;
     return context->callback(dataA, dataB, context->userData);
 }

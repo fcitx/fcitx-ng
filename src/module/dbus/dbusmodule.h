@@ -24,4 +24,6 @@
 
 typedef struct _FcitxDBus FcitxDBus;
 
+typedef void (*FcitxDBusWatchNameCallback)(void* arg, const char* serviceName, const char* oldName, const char* newName);
+
 #endif // _FCITX_MODULE_DBUS_DBUSMODULE_H_

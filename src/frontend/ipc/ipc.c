@@ -41,7 +41,7 @@ const char * inputmethod_introspection_xml =
     "<interface name=\"" FCITX_INPUTMETHOD_DBUS_INTERFACE "\">"
     "<method name=\"CreateIC\">"
     "<arg name=\"parameter\" direction=\"in\" type=\"a{sv}\"/>"
-    "<arg name=\"icid\" direction=\"out\" type=\"i\"/>"
+    "<arg name=\"ic\" direction=\"out\" type=\"o\"/>"
     "<arg name=\"uuid\" direction=\"out\" type=\"ay\"/>"
     "</method>"
     "</interface>"
@@ -119,17 +119,29 @@ const char * inputcontext_introspection_xml =
     "</interface>"
     "</node>";
 
+typedef struct _FcitxIPCSender
+{
+    int watchId;
+    FcitxDict* ics;
+} FcitxIPCSender;
+
 typedef struct _FcitxIPC
 {
     FcitxInstance* instance;
     DBusConnection* conn;
     dbus_bool_t objectRegistered;
     FcitxInputContextManager* icManager;
+    FcitxDict* senderToIC;
+    FcitxAddonManager* manager;
+    int32_t frontendDataId;
 } FcitxIPC;
 
 static void* fcitx_ipc_init(FcitxAddonManager* manager, const FcitxAddonConfig* config);
 static void fcitx_ipc_destroy(void* data);
 static bool fcitx_ipc_handle_event(void* self, FcitxEvent* event);
+static void fcitx_ipc_watch_name(void* arg, const char* serviceName, const char* oldName, const char* newName);
+static void fcitx_ipc_destroy_input_context(FcitxInputContext* ic, void* data);
+static DBusHandlerResult fcitx_ipc_inputcontext_handler(DBusConnection *connection, DBusMessage *msg, void *user_data);
 
 FCITX_DEFINE_ADDON(fcitx_ipc, frontend, FcitxAddonAPIFrontend) = {
     .common = {
@@ -138,6 +150,49 @@ FCITX_DEFINE_ADDON(fcitx_ipc, frontend, FcitxAddonAPIFrontend) = {
     },
     .handleEvent = fcitx_ipc_handle_event,
 };
+
+static FcitxIPCSender* fcitx_ipc_sender_new()
+{
+    FcitxIPCSender* senderData = fcitx_utils_new(FcitxIPCSender);
+    senderData->ics = fcitx_dict_new(NULL);
+
+    return senderData;
+};
+
+static void fcitx_ipc_sender_free(void *data)
+{
+    FcitxIPCSender* senderData = data;
+    fcitx_dict_free(senderData->ics);
+    free(senderData);
+}
+
+static FcitxInputContext* fcitx_ipc_new_input_context(FcitxIPC* self, const char* sender)
+{
+    FcitxInputContext* ic = fcitx_input_context_new(self->icManager, fcitx_ipc_frontend.frontendId, fcitx_ipc_destroy_input_context, self);
+
+    uint32_t icid = fcitx_input_context_get_id(ic);
+    char icPath[50];
+    sprintf(icPath, "/inputcontext/%u", icid);
+
+    DBusObjectPathVTable controller_vtable = {NULL, &fcitx_ipc_inputcontext_handler, NULL, NULL, NULL, NULL };
+    if (!dbus_connection_register_object_path(self->conn, icPath, &controller_vtable, self)) {
+        fcitx_input_context_destroy(ic);
+        return NULL;
+    }
+
+    FcitxIPCSender* senderData = NULL;
+    if (!fcitx_dict_lookup_by_str(self->senderToIC, sender, &senderData)) {
+        senderData = fcitx_ipc_sender_new();
+        int id = fcitx_dbus_invoke_watch_name(self->manager, sender, fcitx_ipc_watch_name, NULL, self);
+        senderData->watchId = id;
+        fcitx_dict_insert_by_str(self->senderToIC, sender, senderData, false);
+    }
+
+    fcitx_dict_insert_by_data(senderData->ics, (intptr_t) ic, NULL, false);
+    fcitx_input_context_set_property(ic, self->frontendDataId, fcitx_utils_strdup(sender));
+
+    return ic;
+}
 
 DBusHandlerResult fcitx_ipc_inputcontext_handler(DBusConnection *connection, DBusMessage *msg, void *user_data)
 {
@@ -218,7 +273,6 @@ DBusHandlerResult fcitx_ipc_inputcontext_handler(DBusConnection *connection, DBu
 
         reply = dbus_message_new_method_return(msg);
     } else if (dbus_message_is_method_call(msg, FCITX_INPUTCONTEXT_DBUS_INTERFACE, "DestroyIC")) {
-        dbus_connection_unregister_object_path(connection, path);
         fcitx_input_context_destroy(ic);
 
         reply = dbus_message_new_method_return(msg);
@@ -262,6 +316,10 @@ DBusHandlerResult fcitx_ipc_inputcontext_handler(DBusConnection *connection, DBu
     return result;
 }
 
+static const UT_icd ut_icid_icd = {
+    sizeof(uint32_t), NULL, NULL, NULL
+};
+
 DBusHandlerResult fcitx_ipc_inputmethod_handler(DBusConnection *connection, DBusMessage *msg, void *user_data)
 {
     FcitxIPC* ipc = user_data;
@@ -272,29 +330,30 @@ DBusHandlerResult fcitx_ipc_inputmethod_handler(DBusConnection *connection, DBus
         reply = dbus_message_new_method_return(msg);
         dbus_message_append_args(reply, DBUS_TYPE_STRING, &inputmethod_introspection_xml, DBUS_TYPE_INVALID);
     } else if (dbus_message_is_method_call(msg, FCITX_INPUTMETHOD_DBUS_INTERFACE, "CreateIC")) {
-        FcitxInputContext* ic = fcitx_input_context_new(ipc->icManager, fcitx_ipc_frontend.frontendId);
-        uint32_t icid = fcitx_input_context_get_id(ic);
-
-        DBusObjectPathVTable controller_vtable = {NULL, &fcitx_ipc_inputcontext_handler, NULL, NULL, NULL, NULL };
-
-        char icPath[50];
-
-        sprintf(icPath, "/inputcontext/%u", icid);
-
-        if (dbus_connection_register_object_path(ipc->conn, icPath, &controller_vtable, ipc)) {
-            uint8_t uuid[16];
-            fcitx_input_context_get_uuid(ic, uuid);
-
-            const uint8_t* vByte = uuid;
-
-            reply = dbus_message_new_method_return(msg);
-            dbus_message_append_args(reply,
-                                    DBUS_TYPE_UINT32, &icid,
-                                    DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE, &vByte, 16,
-                                    DBUS_TYPE_INVALID);
+        const char* sender = dbus_message_get_sender(msg);
+        if (!sender) {
+            reply = dbus_message_new_error(msg, DBUS_ERROR_FAILED, "register failed");
         } else {
-            fcitx_input_context_destroy(ic);
-            reply = dbus_message_new_error(msg, DBUS_ERROR_NO_MEMORY, "register failed");
+            FcitxInputContext* ic = fcitx_ipc_new_input_context(ipc, sender);
+
+            if (ic) {
+                uint32_t icid = fcitx_input_context_get_id(ic);
+                char icPath[50];
+                sprintf(icPath, "/inputcontext/%u", icid);
+                const char* icPathPtr = icPath;
+                uint8_t uuid[16];
+                fcitx_input_context_get_uuid(ic, uuid);
+
+                const uint8_t* vByte = uuid;
+
+                reply = dbus_message_new_method_return(msg);
+                dbus_message_append_args(reply,
+                                        DBUS_TYPE_OBJECT_PATH, &icPathPtr,
+                                        DBUS_TYPE_ARRAY, DBUS_TYPE_BYTE, &vByte, 16,
+                                        DBUS_TYPE_INVALID);
+            } else {
+                reply = dbus_message_new_error(msg, DBUS_ERROR_NO_MEMORY, "register failed");
+            }
         }
     }
 
@@ -310,10 +369,13 @@ DBusHandlerResult fcitx_ipc_inputmethod_handler(DBusConnection *connection, DBus
 
 void* fcitx_ipc_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITXGCLIENT_UNUSED(config);
+    FCITX_UNUSED(config);
     FcitxIPC* ipc = fcitx_utils_new(FcitxIPC);
+    ipc->manager = manager;
     ipc->conn = fcitx_dbus_invoke_get_connection(manager);
     ipc->icManager = fcitx_addon_manager_get_property(manager, "icmanager");
+    ipc->senderToIC = fcitx_dict_new(fcitx_ipc_sender_free);
+    ipc->frontendDataId = fcitx_input_context_manager_lookup_property(ipc->icManager, FCITX_FRONTEND_DATA_PROPERTY);
 
     DBusObjectPathVTable controller_vtable = {NULL, &fcitx_ipc_inputmethod_handler, NULL, NULL, NULL, NULL };
     if (!dbus_connection_register_object_path(ipc->conn, "/inputmethod", &controller_vtable, ipc)) {
@@ -330,6 +392,7 @@ void fcitx_ipc_destroy(void* data)
 {
     FcitxIPC* ipc = data;
     dbus_connection_unregister_object_path(ipc->conn, "/inputmethod");
+    fcitx_dict_free(ipc->senderToIC);
     free(ipc);
 }
 
@@ -419,4 +482,52 @@ bool fcitx_ipc_handle_event(void* _self, FcitxEvent* event)
             return false;
     }
     return true;
+}
+
+void fcitx_ipc_watch_name(void* arg, const char* serviceName, const char* oldName, const char* newName)
+{
+    FcitxIPC* self = arg;
+    FcitxIPCSender* senderData;
+    if (!(strlen(oldName) > 0 && strlen(newName) == 0)) {
+        return;
+    }
+
+    if (!fcitx_dict_lookup_by_str(self->senderToIC, serviceName, &senderData)) {
+        return;
+    }
+
+    while (fcitx_dict_size(senderData->ics)) {
+        bool last = fcitx_dict_size(senderData->ics) == 1;
+        FcitxDictData* item = fcitx_dict_first(senderData->ics);
+        FcitxInputContext* ic = (void*) (*(intptr_t*) item->key);
+
+        fcitx_input_context_destroy(ic);
+
+        if (last) {
+            break;
+        }
+    }
+}
+
+void fcitx_ipc_destroy_input_context(FcitxInputContext* ic, void* data)
+{
+    FcitxIPC* self = data;
+    uint32_t icid = fcitx_input_context_get_id(ic);
+    char path[50];
+    sprintf(path, "/inputcontext/%u", icid);
+    fprintf(stderr, "DESTROY %s\n", path);
+    dbus_connection_unregister_object_path(self->conn, path);
+    char* sender = fcitx_input_context_get_property(ic, self->frontendDataId);
+    FcitxIPCSender* senderData = NULL;
+    if (!fcitx_dict_lookup_by_str(self->senderToIC, sender, &senderData)) {
+        abort();
+    }
+    fcitx_dict_remove_by_data(senderData->ics, (intptr_t) ic, NULL);
+
+    if (fcitx_dict_size(senderData->ics) == 0) {
+        fcitx_dbus_invoke_remove_watch(self->manager, senderData->watchId);
+        fcitx_dict_remove_by_str(self->senderToIC, sender, NULL);
+    }
+
+    free(sender);
 }

@@ -1,4 +1,4 @@
-if (NOT TARGET DBus::DBus AND NOT TARGET fcitx-dbus-interface)
+if (NOT TARGET DBus::DBus OR NOT TARGET fcitx-dbus-interface)
 return()
 endif()
 

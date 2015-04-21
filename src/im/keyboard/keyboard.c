@@ -58,8 +58,8 @@ FCITX_DEFINE_ADDON(fcitx_keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
 
 void* fcitx_keyboard_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITXGCLIENT_UNUSED(manager);
-    FCITXGCLIENT_UNUSED(config);
+    FCITX_UNUSED(manager);
+    FCITX_UNUSED(config);
     FcitxKeyboard* keyboard = fcitx_utils_new(FcitxKeyboard);
 
     keyboard->manager = manager;

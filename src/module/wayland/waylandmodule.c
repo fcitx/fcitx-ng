@@ -82,7 +82,7 @@ static void
 FxWaylandShmFormatHandler(void *data, struct wl_shm *shm, uint32_t format)
 {
     FcitxWayland *wl = data;
-    FCITXGCLIENT_UNUSED(shm);
+    FCITX_UNUSED(shm);
     wl->shm_formats |= (1 << format);
 }
 
@@ -92,9 +92,9 @@ static const struct wl_shm_listener fx_shm_listenr = {
 
 void fcitx_wayland_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITXGCLIENT_UNUSED(_event);
-    FCITXGCLIENT_UNUSED(fd);
-    FCITXGCLIENT_UNUSED(flag);
+    FCITX_UNUSED(_event);
+    FCITX_UNUSED(fd);
+    FCITX_UNUSED(flag);
 
     FcitxWayland* wayland = data;
     if (wl_display_dispatch(wayland->display)) {
@@ -103,7 +103,7 @@ void fcitx_wayland_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, 
 
 void* fcitx_wayland_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITXGCLIENT_UNUSED(config);
+    FCITX_UNUSED(config);
     FcitxWayland* wayland = fcitx_utils_new(FcitxWayland);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     FcitxInputContextManager* icManager = fcitx_addon_manager_get_property(manager, "icmanager");

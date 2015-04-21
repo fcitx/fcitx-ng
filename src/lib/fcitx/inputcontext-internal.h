@@ -32,6 +32,7 @@ struct _FcitxInputContext {
     uint32_t flags; /**< input context capacity */
     uuid_t uuid;
     UT_hash_handle hh;
+    UT_hash_handle hh2;
     FcitxInputContextManager* manager;
     FcitxInputContextFocusGroup* group;
 
@@ -47,6 +48,8 @@ struct _FcitxInputContext {
     FcitxPtrArray* data;
     FcitxPtrArray* properties;
     FcitxText* preedit;
+    FcitxInputContextDestroyNotify destroyNotify;
+    void* frontendData;
 };
 
 #endif // _FCITX_INPUTCONTEXT_INTERNAL_H_

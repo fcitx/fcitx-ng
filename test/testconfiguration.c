@@ -21,7 +21,7 @@ const char configText[] =
 
 void dump(FcitxConfiguration* config, const char* path, void* data)
 {
-    FCITXGCLIENT_UNUSED(data);
+    FCITX_UNUSED(data);
     printf("%s=%s\n", path, fcitx_configuration_get_value(config));
 }
 

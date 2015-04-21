@@ -40,6 +40,7 @@ typedef struct _FcitxInputContextManager
     uint32_t icid;
     FcitxInputContext* freeList;
     FcitxInputContext* ics;
+    FcitxInputContext* ics_by_uuid;
     FcitxInputContextFocusGroup* globalGroup;
     FcitxListHead groups;
     FcitxDispatchEventCallback callback;
@@ -215,6 +216,11 @@ void _fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputConte
         return;
     }
 
+    bool oldFocus = ic->focused;
+    if (ic->focused) {
+        fcitx_input_context_focus_out(ic);
+    }
+
     if (ic->group) {
         fcitx_list_remove(&ic->list);
     }
@@ -223,8 +229,8 @@ void _fcitx_input_context_set_focus_group(FcitxInputContext* ic, FcitxInputConte
         fcitx_list_append(&ic->list, &group->inputContexts);
     }
     ic->group = group;
-    if (ic->focused) {
-        _fcitx_input_context_focus_out(ic);
+    if (oldFocus) {
+        fcitx_input_context_focus_in(ic);
     }
 }
 
@@ -272,15 +278,15 @@ int32_t fcitx_input_context_manager_lookup_property(FcitxInputContextManager* ma
 
 
 FCITX_EXPORT_API
-FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, uint32_t frontend)
+FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, uint32_t frontend, FcitxInputContextDestroyNotify destroyNotify, void* data)
 {
     FcitxInputContext* ic = NULL;
     if (manager->freeList) {
         ic = manager->freeList;
+        manager->freeList = ic->hh.next;
         uint32_t oldId = ic->id;
         memset(ic, 0, sizeof(*ic));
         ic->id = oldId;
-        manager->freeList = ic->hh.next;
     } else {
         uint32_t newid;
         while ((newid = ++manager->icid) == 0);
@@ -293,6 +299,8 @@ FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, ui
     }
     ic->manager = manager;
     ic->frontend = frontend;
+    ic->frontendData = data;
+    ic->destroyNotify = destroyNotify;
     ic->data = fcitx_ptr_array_new(NULL);
     ic->properties = fcitx_ptr_array_new(fcitx_input_context_property_free);
     ic->preedit = fcitx_text_new();
@@ -300,6 +308,7 @@ FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, ui
     uuid_generate(ic->uuid);
 
     HASH_ADD(hh, manager->ics, id, sizeof(uint32_t), ic);
+    HASH_ADD(hh2, manager->ics_by_uuid, uuid, sizeof(uuid_t), ic);
 
     if (manager->callback) {
         FcitxInputContextEvent event;
@@ -369,6 +378,14 @@ FcitxInputContext* fcitx_input_context_manager_get_input_context(FcitxInputConte
 }
 
 FCITX_EXPORT_API
+FcitxInputContext* fcitx_input_context_manager_get_input_context_by_uuid(FcitxInputContextManager* manager, uint8_t uuid[16])
+{
+    FcitxInputContext* ic = NULL;
+    HASH_FIND(hh, manager->ics_by_uuid, uuid, 16, ic);
+    return ic;
+}
+
+FCITX_EXPORT_API
 void fcitx_input_context_destroy(FcitxInputContext* inputContext)
 {
     FcitxInputContextManager* manager = inputContext->manager;
@@ -380,6 +397,7 @@ void fcitx_input_context_destroy(FcitxInputContext* inputContext)
     _fcitx_input_context_destroy(inputContext);
 
     HASH_DEL(manager->ics, inputContext);
+    HASH_DELETE(hh2, manager->ics_by_uuid, inputContext);
 
     inputContext->hh.next = manager->freeList;
     manager->freeList = inputContext;
@@ -626,6 +644,10 @@ void _fcitx_input_context_destroy(FcitxInputContext* ic)
         manager->callback(manager->userData, (FcitxEvent*) &event);
     }
 
+    if (ic->destroyNotify) {
+        ic->destroyNotify(ic, ic->frontendData);
+    }
+
     fcitx_text_unref(ic->preedit);
     fcitx_ptr_array_free(ic->data);
     fcitx_ptr_array_free(ic->properties);
@@ -868,3 +890,4 @@ void fcitx_input_context_forward_key(FcitxInputContext* inputContext, FcitxKeyEv
         manager->callback(manager->userData, (FcitxEvent*) &event);
     }
 }
+

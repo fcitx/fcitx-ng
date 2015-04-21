@@ -28,7 +28,7 @@
 #define FCITX_EXPORT_API __attribute__ ((visibility("default")))
 
 /** suppress the unused warning */
-#define FCITXGCLIENT_UNUSED(x) (void)(x)
+#define FCITX_UNUSED(x) (void)(x)
 
 #if defined(__GNUC__) && ((__GNUC__ * 100 + __GNUC_MINOR__) >= 301)
 # define FCITX_DEPRECATED  __attribute__((deprecated))
@@ -37,9 +37,9 @@
 #endif
 
 #ifdef __GNUC__
-#define _FCITXGCLIENT_UNUSED_ __attribute__ ((__unused__))
+#define _FCITX_UNUSED_ __attribute__ ((__unused__))
 #else
-#define _FCITXGCLIENT_UNUSED_
+#define _FCITX_UNUSED_
 #endif
 
 #ifdef __GNUC__

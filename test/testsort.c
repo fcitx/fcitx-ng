@@ -56,7 +56,7 @@ SortItem msort_array[] = {
 
 int cmp(const void* a, const void* b, void* thunk)
 {
-    FCITXGCLIENT_UNUSED(thunk);
+    FCITX_UNUSED(thunk);
     return ((SortItem*)a)->a - ((SortItem*)b)->a;
 }
 

@@ -26,6 +26,12 @@
 #include "dbusmodule.h"
 #include "fcitx-dbus-internal.h"
 
+typedef struct _FcitxDBusWatchNameNotify {
+    void *data;
+    FcitxDestroyNotify destroy;
+    FcitxDBusWatchNameCallback func;
+} FcitxDBusWatchNameNotify;
+
 #define FCITX_CONTROLLER_DBUS_INTERFACE "org.fcitx.Fcitx.Controller1"
 
 const char * controller_introspection_xml =
@@ -117,6 +123,7 @@ struct _FcitxDBus
     bool shutdown;
     FcitxTimeoutEvent* wakeup_main;
     bool objectRegistered;
+    FcitxHandlerTable* handler;
 };
 
 typedef struct _FcitxDBusWakeUpMainData
@@ -141,8 +148,8 @@ FCITX_DEFINE_ADDON(fcitx_dbus, module, FcitxAddonAPICommon) = {
 
 void fcitx_dbus_watch_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITXGCLIENT_UNUSED(_event);
-    FCITXGCLIENT_UNUSED(fd);
+    FCITX_UNUSED(_event);
+    FCITX_UNUSED(fd);
 
     unsigned int dflag =
            ((flag & FIOEF_IN) ? DBUS_WATCH_READABLE : 0)
@@ -160,7 +167,7 @@ void fcitx_dbus_watch_remove_notify(void* data)
     dbus_watch_set_data(watch, NULL, NULL);
 }
 
-dbus_bool_t fcitx_dbus_add_watch(DBusWatch *watch, void *data)
+dbus_bool_t fcitx_dbus_add_dbus_watch(DBusWatch *watch, void *data)
 {
     FcitxDBus* dbus = data;
     if (!dbus_watch_get_enabled(watch)) {
@@ -187,7 +194,7 @@ dbus_bool_t fcitx_dbus_add_watch(DBusWatch *watch, void *data)
     return FALSE;
 }
 
-void fcitx_dbus_remove_watch(DBusWatch *watch, void *data)
+void fcitx_dbus_remove_dbus_watch(DBusWatch *watch, void *data)
 {
     FcitxDBus* dbus = data;
     FcitxIOEvent* event = dbus_watch_get_data(watch);
@@ -196,12 +203,12 @@ void fcitx_dbus_remove_watch(DBusWatch *watch, void *data)
     }
 }
 
-void fcitx_dbus_toggle_watch(DBusWatch *watch, void *data)
+void fcitx_dbus_toggle_dbus_watch(DBusWatch *watch, void *data)
 {
     if (dbus_watch_get_enabled (watch))
-        fcitx_dbus_add_watch (watch, data);
+        fcitx_dbus_add_dbus_watch (watch, data);
     else
-        fcitx_dbus_remove_watch (watch, data);
+        fcitx_dbus_remove_dbus_watch (watch, data);
 }
 
 void fcitx_dbus_timeout_remove_notify(void* data)
@@ -212,7 +219,7 @@ void fcitx_dbus_timeout_remove_notify(void* data)
 
 void fcitx_dbus_timeout_callback(FcitxTimeoutEvent* _event, void* data)
 {
-    FCITXGCLIENT_UNUSED(_event);
+    FCITX_UNUSED(_event);
     DBusTimeout* timeout = data;
     dbus_timeout_handle(timeout);
 }
@@ -254,7 +261,7 @@ void fcitx_dbus_toggle_timeout(DBusTimeout *timeout, void *data)
 
 void fcitx_dbus_dispatch(FcitxTimeoutEvent* event, void* _data)
 {
-    FCITXGCLIENT_UNUSED(event);
+    FCITX_UNUSED(event);
     FcitxDBusWakeUpMainData* data = _data;
     data->dbus->wakeup_main = NULL;
     dbus_connection_ref(data->conn);
@@ -278,9 +285,9 @@ bool fcitx_dbus_setup_connection(FcitxDBus* dbus, DBusConnection* conn)
     }
 
     if (!dbus_connection_set_watch_functions(conn,
-                                             fcitx_dbus_add_watch,
-                                             fcitx_dbus_remove_watch,
-                                             fcitx_dbus_toggle_watch,
+                                             fcitx_dbus_add_dbus_watch,
+                                             fcitx_dbus_remove_dbus_watch,
+                                             fcitx_dbus_toggle_dbus_watch,
                                              dbus, NULL)) {
         return false;
     }
@@ -333,13 +340,74 @@ static DBusHandlerResult fcitx_dbus_controller_handler(DBusConnection *connectio
     return result;
 }
 
+static void
+fcitx_dbus_watch_name_notify_free(void *obj)
+{
+    FcitxDBusWatchNameNotify *notify = obj;
+    if (notify->destroy) {
+        notify->destroy(notify->data);
+    }
+}
+
+void fcitx_dbus_add_match(void* data, const void* key, size_t len, void* owner)
+{
+    FCITX_UNUSED(data);
+    FcitxDBus* dbusmodule = (FcitxDBus*) owner;
+    char* name = fcitx_utils_malloc(len + 1);
+    memcpy(name, key, len);
+    name[len] = '\0';
+    char* rule = NULL;
+    fcitx_asprintf(&rule,
+             "type='signal',"
+             "sender='" DBUS_SERVICE_DBUS "',"
+             "interface='" DBUS_INTERFACE_DBUS "',"
+             "path='" DBUS_PATH_DBUS "',"
+             "member='NameOwnerChanged',"
+             "arg0='%s'",
+             name);
+    free(name);
+
+    dbus_bus_add_match(dbusmodule->conn, rule, NULL);
+    free(rule);
+}
+
+
+void fcitx_dbus_remove_match(void* data, const void* key, size_t len, void* owner)
+{
+    FCITX_UNUSED(data);
+    FcitxDBus* dbusmodule = (FcitxDBus*) owner;
+    char* name = fcitx_utils_malloc(len + 1);
+    memcpy(name, key, len);
+    name[len] = '\0';
+    char* rule = NULL;
+    fcitx_asprintf(&rule,
+             "type='signal',"
+             "sender='" DBUS_SERVICE_DBUS "',"
+             "interface='" DBUS_INTERFACE_DBUS "',"
+             "path='" DBUS_PATH_DBUS "',"
+             "member='NameOwnerChanged',"
+             "arg0='%s'",
+             name);
+    free(name);
+
+    dbus_bus_remove_match(dbusmodule->conn, rule, NULL);
+    free(rule);
+}
+
 void* fcitx_dbus_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITXGCLIENT_UNUSED(config);
+    FCITX_UNUSED(config);
     FcitxDBus* dbus = fcitx_utils_new(FcitxDBus);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     dbus->instance = instance;
     dbus->mainloop = fcitx_instance_get_mainloop(instance);
+
+    FcitxHandlerKeyDataVTable vtable;
+    vtable.size = 0;
+    vtable.owner = dbus;
+    vtable.init = fcitx_dbus_add_match;
+    vtable.free = fcitx_dbus_remove_match;
+    dbus->handler = fcitx_handler_table_new_with_keydata(sizeof(FcitxDBusWatchNameNotify), fcitx_dbus_watch_name_notify_free, &vtable);
 
     int retry = 0;
 
@@ -426,7 +494,7 @@ dbus_failed_no_conn:
 DBusHandlerResult
 fcitx_dbus_filter(DBusConnection* connection, DBusMessage* msg, void* user_data)
 {
-    FCITXGCLIENT_UNUSED(connection);
+    FCITX_UNUSED(connection);
     FcitxDBus* dbus = (FcitxDBus*) user_data;
     if (dbus_message_is_signal(msg, DBUS_INTERFACE_LOCAL, "Disconnected")) {
         fcitx_instance_shutdown(dbus->instance);
@@ -445,6 +513,27 @@ fcitx_dbus_filter(DBusConnection* connection, DBusMessage* msg, void* user_data)
                 return DBUS_HANDLER_RESULT_HANDLED;
             }
         } while(0);
+    } else if (dbus_message_is_signal(msg, DBUS_INTERFACE_DBUS, "NameOwnerChanged")) {
+        const char* service, *oldowner, *newowner;
+        do {
+            if (!dbus_message_get_args(msg, NULL,
+                                       DBUS_TYPE_STRING, &service ,
+                                       DBUS_TYPE_STRING, &oldowner ,
+                                       DBUS_TYPE_STRING, &newowner ,
+                                       DBUS_TYPE_INVALID)) {
+                break;
+            }
+
+            FcitxDBusWatchNameNotify *notify;
+            notify = fcitx_handler_table_first_strkey(dbus->handler, service);
+            if (!notify) {
+                return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
+            }
+            for (; notify; notify = fcitx_handler_table_next(dbus->handler, notify)) {
+                notify->func(notify->data, service, oldowner, newowner);
+            }
+            return DBUS_HANDLER_RESULT_HANDLED;
+        } while(0);
     }
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
@@ -454,6 +543,7 @@ void fcitx_dbus_destroy(void* data)
 {
     FcitxDBus* dbus = data;
     dbus->shutdown = true;
+    fcitx_handler_table_free(dbus->handler);
     if (dbus->objectRegistered) {
         dbus_connection_unregister_object_path(dbus->conn, "/controller");
     }
@@ -470,4 +560,18 @@ void fcitx_dbus_destroy(void* data)
 DBusConnection* fcitx_dbus_get_connection(FcitxDBus* self)
 {
     return self->conn;
+}
+
+int fcitx_dbus_watch_name(FcitxDBus* self, const char* name, void* func, void* destroy, void* data)
+{
+    FcitxDBusWatchNameNotify notify;
+    notify.data = data;
+    notify.destroy = destroy;
+    notify.func = func;
+    return fcitx_handler_table_append_strkey(self->handler, name, &notify);
+}
+
+void fcitx_dbus_remove_watch(FcitxDBus* self, int id)
+{
+    fcitx_handler_table_remove_by_id_full(self->handler, id);
 }
