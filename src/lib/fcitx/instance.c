@@ -258,6 +258,16 @@ void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int fla
     }
 }
 
+void* fcitx_input_context_app_name_set(void* data, void* value, void* userData)
+{
+    FCITX_UNUSED(userData);
+
+    char* str = data;
+    fcitx_utils_string_swap(&str, value);
+
+    return str;
+}
+
 void* fcitx_input_context_input_method_private_state_set(void* data, void* value, void* userData)
 {
     FCITX_UNUSED(userData);
@@ -341,6 +351,14 @@ void* fcitx_input_context_input_method_state_copy(void* dst, void* src, void* us
     return state;
 }
 
+char*
+fcitx_app_name_property_key(void* value, size_t* len, void* userData)
+{
+    FCITX_UNUSED(userData);
+    *len = value ? strlen(value) : 0;
+    return value;
+}
+
 FCITX_EXPORT_API
 int fcitx_instance_run(FcitxInstance* instance)
 {
@@ -358,6 +376,13 @@ int fcitx_instance_run(FcitxInstance* instance)
                                                       NULL,
                                                       fcitx_utils_closure_free,
                                                       NULL, instance);
+    int32_t appNameId = fcitx_input_context_manager_register_property(instance->icManager,
+                                                      FCITX_APPLICATION_NAME_PROPERTY,
+                                                      fcitx_input_context_app_name_set,
+                                                      NULL,
+                                                      fcitx_utils_closure_free,
+                                                      NULL, instance);
+    instance->appNamePolicy = fcitx_input_context_shared_state_policy_new(instance->icManager, appNameId, fcitx_app_name_property_key, NULL, NULL);
     fcitx_addon_manager_set_property(instance->addonManager, "instance", instance);
     fcitx_addon_manager_set_property(instance->addonManager, "icmanager", instance->icManager);
     fcitx_addon_manager_set_property(instance->addonManager, "immanager", instance->imManager);
@@ -408,13 +433,15 @@ bool fcitx_instance_get_try_replace(FcitxInstance* instance)
 FCITX_EXPORT_API
 void fcitx_instance_destroy(FcitxInstance* instance)
 {
-    fcitx_global_config_free(instance->globalConfig);
+    // input context may have callback to addon, so destroy all input context first.
+    fcitx_input_context_manager_destroy_all_input_context(instance->icManager);
+    fcitx_input_method_manager_unref(instance->imManager);
     fcitx_addon_manager_unref(instance->addonManager);
+    fcitx_input_context_manager_unref(instance->icManager);
     fcitx_standard_path_unref(instance->standardPath);
     fcitx_mainloop_free(instance->mainloop);
-    fcitx_input_method_manager_unref(instance->imManager);
-    fcitx_input_context_manager_unref(instance->icManager);
     fcitx_ptr_array_free(instance->globalInputMethod);
+    fcitx_global_config_free(instance->globalConfig);
     free(instance->enableList);
     free(instance->disableList);
     free(instance->uiname);

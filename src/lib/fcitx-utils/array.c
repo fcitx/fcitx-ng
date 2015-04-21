@@ -99,7 +99,7 @@ void fcitx_ptr_array_remove(FcitxPtrArray* array, size_t position, void** steal)
         array->data[i] = array->data[i + 1];
     }
     
-    if (steal == data) {
+    if (steal) {
         *steal = data;
     } else {
         if (priv->destoryNotify2) {

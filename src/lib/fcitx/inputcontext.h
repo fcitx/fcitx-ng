@@ -119,6 +119,8 @@ int32_t fcitx_input_context_manager_lookup_property(FcitxInputContextManager* ma
 
 void fcitx_input_context_manager_foreach(FcitxInputContextManager* manager, FcitxForeachInputContextCallback callback, void* userData);
 
+void fcitx_input_context_manager_destroy_all_input_context(FcitxInputContextManager* manager);
+
 FcitxInputContext* fcitx_input_context_new(FcitxInputContextManager* manager, uint32_t frontend, FcitxInputContextDestroyNotify destroyNotify, void* data);
 
 #define FCITX_INVALID_IC 0

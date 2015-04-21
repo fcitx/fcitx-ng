@@ -34,6 +34,8 @@ FCITX_DECL_BEGIN
 
 typedef struct _FcitxInstance FcitxInstance;
 
+#define FCITX_APPLICATION_NAME_PROPERTY "applicationName"
+
 // control instance
 FcitxInstance* fcitx_instance_new(int argc, char* argv[]);
 int fcitx_instance_run(FcitxInstance* instance);

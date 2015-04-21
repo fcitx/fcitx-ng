@@ -48,6 +48,7 @@ struct _FcitxInstance {
     FcitxPtrArray* globalInputMethod;
     FcitxGlobalConfig* globalConfig;
     int32_t inputMethodPrivateStateId;
+    FcitxInputContextSharedStatePolicy* appNamePolicy;
 };
 
 #endif
