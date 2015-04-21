@@ -8,8 +8,8 @@ TestIM testIM;
 
 bool test_im_handle_event(void* _self, FcitxEvent* event)
 {
-    FCITX_UNUSED(_self);
-    FCITX_UNUSED(event);
+    FCITXGCLIENT_UNUSED(_self);
+    FCITXGCLIENT_UNUSED(event);
     return false;
 }
 

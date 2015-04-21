@@ -1,5 +1,6 @@
 /***************************************************************************
- *   Copyright (C) 2010~2012 by CSSlayer                                   *
+ *   Copyright (C) 2013~2013 by Yichao Yu                                  *
+ *   yyc1992@gmail.com                                                     *
  *                                                                         *
  *   This program is free software; you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -17,36 +18,11 @@
  *   51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.              *
  ***************************************************************************/
 
-#ifndef __FCITX_IM_CONTEXT_H_
-#define __FCITX_IM_CONTEXT_H_
+#ifndef WAYLAND_INPUT_H
+#define WAYLAND_INPUT_H
 
-#include <gtk/gtk.h>
+#include "wayland-global.h"
 
-/*
-* Type macros.
-*/
-#define FCITX_TYPE_IM_CONTEXT \
-    (fcitx_im_context_get_type ())
-#define FCITX_IM_CONTEXT(obj) \
-    (G_TYPE_CHECK_INSTANCE_CAST ((obj), FCITX_TYPE_IM_CONTEXT, FcitxIMContext))
-#define FCITX_IM_CONTEXT_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_CAST ((klass), FCITX_TYPE_IM_CONTEXT, FcitxIMContextClass))
-#define FCITX_IS_IM_CONTEXT(obj) \
-    (G_TYPE_CHECK_INSTANCE_TYPE ((obj), FCITX_TYPE_IM_CONTEXT))
-#define FCITX_IS_IM_CONTEXT_CLASS(klass) \
-    (G_TYPE_CHECK_CLASS_TYPE ((klass), FCITX_TYPE_IM_CONTEXT))
-#define FCITX_IM_CONTEXT_GET_CLASS(obj) \
-    (G_TYPE_CHECK_GET_CLASS ((obj), FCITX_TYPE_IM_CONTEXT, FcitxIMContextClass))
+void FxWaylandInputInit(FcitxWayland *wl);
 
-G_BEGIN_DECLS
-
-typedef struct _FcitxIMContext FcitxIMContext;
-typedef struct _FcitxIMContextClass FcitxIMContextClass;
-
-GType fcitx_im_context_get_type(void);
-FcitxIMContext *fcitx_im_context_new(void);
-void fcitx_im_context_register_type(GTypeModule *type_module);
-
-G_END_DECLS
 #endif
-// kate: indent-mode cstyle; space-indent on; indent-width 0;

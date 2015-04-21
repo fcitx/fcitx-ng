@@ -28,7 +28,7 @@
 FCITX_EXPORT_API
 void fcitx_utils_closure_free(void* data, void* userData)
 {
-    FCITX_UNUSED(userData);
+    FCITXGCLIENT_UNUSED(userData);
     free(data);
 }
 

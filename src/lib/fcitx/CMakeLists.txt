@@ -16,6 +16,7 @@ set(FCITX_HEADERS
     instance.h
     inputcontext.h
     ui.h
+    event.h
   )
 
 set(FCITX_INTERNAL_HEADERS
@@ -32,7 +33,8 @@ set_target_properties(fcitx-core
   PROPERTIES VERSION 1.0
   SOVERSION 1
   COMPILE_FLAGS "-fvisibility=hidden"
-  LINK_FLAGS "-Wl,--no-undefined")
+  LINK_FLAGS "-Wl,--no-undefined"
+  EXPORT_NAME Core)
 
 configure_file(fcitx.pc.in ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc)
 
@@ -41,11 +43,28 @@ target_link_libraries(fcitx-core
         Fcitx::Config Fcitx::Utils
     PRIVATE
         LibFFI::FFI LibUUID::UUID DL::DL)
-target_include_directories(fcitx-core PUBLIC "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
-target_include_directories(fcitx-core INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
-install(TARGETS fcitx-core EXPORT FcitxTargets LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
+target_include_directories(fcitx-core PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_INCLUDEDIR}>)
+install(TARGETS fcitx-core EXPORT FcitxCoreTargets LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx.pc
   DESTINATION "${CMAKE_INSTALL_LIBDATADIR}/pkgconfig")
 install(FILES ${FCITX_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/fcitx")
 
 add_library(Fcitx::Core ALIAS fcitx-core)
+
+ecm_setup_version(PROJECT
+                  PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/FcitxCoreConfigVersion.cmake"
+                  SOVERSION 1)
+
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/FcitxCoreConfig.cmake.in"
+                              "${CMAKE_CURRENT_BINARY_DIR}/FcitxCoreConfig.cmake"
+                              INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FcitxCore
+)
+
+install(EXPORT FcitxCoreTargets DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FcitxCore FILE FcitxCoreTargets.cmake NAMESPACE Fcitx::)
+
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/FcitxCoreConfig.cmake"
+               "${CMAKE_CURRENT_BINARY_DIR}/FcitxCoreConfigVersion.cmake"
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FcitxCore
+        COMPONENT Devel )

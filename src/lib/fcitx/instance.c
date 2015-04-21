@@ -21,6 +21,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include "config.h"
+#include "fcitx_version.h"
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/mainloop.h"
 #include "fcitx-utils/stringlist.h"
@@ -112,7 +113,7 @@ void Usage()
  */
 void Version()
 {
-    printf("fcitx version: %s\n", FCITX_VERSION);
+    printf("fcitx version: %s\n", FCITX_VERSION_STRING);
 }
 
 static inline
@@ -236,7 +237,7 @@ FcitxInstance* fcitx_instance_new(int argc, char* argv[])
     instance->addonManager = fcitx_addon_manager_new(instance->standardPath);
     instance->icManager = fcitx_input_context_manager_new();
     fcitx_input_context_manager_set_event_dispatcher(instance->icManager, fcitx_instance_event_dispatch, NULL, instance);
-    instance->imManager = fcitx_input_method_manager_new();
+    instance->imManager = fcitx_input_method_manager_new(instance->addonManager);
     fcitx_input_method_manager_set_event_dispatcher(instance->imManager, fcitx_instance_event_dispatch, NULL, instance);
     instance->globalInputMethod = fcitx_ptr_array_new(NULL);
     instance->globalConfig = fcitx_global_config_new();
@@ -246,8 +247,8 @@ FcitxInstance* fcitx_instance_new(int argc, char* argv[])
 
 void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITX_UNUSED(_event);
-    FCITX_UNUSED(flag);
+    FCITXGCLIENT_UNUSED(_event);
+    FCITXGCLIENT_UNUSED(flag);
     FcitxInstance* instance = data;
     uint8_t signo = 0;
     while (read(fd, &signo, sizeof(signo)) > 0) {
@@ -259,8 +260,8 @@ void fcitx_instance_handle_signal(FcitxIOEvent* _event, int fd, unsigned int fla
 
 void* fcitx_input_context_input_method_private_state_set(void* data, void* value, void* userData)
 {
-    FCITX_UNUSED(userData);
-    FCITX_UNUSED(value);
+    FCITXGCLIENT_UNUSED(userData);
+    FCITXGCLIENT_UNUSED(value);
     FcitxInputMethodPrivateState* state = data;
     if (!data) {
         state = fcitx_utils_new(FcitxInputMethodPrivateState);
@@ -302,7 +303,7 @@ void* fcitx_input_context_input_method_state_set(void* data, void* value, void* 
 
 void fcitx_input_context_input_method_state_free(void* data, void* userData)
 {
-    FCITX_UNUSED(userData);
+    FCITXGCLIENT_UNUSED(userData);
     if (!data) {
         return;
     }
@@ -589,7 +590,13 @@ void fcitx_instance_toggle_input_context(FcitxInstance* instance, FcitxInputCont
     // TODO
 }
 
-void fcitx_instance_scroll_input_method(FcitxInstance* instance, FcitxInputContext* ic, bool forward);
+FCITX_EXPORT_API
+void fcitx_instance_scroll_input_method(FcitxInstance* instance, FcitxInputContext* ic, bool forward)
+{
+}
 
-void fcitx_instance_switch_input_method_group(FcitxInstance* instance, FcitxInputContext* ic, bool forward);
+FCITX_EXPORT_API
+void fcitx_instance_switch_input_method_group(FcitxInstance* instance, FcitxInputContext* ic, bool forward)
+{
+}
 

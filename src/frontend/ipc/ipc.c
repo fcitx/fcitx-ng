@@ -310,7 +310,7 @@ DBusHandlerResult fcitx_ipc_inputmethod_handler(DBusConnection *connection, DBus
 
 void* fcitx_ipc_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITX_UNUSED(config);
+    FCITXGCLIENT_UNUSED(config);
     FcitxIPC* ipc = fcitx_utils_new(FcitxIPC);
     ipc->conn = fcitx_dbus_invoke_get_connection(manager);
     ipc->icManager = fcitx_addon_manager_get_property(manager, "icmanager");

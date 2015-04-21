@@ -1,3 +1,7 @@
+if (NOT TARGET DBus::DBus)
+return()
+endif()
+
 fcitx5_generate_addon_function(fcitx-dbus.fxaddon)
 
 add_library(fcitx-dbus MODULE dbusmodule.c

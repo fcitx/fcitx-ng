@@ -22,9 +22,16 @@
 #include "addon.h"
 #include "inputcontext.h"
 
+typedef struct _FcitxInputMethodItem FcitxInputMethodItem;
+
+typedef struct FcitxConfiguration* (*FcitxListAvailableInputMethod)(void* data);
+typedef void* (*FcitxNewInputMethod)(FcitxInputMethodItem* item, void* data);
 typedef struct _FcitxAddonAPIInputMethod
 {
     FcitxAddonAPICommon common;
+    FcitxListAvailableInputMethod* listInputMethod;
+    FcitxNewInputMethod newInputMethod;
+    FcitxClosureFunc freeInputMethod;
 } FcitxAddonAPIInputMethod;
 
 typedef enum _FcitxInputMethodItemProperty
@@ -36,11 +43,9 @@ typedef enum _FcitxInputMethodItemProperty
     FIMIP_None = 0x0
 } FcitxInputMethodItemProperty;
 
-typedef struct _FcitxInputMethodItem FcitxInputMethodItem;
-
 typedef struct _FcitxInputMethodManager FcitxInputMethodManager;
 
-FcitxInputMethodManager* fcitx_input_method_manager_new();
+FcitxInputMethodManager* fcitx_input_method_manager_new(FcitxAddonManager* manager);
 FcitxInputMethodManager* fcitx_input_method_manager_ref(FcitxInputMethodManager* manager);
 void fcitx_input_method_manager_unref(FcitxInputMethodManager* manager);
 

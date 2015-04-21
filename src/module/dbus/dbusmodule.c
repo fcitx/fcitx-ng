@@ -141,8 +141,8 @@ FCITX_DEFINE_ADDON(fcitx_dbus, module, FcitxAddonAPICommon) = {
 
 void fcitx_dbus_watch_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITX_UNUSED(_event);
-    FCITX_UNUSED(fd);
+    FCITXGCLIENT_UNUSED(_event);
+    FCITXGCLIENT_UNUSED(fd);
 
     unsigned int dflag =
            ((flag & FIOEF_IN) ? DBUS_WATCH_READABLE : 0)
@@ -212,7 +212,7 @@ void fcitx_dbus_timeout_remove_notify(void* data)
 
 void fcitx_dbus_timeout_callback(FcitxTimeoutEvent* _event, void* data)
 {
-    FCITX_UNUSED(_event);
+    FCITXGCLIENT_UNUSED(_event);
     DBusTimeout* timeout = data;
     dbus_timeout_handle(timeout);
 }
@@ -254,7 +254,7 @@ void fcitx_dbus_toggle_timeout(DBusTimeout *timeout, void *data)
 
 void fcitx_dbus_dispatch(FcitxTimeoutEvent* event, void* _data)
 {
-    FCITX_UNUSED(event);
+    FCITXGCLIENT_UNUSED(event);
     FcitxDBusWakeUpMainData* data = _data;
     data->dbus->wakeup_main = NULL;
     dbus_connection_ref(data->conn);
@@ -335,7 +335,7 @@ static DBusHandlerResult fcitx_dbus_controller_handler(DBusConnection *connectio
 
 void* fcitx_dbus_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITX_UNUSED(config);
+    FCITXGCLIENT_UNUSED(config);
     FcitxDBus* dbus = fcitx_utils_new(FcitxDBus);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     dbus->instance = instance;
@@ -426,7 +426,7 @@ dbus_failed_no_conn:
 DBusHandlerResult
 fcitx_dbus_filter(DBusConnection* connection, DBusMessage* msg, void* user_data)
 {
-    FCITX_UNUSED(connection);
+    FCITXGCLIENT_UNUSED(connection);
     FcitxDBus* dbus = (FcitxDBus*) user_data;
     if (dbus_message_is_signal(msg, DBUS_INTERFACE_LOCAL, "Disconnected")) {
         fcitx_instance_shutdown(dbus->instance);

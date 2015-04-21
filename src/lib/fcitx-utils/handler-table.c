@@ -143,7 +143,7 @@ fcitx_handler_key_prepend(FcitxHandlerTable *table, FcitxHandlerKey *key_struct,
 FCITX_EXPORT_API
 bool fcitx_handler_key_is_empty(FcitxHandlerTable* table, FcitxHandlerKey* key)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     return key->last == FCITX_OBJECT_POOL_INVALID_ID
         && key->first == FCITX_OBJECT_POOL_INVALID_ID;
 }
@@ -195,7 +195,7 @@ FcitxHandlerKey* fcitx_handler_table_get_key_by_id(FcitxHandlerTable* table, int
 FCITX_EXPORT_API void*
 fcitx_handler_key_get_data(FcitxHandlerTable *table, FcitxHandlerKey *key)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     if (fcitx_unlikely(!key))
         return NULL;
     return key + 1;
@@ -205,7 +205,7 @@ FCITX_EXPORT_API const void*
 fcitx_handler_key_get_key(FcitxHandlerTable *table, FcitxHandlerKey *key,
                           size_t *len)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     if (fcitx_unlikely(!key)) {
         if (len)
             *len = 0;
@@ -219,7 +219,7 @@ fcitx_handler_key_get_key(FcitxHandlerTable *table, FcitxHandlerKey *key,
 FCITX_EXPORT_API int
 fcitx_handler_key_first_id(FcitxHandlerTable *table, FcitxHandlerKey *key)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     if (fcitx_unlikely(!key))
         return FCITX_OBJECT_POOL_INVALID_ID;
     return key->first;
@@ -228,7 +228,7 @@ fcitx_handler_key_first_id(FcitxHandlerTable *table, FcitxHandlerKey *key)
 FCITX_EXPORT_API int
 fcitx_handler_key_last_id(FcitxHandlerTable *table, FcitxHandlerKey *key)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     if (fcitx_unlikely(!key))
         return FCITX_OBJECT_POOL_INVALID_ID;
     return key->last;
@@ -273,7 +273,7 @@ fcitx_handler_table_last_id(FcitxHandlerTable *table, size_t keysize,
 FCITX_EXPORT_API int
 fcitx_handler_table_next_id(FcitxHandlerTable *table, const void *obj)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     const FcitxHandlerObj *obj_struct = obj - sizeof(FcitxHandlerObj);
     return obj_struct->next;
 }
@@ -281,7 +281,7 @@ fcitx_handler_table_next_id(FcitxHandlerTable *table, const void *obj)
 FCITX_EXPORT_API int
 fcitx_handler_table_prev_id(FcitxHandlerTable *table, const void *obj)
 {
-    FCITX_UNUSED(table);
+    FCITXGCLIENT_UNUSED(table);
     const FcitxHandlerObj *obj_struct = obj - sizeof(FcitxHandlerObj);
     return obj_struct->prev;
 }

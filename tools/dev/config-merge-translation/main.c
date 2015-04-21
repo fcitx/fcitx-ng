@@ -96,7 +96,7 @@ void translate_callback (FcitxConfiguration* config,
                          const char* path,
                          void* userData)
 {
-    FCITX_UNUSED(userData);
+    FCITXGCLIENT_UNUSED(userData);
     const char* name = fcitx_configuration_get_name(config);
     const char* value = fcitx_configuration_get_value(config);
     if (name[0] == '_') {

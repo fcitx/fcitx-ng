@@ -1,3 +1,11 @@
+if (NOT TARGET XCB::XCB AND
+    NOT TARGET XCB::AUX AND
+    NOT TARGET XCB::XKB AND
+    NOT TARGET XKBCommon::XKBCommon AND
+    NOT TARGET XKBCommon::X11)
+return()
+endif()
+
 fcitx5_generate_addon_function(fcitx-xcb.fxaddon)
 
 add_library(fcitx-xcb MODULE

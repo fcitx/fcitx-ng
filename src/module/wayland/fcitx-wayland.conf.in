@@ -1,0 +1,9 @@
+[Addon]
+Name=fcitx-wayland
+_GeneralName=Wayland Support
+_Comment=Provides Wayland Support (Used by other Addon)
+Category=Module
+Enabled=True
+Library=fcitx-wayland
+Type=SharedLibrary
+Advance=True

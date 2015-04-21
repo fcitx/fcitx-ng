@@ -13,8 +13,8 @@ FCITX_DEFINE_ADDON(testfrontend, frontend, FcitxAddonAPIFrontend) = {
 
 void* fcitx_test_frontend_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITX_UNUSED(manager);
-    FCITX_UNUSED(config);
+    FCITXGCLIENT_UNUSED(manager);
+    FCITXGCLIENT_UNUSED(config);
     int* dummy = fcitx_utils_new(int);
     return dummy;
 }

@@ -1,0 +1,9 @@
+[FcitxAddon]
+Name=fcitx-wayland
+Include/0=<wayland-client.h>
+Include/0="waylandmodule.h"
+Self.Type=FcitxWayland
+Function/0=GetDisplay
+
+[GetDisplay/Function]
+ReturnType=struct wl_display*

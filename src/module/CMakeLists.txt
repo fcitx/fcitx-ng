@@ -1,3 +1,3 @@
-
-add_subdirectory(dbus)
-add_subdirectory(xcb)
+ecm_optional_add_subdirectory(dbus)
+ecm_optional_add_subdirectory(xcb)
+#ecm_optional_add_subdirectory(wayland)

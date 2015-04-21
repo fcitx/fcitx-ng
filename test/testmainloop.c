@@ -8,15 +8,15 @@
 int p[2];
 void timeout_callback(FcitxTimeoutEvent* event, void* data)
 {
-    FCITX_UNUSED(event);
-    FCITX_UNUSED(data);
+    FCITXGCLIENT_UNUSED(event);
+    FCITXGCLIENT_UNUSED(data);
     char c = 0;
     assert(write(p[1], &c, sizeof(char)) == 1);
 }
 
 void timeout_callback2(FcitxTimeoutEvent* event, void* data)
 {
-    FCITX_UNUSED(event);
+    FCITXGCLIENT_UNUSED(event);
     FcitxMainLoop* mainloop = data;
     fcitx_mainloop_quit(mainloop);
 }
@@ -24,9 +24,9 @@ void timeout_callback2(FcitxTimeoutEvent* event, void* data)
 
 void io_callback(FcitxIOEvent* event, int fd, unsigned int flag, void* data)
 {
-    FCITX_UNUSED(event);
-    FCITX_UNUSED(fd);
-    FCITX_UNUSED(flag);
+    FCITXGCLIENT_UNUSED(event);
+    FCITXGCLIENT_UNUSED(fd);
+    FCITXGCLIENT_UNUSED(flag);
     static int counter = 0;
     counter ++;
 

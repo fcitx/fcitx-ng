@@ -1,3 +1,10 @@
+if (NOT TARGET XCBImdkit::XCBImdkit AND
+    NOT TARGET fcitx-xcb-interface AND
+    NOT TARGET XCB::XCB AND
+    NOT TARGET XCB::AUX AND
+    NOT TARGET XKBCommon::XKBCommon)
+return()
+endif()
 
 fcitx5_generate_config_source(fcitx-xim.desc xim-config XIMConfig Fcitx)
 

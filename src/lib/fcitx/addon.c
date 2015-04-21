@@ -92,7 +92,7 @@ void* _fcitx_library_get_symbol(FcitxLibrary* library, const char* addonName, co
 
 bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data)
 {
-    FCITX_UNUSED(data);
+    FCITXGCLIENT_UNUSED(data);
     FcitxStandardPath* standardPath = fcitx_addon_manager_get_standard_path(manager);
     char* toFree = NULL;
     const char* libraryName = NULL;
@@ -142,9 +142,9 @@ bool fcitx_shared_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
 
 void fcitx_shared_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data)
 {
-    FCITX_UNUSED(addonConfig);
-    FCITX_UNUSED(manager);
-    FCITX_UNUSED(data);
+    FCITXGCLIENT_UNUSED(addonConfig);
+    FCITXGCLIENT_UNUSED(manager);
+    FCITXGCLIENT_UNUSED(data);
     fcitx_library_unload(addonInst->resolverData);
     fcitx_library_free(addonInst->resolverData);
 }
@@ -173,10 +173,10 @@ bool fcitx_static_library_resolve(const FcitxAddonConfig* addonConfig, FcitxAddo
 
 void fcitx_static_library_unload(const FcitxAddonConfig* addonConfig, FcitxAddonInstance* addonInst, FcitxAddonManager* manager, void* data)
 {
-    FCITX_UNUSED(addonConfig);
-    FCITX_UNUSED(manager);
-    FCITX_UNUSED(data);
-    FCITX_UNUSED(addonInst);
+    FCITXGCLIENT_UNUSED(addonConfig);
+    FCITXGCLIENT_UNUSED(manager);
+    FCITXGCLIENT_UNUSED(data);
+    FCITXGCLIENT_UNUSED(addonInst);
 }
 
 void fcitx_static_library_resolver_free(void* data)
@@ -301,8 +301,8 @@ void fcitx_addon_manager_register_default_resolver(FcitxAddonManager* mananger, 
 
 bool _fcitx_addon_load_metadata(const char* key, size_t keyLen, void** data, void* userData)
 {
-    FCITX_UNUSED(key);
-    FCITX_UNUSED(keyLen);
+    FCITXGCLIENT_UNUSED(key);
+    FCITXGCLIENT_UNUSED(keyLen);
     FcitxStandardPathFile* files = *data;
     size_t i = 0;
     while (files[i].fp) {

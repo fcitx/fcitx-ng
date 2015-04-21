@@ -16,7 +16,7 @@ int main()
     fcitx_utf8_strncpy(buf, string, BUF_SIZE - 1);
     buf[BUF_SIZE - 1] = 0;
     assert(memcmp(buf, result, BUF_SIZE) == 0);
-    FCITX_UNUSED(result);
+    FCITXGCLIENT_UNUSED(result);
 
     assert(fcitx_utf8_strnlen(string, 0) == 0);
     assert(fcitx_utf8_strnlen(string, 1) == 0);

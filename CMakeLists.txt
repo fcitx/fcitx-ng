@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(fcitx)
-
-set(FCITX_VERSION "4.99")
+cmake_minimum_required(VERSION 3.0)
+set(FCITX_VERSION 4.99.0)
+project(fcitx VERSION ${FCITX_VERSION})
 
 find_package(ECM 0.0.11 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
@@ -10,17 +9,13 @@ set(CMAKE_AUTOMOC_RELAXED_MODE TRUE)
 include(FeatureSummary)
 include(ECMSetupVersion)
 include(ECMGenerateHeaders)
+include(ECMOptionalAddSubdirectory)
+include(ECMCoverageOption)
+include(Utils)
 
 include(FcitxMacros)
 
 option(ENABLE_TEST "Build Test" On)
-option(ENABLE_COVERAGE "Enable coverage" Off)
-option(ENABLE_BACKTRACE "Build with backtrace support" On)
-option(ENABLE_LIBXML2 "Build with libxml" On)
-option(ENABLE_GIR "Build with Gir" On)
-option(ENABLE_GTK2_IM_MODULE "Enable GTK2 IM Module" ON)
-option(ENABLE_GTK3_IM_MODULE "Enable GTK3 IM Module" OFF)
-
 
 if(NOT NO_SNOOPER_APPS)
   set(NO_SNOOPER_APPS ".*chrome.*,.*chromium.*,firefox.*,Do.*"
@@ -60,6 +55,7 @@ set(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_FULL_DATADIR}/fcitx")
 set(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_FULL_BINDIR})
 set(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_FULL_LOCALEDIR})
 set(FCITX_INSTALL_ADDONDIR "${CMAKE_INSTALL_FULL_LIBDIR}/fcitx")
+set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/fcitx")
 
 # TODO mac/win
 set(FCITX_LIBRARY_SUFFIX ".so")
@@ -74,45 +70,21 @@ if("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STREQU
     set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 endif("${_isSystemPlatformLibDir}" STREQUAL "-1" AND "${_isSystemCxxLibDir}" STREQUAL "-1")
 
+find_package(PkgConfig REQUIRED)
 find_package(DL REQUIRED)
 find_package(LibFFI REQUIRED)
 find_package(LibUUID REQUIRED)
 find_package(GettextPo REQUIRED)
 find_package(RT)
+find_package(LibExecinfo)
 
-if (ENABLE_BACKTRACE)
-find_package(LibExecinfo REQUIRED)
-endif ()
-
-# Dependences for modules
-# xcb
-find_package(XCB REQUIRED COMPONENTS XCB XKB AUX)
-find_package(XKeyboardConfig REQUIRED)
-# xim
-find_package(XCBImdkit REQUIRED)
-# dbus
-find_package(DBus REQUIRED)
-# libxml
-if (ENABLE_LIBXML2)
-find_package(LibXml2 REQUIRED)
-find_package(IsoCodes REQUIRED)
-endif (ENABLE_LIBXML2)
-# xkbcommon
-find_package(XKBCommon REQUIRED)
-
-find_package(GLib2 REQUIRED)
-find_package(Gio2 REQUIRED)
-find_package(GObject2 REQUIRED)
-
-if (ENABLE_GTK2_IM_MODULE)
-find_package(GTK2 REQUIRED gtk)
-endif()
-
-if (RT_FOUND)
-    set(HAVE_CLOCK_GETTIME 1)
-else()
-    set(HAVE_CLOCK_GETTIME 0)
-endif()
+########### optional dependency ################
+find_package(LibXml2)
+find_package(DBus)
+find_package(XCB COMPONENTS XCB AUX XKB)
+find_package(XKBCommon COMPONENTS XKBCommon X11)
+find_package(XCBImdkit)
+find_package(Wayland COMPONENTS Client)
 
 # we want some useful function like asprintf
 add_definitions(-D_GNU_SOURCE)
@@ -121,45 +93,27 @@ set(CMAKE_CXX_FLAGS "-fPIC -Wall -Wextra -fvisibility=hidden ${CMAKE_CXX_FLAGS}"
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed -Wl,--no-undefined ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed -Wl,--no-undefined ${CMAKE_MODULE_LINKER_FLAGS}")
 
-if (ENABLE_COVERAGE)
-    add_definitions(-fprofile-arcs -ftest-coverage)
-    set(CMAKE_EXE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage ${CMAKE_EXE_LINKER_FLAGS}")
-    set(CMAKE_SHARED_LINKER_FLAGS "-fprofile-arcs -ftest-coverage ${CMAKE_SHARED_LINKER_FLAGS}")
-    set(CMAKE_MODULE_LINKER_FLAGS "-fprofile-arcs -ftest-coverage ${CMAKE_MODULE_LINKER_FLAGS}")
-    add_custom_target(coverage
-                      COMMAND "${CMAKE_CTEST_COMMAND}"
-                      COMMAND lcov --capture --directory ./ --output-file coverage.info
-                      COMMAND genhtml coverage.info --output-directory "coverage_pages"
-                      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
-endif()
-
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
-ecm_setup_version(${FCITX_VERSION} VARIABLE_PREFIX KCONFIG
-                        VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h"
-                        PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake"
-                        SOVERSION 5)
+ecm_setup_version(PROJECT
+                  VARIABLE_PREFIX "FCITX"
+                  VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h"
+                  PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake")
 
-# create a Config.cmake and a ConfigVersion.cmake file and install them
-set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/fcitx")
+include(CMakePackageConfigHelpers)
 
-include(ECMPackageConfigHelpers)
-
-ecm_configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/FcitxConfig.cmake.in"
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/FcitxConfig.cmake.in"
                               "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
                               INSTALL_DESTINATION  ${CMAKECONFIG_INSTALL_DIR}
                               )
 
-install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
-               "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake"
+
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake"
+               "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
                "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FcitxMacros.cmake"
-        DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/fcitx"
         COMPONENT Devel )
-
-
-install(EXPORT FcitxTargets DESTINATION "${CMAKECONFIG_INSTALL_DIR}"
-        FILE FcitxTargets.cmake NAMESPACE Fcitx:: COMPONENT Devel)
 
 
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h
@@ -177,7 +131,5 @@ add_subdirectory(tools)
 add_subdirectory(data)
 
 add_subdirectory(po)
-
-add_subdirectory(client)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

@@ -54,6 +54,7 @@ struct _FcitxInputMethodManager
     FcitxDispatchEventCallback callback;
     FcitxDestroyNotify destroyNotify;
     void* userData;
+    FcitxAddonManager* addonManager;
 };
 
 void fcitx_input_method_free(FcitxInputMethod* im)
@@ -82,26 +83,27 @@ void fcitx_input_method_item_free(FcitxInputMethodItem* item)
 }
 
 FCITX_EXPORT_API
-FcitxInputMethodManager* fcitx_input_method_manager_new()
+FcitxInputMethodManager* fcitx_input_method_manager_new(FcitxAddonManager* addonManager)
 {
-    FcitxInputMethodManager* manager = fcitx_utils_new(FcitxInputMethodManager);
-    manager->ims = fcitx_dict_new((FcitxDestroyNotify) fcitx_input_method_free);
-    manager->nextGroupId = 1;
-    manager->groups = fcitx_ptr_array_new((FcitxDestroyNotify) fcitx_input_method_group_free);
-    fcitx_input_method_manager_create_group(manager, "layout", "us", NULL);
-    return fcitx_input_method_manager_ref(manager);
+    FcitxInputMethodManager* self = fcitx_utils_new(FcitxInputMethodManager);
+    self->addonManager = addonManager;
+    self->ims = fcitx_dict_new((FcitxDestroyNotify) fcitx_input_method_free);
+    self->nextGroupId = 1;
+    self->groups = fcitx_ptr_array_new((FcitxDestroyNotify) fcitx_input_method_group_free);
+    fcitx_input_method_manager_create_group(self, "layout", "us", NULL);
+    return fcitx_input_method_manager_ref(self);
 }
 
 
-void fcitx_input_method_manager_free(FcitxInputMethodManager* manager)
+void fcitx_input_method_manager_free(FcitxInputMethodManager* self)
 {
-    fcitx_ptr_array_free(manager->groups);
-    fcitx_dict_free(manager->ims);
+    fcitx_ptr_array_free(self->groups);
+    fcitx_dict_free(self->ims);
 
-    if (manager->destroyNotify) {
-        manager->destroyNotify(manager->userData);
+    if (self->destroyNotify) {
+        self->destroyNotify(self->userData);
     }
-    free(manager);
+    free(self);
 }
 
 FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxInputMethodManager, fcitx_input_method_manager);

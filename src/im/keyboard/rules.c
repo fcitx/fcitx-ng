@@ -281,7 +281,7 @@ void RulesHandlerStartElement(void *ctx, const xmlChar *name,
 
 void RulesHandlerEndElement(void *ctx, const xmlChar *name)
 {
-    FCITX_UNUSED(name);
+    FCITXGCLIENT_UNUSED(name);
     FcitxXkbRulesHandler* ruleshandler = (FcitxXkbRulesHandler*) ctx;
     utarray_pop_back(ruleshandler->path);
 }

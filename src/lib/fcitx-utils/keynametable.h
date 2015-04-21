@@ -25,7 +25,7 @@
 
 FCITX_DECL_BEGIN
 
-static const char *keyNameList[] _FCITX_UNUSED_ =
+static const char *keyNameList[] _FCITXGCLIENT_UNUSED_ =
 {
 "0",
 "1",
@@ -2302,7 +2302,7 @@ static const char *keyNameList[] _FCITX_UNUSED_ =
 "zstroke",
 };
 
-static const uint32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
+static const uint32_t keyValueByNameOffset[] _FCITXGCLIENT_UNUSED_ =
 {
 0x0030,
 0x0031,
@@ -4582,7 +4582,7 @@ static const uint32_t keyValueByNameOffset[] _FCITX_UNUSED_ =
 static const struct KeyNameOffsetByValue {
     uint32_t sym;
     uint16_t offset;
-} keyNameOffsetByValue[] _FCITX_UNUSED_ = {
+} keyNameOffsetByValue[] _FCITXGCLIENT_UNUSED_ = {
 {0x0, 934},
 {0x0020, 2178},
 {0x0021, 1835},

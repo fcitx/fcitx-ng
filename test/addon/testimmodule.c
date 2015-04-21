@@ -15,8 +15,8 @@ FcitxAddonAPIInputMethod testim_inputmethod = {
 
 void* fcitx_test_im_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITX_UNUSED(manager);
-    FCITX_UNUSED(config);
+    FCITXGCLIENT_UNUSED(manager);
+    FCITXGCLIENT_UNUSED(config);
     int* dummy = fcitx_utils_new(int);
     *dummy = 5;
     return dummy;

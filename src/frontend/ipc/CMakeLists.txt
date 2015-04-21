@@ -1,3 +1,7 @@
+if (NOT TARGET DBus::DBus AND NOT TARGET fcitx-dbus-interface)
+return()
+endif()
+
 add_library(fcitx-ipc MODULE ipc.c)
 add_dependencies(fcitx-ipc fcitx-dbus.h.target)
 target_link_libraries(fcitx-ipc DBus::DBus Fcitx::Core fcitx-dbus-interface)

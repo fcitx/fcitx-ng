@@ -99,9 +99,9 @@ FCITX_DEFINE_ADDON(fcitx_xcb, module, FcitxAddonAPICommon) = {
 
 void fcitx_xcb_io_callback(FcitxIOEvent* _event, int fd, unsigned int flag, void* data)
 {
-    FCITX_UNUSED(_event);
-    FCITX_UNUSED(fd);
-    FCITX_UNUSED(flag);
+    FCITXGCLIENT_UNUSED(_event);
+    FCITXGCLIENT_UNUSED(fd);
+    FCITXGCLIENT_UNUSED(flag);
 
     FcitxXCBConnection* fconn = data;
     xcb_generic_event_t* event;
@@ -154,7 +154,7 @@ void fcitx_xcb_connection_close(void* data)
 
 void* fcitx_xcb_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
 {
-    FCITX_UNUSED(config);
+    FCITXGCLIENT_UNUSED(config);
     FcitxXCB* xcb = fcitx_utils_new(FcitxXCB);
     FcitxInstance* instance = fcitx_addon_manager_get_property(manager, "instance");
     FcitxInputContextManager* icManager = fcitx_addon_manager_get_property(manager, "icmanager");
@@ -421,7 +421,7 @@ char* fcitx_xcb_get_xkb_rules_names(FcitxXCB* self, const char* display, int* pL
 
 bool fcitx_xcb_fitler_event(xcb_connection_t* conn, xcb_generic_event_t* event, void* data)
 {
-    FCITX_UNUSED(conn);
+    FCITXGCLIENT_UNUSED(conn);
     FcitxXCBConnection* fconn = data;
 
     uint8_t response_type = event->response_type & ~0x80;

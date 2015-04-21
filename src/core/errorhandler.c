@@ -19,6 +19,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
+#include "fcitx_version.h"
 #include "config.h"
 
 #include <signal.h>
@@ -29,7 +30,7 @@
 #include "errorhandler.h"
 #include "fcitx/instance.h"
 
-#if defined(ENABLE_BACKTRACE)
+#if defined(LIBEXECINFO_FOUND)
 #include <execinfo.h>
 #endif
 
@@ -136,7 +137,7 @@ void OnException(int signo)
     BufferReset(&buffer);
     BufferAppendUInt64(&buffer, signo, 10);
     _write_string(fd, "=========================\n");
-    _write_string(fd, "Fcitx " FCITX_VERSION " -- Get Signal No.: ");
+    _write_string(fd, "Fcitx " FCITX_VERSION_STRING " -- Get Signal No.: ");
     _write_buffer(fd, &buffer);
     _write_string(fd, "\n");
 
@@ -155,7 +156,7 @@ void OnException(int signo)
     _write_buffer(fd, &buffer);
     _write_string(fd, "\n");
 
-#if defined(ENABLE_BACKTRACE)
+#if defined(LIBEXECINFO_FOUND)
 #define BACKTRACE_SIZE 32
     void *array[BACKTRACE_SIZE] = { NULL, };
 

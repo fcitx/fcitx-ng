@@ -1,5 +1,2 @@
- 
-
-add_subdirectory(xim)
-
-add_subdirectory(ipc)
+ecm_optional_add_subdirectory(xim)
+ecm_optional_add_subdirectory(ipc)
