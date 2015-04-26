@@ -23,6 +23,7 @@
 #include <assert.h>
 #include "fcitx-utils/utils.h"
 #include "configuration.h"
+#include "iniparser.h"
 
 FCITX_EXPORT_API
 FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)

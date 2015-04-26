@@ -1,5 +1,5 @@
-[InputMethods]\n"
-InputMethods/0=keyboard\n"
+[InputMethods]
+InputMethods/0=keyboard
 
 [keyboard/IM]
 UniqueName=keyboard

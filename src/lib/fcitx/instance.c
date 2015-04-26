@@ -21,7 +21,7 @@
 #include <getopt.h>
 #include <unistd.h>
 #include "config.h"
-#include "fcitx_version.h"
+#include "fcitx5_version.h"
 #include "fcitx-utils/utils.h"
 #include "fcitx-utils/mainloop.h"
 #include "fcitx-utils/stringlist.h"

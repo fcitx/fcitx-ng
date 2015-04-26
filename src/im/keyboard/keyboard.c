@@ -28,6 +28,7 @@
 #include "isocodes.h"
 #include "rules.h"
 #include "fcitx-xcb.h"
+#include "keyboard_conf.h"
 
 #define XKB_RULES_XML_FILE XKEYBOARDCONFIG_XKBBASE "/rules/evdev.xml"
 
@@ -95,9 +96,7 @@ bool fcitx_keyboard_handle_event(void* data, FcitxEvent* event)
 FcitxConfiguration* fcitx_keyboard_list_im(void* data)
 {
     FCITX_UNUSED(data);
-    //return fcitx_ini_parse_string();
-
-    return NULL;
+    return fcitx_ini_parse_string(keyboard_conf, keyboard_conf_len, NULL);
 }
 
 void* fcitx_keyboard_new_im(FcitxInputMethodItem* item, void* data)

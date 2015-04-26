@@ -14,8 +14,12 @@ endmacro()
 
 macro(fcitx5_generate_binary_file_header infile outfile varname)
     get_filename_component(_in_file ${infile} ABSOLUTE)
-    add_custom_command(OUTPUT ${outfile}
-                       COMMAND Fcitx5::text2cstring varname ${_in_file} > ${outfile}
+    set(_outfile "${outfile}")
+    if(NOT IS_ABSOLUTE "${outfile}")
+        set(_outfile "${CMAKE_CURRENT_BINARY_DIR}/${outfile}")
+    endif()
+    add_custom_command(OUTPUT ${_outfile}
+                       COMMAND Fcitx5::text2cstring ${varname} ${_in_file} > ${_outfile}
                        DEPENDS ${_in_file})
 endmacro()
 

@@ -19,7 +19,7 @@
  * see <http://www.gnu.org/licenses/>.
  */
 
-#include "fcitx_version.h"
+#include "fcitx5_version.h"
 #include "config.h"
 
 #include <signal.h>

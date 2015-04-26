@@ -28,7 +28,7 @@
 
 FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config);
 
-FcitxConfiguration* fcitx_ini_parse_string(FcitxConfiguration* config);
+FcitxConfiguration* fcitx_ini_parse_string(const char* str, size_t length, FcitxConfiguration* config);
 
 void fcitx_ini_print(FcitxConfiguration* config, FILE* fp);
 
