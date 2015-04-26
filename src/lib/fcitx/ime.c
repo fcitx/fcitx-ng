@@ -87,6 +87,7 @@ FcitxInputMethodManager* fcitx_input_method_manager_new(FcitxAddonManager* addon
 
 void fcitx_input_method_manager_free(FcitxInputMethodManager* self)
 {
+    fcitx_dict_free(self->ims);
     fcitx_ptr_array_free(self->groups);
 
     if (self->destroyNotify) {
