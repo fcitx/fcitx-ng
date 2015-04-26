@@ -22,16 +22,10 @@
 
 #include "ime.h"
 
-typedef struct _FcitxInputMethod
-{
-    char* uniqueName;
-    char* name;
-    char* iconName;
-    int priority;
-    char* langCode;
-    void* imclass;
-    FcitxDispatchEventCallback handleEvent;
-} FcitxInputMethod;
+typedef struct _FcitxInputMethod FcitxInputMethod;
 
+struct _FcitxInputMethod
+{
+};
 
 #endif // _FCITX_IME_INTERNAL_H_

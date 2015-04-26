@@ -13,7 +13,7 @@ include(ECMOptionalAddSubdirectory)
 include(ECMCoverageOption)
 include(Utils)
 
-include(FcitxMacros)
+include(Fcitx5Macros)
 
 option(ENABLE_TEST "Build Test" On)
 
@@ -51,11 +51,12 @@ endif()
 set(FCITX_INSTALL_LIBDIR ${CMAKE_INSTALL_FULL_LIBDIR})
 set(FCITX_INSTALL_LIBDATADIR ${CMAKE_INSTALL_FULL_LIBDATADIR})
 set(FCITX_INSTALL_DATADIR ${CMAKE_INSTALL_FULL_DATADIR})
-set(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_FULL_DATADIR}/fcitx")
+set(FCITX_INSTALL_PKGDATADIR "${CMAKE_INSTALL_FULL_DATADIR}/fcitx5")
 set(FCITX_INSTALL_BINDIR ${CMAKE_INSTALL_FULL_BINDIR})
 set(FCITX_INSTALL_LOCALEDIR ${CMAKE_INSTALL_FULL_LOCALEDIR})
-set(FCITX_INSTALL_ADDONDIR "${CMAKE_INSTALL_FULL_LIBDIR}/fcitx")
-set(CMAKECONFIG_INSTALL_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/fcitx")
+set(FCITX_INSTALL_ADDONDIR "${CMAKE_INSTALL_FULL_LIBDIR}/fcitx5")
+set(FCITX_INSTALL_CMAKECONFIG_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/cmake/Fcitx")
+set(FCITX_INSTALL_MODULE_HEADER_DIR "${CMAKE_INSTALL_FULL_INCLUDEDIR}/Fcitx5/FcitxCore/fcitx/module")
 
 # TODO mac/win
 set(FCITX_LIBRARY_SUFFIX ".so")
@@ -77,12 +78,12 @@ find_package(LibUUID REQUIRED)
 find_package(GettextPo REQUIRED)
 find_package(RT)
 find_package(LibExecinfo)
+find_package(XKBCommon 0.5.0 REQUIRED COMPONENTS XKBCommon X11)
 
 ########### optional dependency ################
 find_package(LibXml2)
 find_package(DBus)
 find_package(XCB COMPONENTS XCB AUX XKB)
-find_package(XKBCommon COMPONENTS XKBCommon X11)
 find_package(XCBImdkit)
 find_package(Wayland COMPONENTS Client)
 
@@ -98,25 +99,25 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 ecm_setup_version(PROJECT
                   VARIABLE_PREFIX "FCITX"
-                  VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h"
-                  PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake")
+                  VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/fcitx5_version.h"
+                  PACKAGE_VERSION_FILE "${CMAKE_CURRENT_BINARY_DIR}/Fcitx5ConfigVersion.cmake")
 
 include(CMakePackageConfigHelpers)
 
-configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/FcitxConfig.cmake.in"
-                              "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
-                              INSTALL_DESTINATION  ${CMAKECONFIG_INSTALL_DIR}
+configure_package_config_file("${CMAKE_CURRENT_SOURCE_DIR}/Fcitx5Config.cmake.in"
+                              "${CMAKE_CURRENT_BINARY_DIR}/Fcitx5Config.cmake"
+                              INSTALL_DESTINATION  ${FCITX_INSTALL_CMAKECONFIG_DIR}
                               )
 
 
-install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfigVersion.cmake"
-               "${CMAKE_CURRENT_BINARY_DIR}/FcitxConfig.cmake"
-               "${CMAKE_CURRENT_SOURCE_DIR}/cmake/FcitxMacros.cmake"
-        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/fcitx"
+install(FILES  "${CMAKE_CURRENT_BINARY_DIR}/Fcitx5ConfigVersion.cmake"
+               "${CMAKE_CURRENT_BINARY_DIR}/Fcitx5Config.cmake"
+               "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Fcitx5Macros.cmake"
+        DESTINATION "${FCITX_INSTALL_CMAKECONFIG_DIR}"
         COMPONENT Devel )
 
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx_version.h
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx5_version.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Devel )
 
 add_subdirectory(src)

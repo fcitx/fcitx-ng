@@ -194,7 +194,8 @@ void fcitx_dict_steal_all(FcitxDict* dict, FcitxDictForeachFunc func, void* data
 FCITX_EXPORT_API
 void fcitx_dict_foreach(FcitxDict* dict, FcitxDictForeachFunc func, void* data)
 {
-    HASH_FOREACH(item, dict->head, FcitxDictItem) {
+    FcitxDictItem *item, *tmp;
+    HASH_ITER(hh, dict->head, item, tmp) {
         if (func(item->content.key, item->content.keyLen, &item->content.data, data)) {
             break;
         }
@@ -215,6 +216,7 @@ void fcitx_dict_remove_if(FcitxDict* dict, FcitxDictForeachFunc func, void* data
     }
 }
 
+FCITX_EXPORT_API
 void fcitx_dict_remove_data(FcitxDict* dict, FcitxDictData* data, void** dataOut)
 {
     FcitxDictItem* item = (FcitxDictItem*) data;
@@ -245,7 +247,8 @@ FcitxDict* fcitx_dict_clone(FcitxDict* other, FcitxDictCopyFunc copyFunc)
 {
     FcitxDict* dict = fcitx_dict_new(other->destroyNotify);
 
-    HASH_FOREACH(item, other->head, FcitxDictItem) {
+    FcitxDictItem *item, *tmp;
+    HASH_ITER(hh, other->head, item, tmp) {
         void *data;
         if (copyFunc) {
             data = copyFunc(item->content.data);

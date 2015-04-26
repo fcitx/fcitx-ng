@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 
         if (desc->error) {
             fprintf(stderr, "Invalid desc file: %s\n", desc->errorMessage);
-            fcitx_description_free(desc);
             result = 1;
             break;
         }

@@ -65,6 +65,9 @@ bool fcitx_addon_init_general(const FcitxAddonConfig* addonConfig, FcitxAddonIns
     if (addonConfig->addon.category == FAC_Frontend) {
         FcitxAddon* addon = fcitx_container_of(addonInst, FcitxAddon, inst);
         fcitx_ptr_array_append(manager->frontends, addon);
+    } else if (addonConfig->addon.category == FAC_InputMethod) {
+        FcitxAddon* addon = fcitx_container_of(addonInst, FcitxAddon, inst);
+        fcitx_ptr_array_append(manager->ims, addon);
     }
 
     if (apiCommon->registerCallback) {
@@ -219,6 +222,7 @@ FcitxAddonManager* fcitx_addon_manager_new(FcitxStandardPath* standardPath)
     manager->loadedAddons = fcitx_ptr_array_new(NULL);
     manager->properties = fcitx_dict_new(NULL);
     manager->frontends = fcitx_ptr_array_new(NULL);
+    manager->ims = fcitx_ptr_array_new(NULL);
     return fcitx_addon_manager_ref(manager);
 }
 
@@ -227,6 +231,7 @@ void fcitx_addon_manager_free(FcitxAddonManager* manager)
     if (manager->loaded) {
         fcitx_addon_manager_unload(manager);
     }
+    fcitx_ptr_array_free(manager->ims);
     fcitx_ptr_array_free(manager->frontends);
     fcitx_dict_free(manager->properties);
     fcitx_ptr_array_free(manager->loadedAddons);
@@ -399,11 +404,17 @@ void _fcitx_addon_manager_unload_addon(FcitxAddonManager* manager, FcitxAddon* a
 FCITX_EXPORT_API
 void fcitx_addon_manager_load(FcitxAddonManager* manager)
 {
+    FCITX_DICT_DATA_FOREACH(data, tmp, manager->addons) {
+        FcitxAddon* addon = data->data;
+        if (!addon->loaded) {
+            fcitx_dict_remove_data(manager->addons, data, NULL);
+        }
+    }
     // list all metadata
     FcitxStandardPathFilter filter;
     filter.flag = FSPFT_Suffix | FSPFT_Sort;
     filter.suffix = ".conf";
-    FcitxDict* fileDict = fcitx_standard_path_match(manager->standardPath, FSPT_Data, "fcitx/addon", &filter);
+    FcitxDict* fileDict = fcitx_standard_path_match(manager->standardPath, FSPT_Data, "fcitx5/addon", &filter);
     fcitx_dict_foreach(fileDict, _fcitx_addon_load_metadata, manager);
     fcitx_dict_free(fileDict);
 

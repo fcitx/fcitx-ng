@@ -157,3 +157,36 @@ void fcitx_ini_print(FcitxConfiguration* config, FILE* fp)
 {
     _fcitx_ini_foreach_callback(config, "", fp);
 }
+
+FCITX_EXPORT_API
+FcitxConfiguration* fcitx_ini_parse_string(const char* str, size_t length, FcitxConfiguration* config)
+{
+    FILE* fp = fmemopen((void*) str, length, "r");
+
+    if (fp) {
+        config = fcitx_ini_parse(fp, config);
+        fclose(fp);
+    }
+
+    return config;
+}
+
+FCITX_EXPORT_API
+char* fcitx_ini_to_string(FcitxConfiguration* config, size_t* pLength)
+{
+    size_t len;
+    char* buf = NULL;
+    FILE * fp = open_memstream(&buf, &len);
+    if (fp) {
+        fcitx_ini_print(config, fp);
+        const char c = 0;
+        fwrite(&c, 1, 1, fp);
+        fclose(fp);
+    }
+
+    if (pLength) {
+        *pLength = len;
+    }
+
+    return buf;
+}

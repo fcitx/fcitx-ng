@@ -11,7 +11,7 @@ add_library(fcitx-wayland MODULE
     ${CMAKE_CURRENT_BINARY_DIR}/fcitx-wayland.c
 )
 target_include_directories(fcitx-wayland PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(fcitx-wayland Fcitx::Core Wayland::Client)
+target_link_libraries(fcitx-wayland Fcitx5::Core Wayland::Client)
 set_target_properties(fcitx-wayland PROPERTIES PREFIX "")
 install(TARGETS fcitx-wayland DESTINATION ${FCITX_INSTALL_ADDONDIR})
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/fcitx-wayland.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/fcitx/module/wayland)

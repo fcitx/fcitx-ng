@@ -51,6 +51,7 @@ struct _FcitxAddonMananger {
     FcitxDict* properties;
 
     FcitxPtrArray* frontends;
+    FcitxPtrArray* ims;
 };
 
 #endif // __FCITX_ADDON_INTERNAL_H__

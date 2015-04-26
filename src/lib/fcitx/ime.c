@@ -23,7 +23,10 @@
 
 #include "ime.h"
 #include "ime-internal.h"
+#include "addon-internal.h"
 #include "fcitx-utils/macro-internal.h"
+#include "input-method-metadata.h"
+#include "input-method-list.h"
 
 typedef struct _FcitxKeyboardLayoutInfo
 {
@@ -43,28 +46,20 @@ struct _FcitxInputMethodItem
     char* name;
     size_t index;
     FcitxInputMethodGroup* group;
+    size_t keyLength;
+    char key[];
 };
 
 struct _FcitxInputMethodManager
 {
     int refcount;
-    FcitxDict* ims;
-    int nextGroupId;
     FcitxPtrArray* groups;
     FcitxDispatchEventCallback callback;
     FcitxDestroyNotify destroyNotify;
     void* userData;
     FcitxAddonManager* addonManager;
+    FcitxDict* ims;
 };
-
-void fcitx_input_method_free(FcitxInputMethod* im)
-{
-    free(im->uniqueName);
-    free(im->name);
-    free(im->iconName);
-    free(im->langCode);
-    free(im);
-}
 
 void fcitx_input_method_group_free(FcitxInputMethodGroup* group)
 {
@@ -76,9 +71,6 @@ void fcitx_input_method_group_free(FcitxInputMethodGroup* group)
 
 void fcitx_input_method_item_free(FcitxInputMethodItem* item)
 {
-    free(item->name);
-    free(item->layoutInfo.layout);
-    free(item->layoutInfo.variant);
     free(item);
 }
 
@@ -87,10 +79,8 @@ FcitxInputMethodManager* fcitx_input_method_manager_new(FcitxAddonManager* addon
 {
     FcitxInputMethodManager* self = fcitx_utils_new(FcitxInputMethodManager);
     self->addonManager = addonManager;
-    self->ims = fcitx_dict_new((FcitxDestroyNotify) fcitx_input_method_free);
-    self->nextGroupId = 1;
     self->groups = fcitx_ptr_array_new((FcitxDestroyNotify) fcitx_input_method_group_free);
-    fcitx_input_method_manager_create_group(self, "layout", "us", NULL);
+    self->ims = fcitx_dict_new(NULL);
     return fcitx_input_method_manager_ref(self);
 }
 
@@ -98,7 +88,6 @@ FcitxInputMethodManager* fcitx_input_method_manager_new(FcitxAddonManager* addon
 void fcitx_input_method_manager_free(FcitxInputMethodManager* self)
 {
     fcitx_ptr_array_free(self->groups);
-    fcitx_dict_free(self->ims);
 
     if (self->destroyNotify) {
         self->destroyNotify(self->userData);
@@ -108,38 +97,6 @@ void fcitx_input_method_manager_free(FcitxInputMethodManager* self)
 
 FCITX_REFCOUNT_FUNCTION_DEFINE(FcitxInputMethodManager, fcitx_input_method_manager);
 
-FCITX_EXPORT_API
-bool fcitx_input_method_manager_register(FcitxInputMethodManager* manager,
-                                         void* imclass,
-                                         const char* uniqueName,
-                                         const char* name,
-                                         const char* iconName,
-                                         FcitxDispatchEventCallback handleEvent,
-                                         int priority, const char* langCode)
-{
-    FcitxInputMethod* im = NULL;
-    if (fcitx_dict_lookup_by_str(manager->ims, uniqueName, &im)) {
-        if (im->imclass) {
-            return false;
-        } else {
-            im->imclass = imclass;
-            im->handleEvent = handleEvent;
-        }
-    } else {
-        im = fcitx_utils_new(FcitxInputMethod);
-        im->uniqueName = fcitx_utils_strdup(uniqueName);
-        im->name = fcitx_utils_strdup(name);
-        im->iconName = fcitx_utils_strdup(iconName);
-        im->langCode = fcitx_utils_strdup(langCode);
-        im->priority = priority;
-        im->imclass = imclass;
-        im->handleEvent = handleEvent;
-
-        fcitx_dict_insert_by_str(manager->ims, uniqueName, im, false);
-    }
-
-    return true;
-}
 
 FCITX_EXPORT_API
 int fcitx_input_method_manager_create_group(FcitxInputMethodManager* manager, ...)
@@ -173,14 +130,7 @@ int fcitx_input_method_manager_create_group(FcitxInputMethodManager* manager, ..
 FCITX_EXPORT_API
 void fcitx_input_method_manager_reset_group(FcitxInputMethodManager* manager)
 {
-    while (fcitx_ptr_array_size(manager->groups) > 1) {
-        fcitx_ptr_array_pop(manager->groups, NULL);
-    }
-
-    FcitxInputMethodGroup* group = fcitx_ptr_array_index(manager->groups, 0, FcitxInputMethodGroup*);
-    fcitx_ptr_array_clear(group->items);
-    fcitx_utils_string_swap(&group->layoutInfo.layout, "us");
-    fcitx_utils_string_swap(&group->layoutInfo.variant, NULL);
+    fcitx_ptr_array_clear(manager->groups);
 }
 
 size_t fcitx_input_method_manager_group_count(FcitxInputMethodManager* manager)
@@ -230,10 +180,32 @@ void fcitx_input_method_manager_set_input_method_list(FcitxInputMethodManager* m
 
         // validate data
         if (item.name) {
-            FcitxInputMethodItem* newItem = fcitx_utils_new(FcitxInputMethodItem);
-            newItem->name = fcitx_utils_strdup(item.name);
-            newItem->layoutInfo.layout = fcitx_utils_strdup(item.layoutInfo.layout);
-            newItem->layoutInfo.variant = fcitx_utils_strdup(item.layoutInfo.variant);
+            size_t offset[] = {
+                offsetof(FcitxInputMethodItem, name),
+                offsetof(FcitxInputMethodItem, layoutInfo.layout),
+                offsetof(FcitxInputMethodItem, layoutInfo.variant),
+            };
+
+            size_t length[FCITX_ARRAY_SIZE(offset)];
+            size_t sumOfLength = 0;
+
+            for (size_t i = 0; i < FCITX_ARRAY_SIZE(offset); i++) {
+                char* str = *(char**)(((char*)&item) + offset[i]);
+                length[i] = str ? strlen(str) : 0;
+                sumOfLength += length[i] + 1;
+            }
+
+            FcitxInputMethodItem* newItem = fcitx_utils_malloc0(sizeof(FcitxInputMethodItem) + sumOfLength);
+            newItem->keyLength = sumOfLength;
+            sumOfLength = 0;
+            for (size_t i = 0; i < FCITX_ARRAY_SIZE(offset); i++) {
+                char* str = *(char**)(((char*)&item) + offset[i]);
+                if (str) {
+                    memcpy(&newItem->key[sumOfLength], str, length[i] + 1);
+                }
+                *(char**)(((char*)newItem) + offset[i]) = str ? &newItem->key[sumOfLength] : NULL;
+                sumOfLength += length[i] + 1;
+            }
             newItem->index = fcitx_ptr_array_size(group->items);
             newItem->group = group;
             fcitx_ptr_array_append(group->items, newItem);
@@ -306,4 +278,48 @@ void fcitx_input_method_item_get_property(FcitxInputMethodItem* item, ...)
         }
     }
     va_end(va);
+}
+
+FCITX_EXPORT_API
+void fcitx_input_method_manager_save_configuration(FcitxInputMethodManager* manager, FILE* fp)
+{
+    // fcitx_configuration_new();
+}
+
+FCITX_EXPORT_API
+FcitxInputMethod* fcitx_input_method_manager_get(FcitxInputMethodManager* manager, FcitxInputMethodItem* item)
+{
+    FcitxInputMethod* inputMethod;
+    if (fcitx_dict_lookup(manager->ims, item->key, item->keyLength, &inputMethod)) {
+        return inputMethod;
+    }
+
+    return NULL;
+}
+
+void fcitx_input_method_manager_load_metadata(FcitxInputMethodManager* manager)
+{
+    FcitxInputMethodList* list = fcitx_input_method_list_new();
+    for (size_t i = 0; i < fcitx_ptr_array_size(manager->addonManager->ims); i++) {
+        FcitxAddon* addon = fcitx_ptr_array_index(manager->addonManager->ims, i, FcitxAddon*);
+        FcitxAddonAPIInputMethod* api = addon->inst.api;
+        FcitxConfiguration* metadataConfig = api->listInputMethod(addon->inst.data);
+
+        fcitx_input_method_list_load(list, metadataConfig);
+        for (uint32_t i = 0; i < list->inputMethods.inputMethods->len; i++) {
+            char* function = *(char**) list->inputMethods.inputMethods->data[i];
+            FcitxConfiguration* subConfig = fcitx_configuration_get(metadataConfig, function, false);
+            if (!subConfig) {
+                continue;
+            }
+
+            FcitxInputMethodMetadata* metadata = fcitx_input_method_metadata_new();
+            fcitx_input_method_metadata_load(metadata, subConfig);
+
+            if (metadata->iM.uniqueName[0]) {
+            }
+        }
+
+    }
+    fcitx_input_method_list_free(list);
 }

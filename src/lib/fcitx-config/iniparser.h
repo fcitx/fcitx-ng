@@ -28,6 +28,10 @@
 
 FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config);
 
+FcitxConfiguration* fcitx_ini_parse_string(FcitxConfiguration* config);
+
 void fcitx_ini_print(FcitxConfiguration* config, FILE* fp);
+
+char* fcitx_ini_to_string(FcitxConfiguration* config, size_t* pLength);
 
 #endif

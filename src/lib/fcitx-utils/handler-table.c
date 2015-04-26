@@ -160,7 +160,8 @@ fcitx_handler_table_prepend(FcitxHandlerTable *table, size_t keysize,
 FCITX_EXPORT_API void
 fcitx_handler_table_foreach_key(FcitxHandlerTable* table, FcitxHandlerTableForeachKeyCallback callback, void* userdata)
 {
-    HASH_FOREACH(key, table->keys, FcitxHandlerKey) {
+    FcitxHandlerKey *key, *tmp;
+    HASH_ITER(hh, table->keys, key, tmp) {
         callback(table, key, userdata);
     }
 }

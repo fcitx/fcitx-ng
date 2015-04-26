@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
+#include "fcitx-config/iniparser.h"
 #include "fcitx/ime.h"
 #include "isocodes.h"
 #include "rules.h"
@@ -49,11 +50,18 @@ static void* fcitx_keyboard_init(FcitxAddonManager* manager, const FcitxAddonCon
 static void fcitx_keyboard_destroy(void* data);
 static bool fcitx_keyboard_handle_event(void* data, FcitxEvent* event);
 
+static FcitxConfiguration* fcitx_keyboard_list_im(void* data);
+static void* fcitx_keyboard_new_im(FcitxInputMethodItem* item, void* data);
+static void fcitx_keyboard_free_im(FcitxInputMethodItem* item, void* imData, void* data);
+
 FCITX_DEFINE_ADDON(fcitx_keyboard, inputmethod, FcitxAddonAPIInputMethod) = {
     .common = {
         .init = fcitx_keyboard_init,
         .destroy = fcitx_keyboard_destroy
-    }
+    },
+    .listInputMethod = fcitx_keyboard_list_im,
+    .newInputMethod = fcitx_keyboard_new_im,
+    .freeInputMethod = fcitx_keyboard_free_im,
 };
 
 void* fcitx_keyboard_init(FcitxAddonManager* manager, const FcitxAddonConfig* config)
@@ -82,4 +90,22 @@ bool fcitx_keyboard_handle_event(void* data, FcitxEvent* event)
             break;
     }
     return false;
+}
+
+FcitxConfiguration* fcitx_keyboard_list_im(void* data)
+{
+    FCITX_UNUSED(data);
+    //return fcitx_ini_parse_string();
+
+    return NULL;
+}
+
+void* fcitx_keyboard_new_im(FcitxInputMethodItem* item, void* data)
+{
+
+}
+
+void fcitx_keyboard_free_im(FcitxInputMethodItem* item, void* imData, void* data)
+{
+
 }

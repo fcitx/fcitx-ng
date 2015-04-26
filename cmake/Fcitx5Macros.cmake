@@ -3,13 +3,20 @@ macro(fcitx5_generate_config_source infile basename name prefix)
     set(_target_c ${CMAKE_CURRENT_BINARY_DIR}/${basename}.c)
     set(_target_h ${CMAKE_CURRENT_BINARY_DIR}/${basename}.h)
 
-    add_custom_command(OUTPUT ${_target_c}
-        COMMAND Fcitx::configdesc-compiler -c -i "${basename}.h" -n "${name}" -p "${prefix}" -o ${_target_c} ${_in_file}
-        DEPENDS ${_in_file} Fcitx::configdesc-compiler ${_target_h} VERBATIM)
-
     add_custom_command(OUTPUT ${_target_h}
-        COMMAND Fcitx::configdesc-compiler -n "${name}" -p "${prefix}" -o ${_target_h} ${_in_file}
-        DEPENDS ${_in_file} Fcitx::configdesc-compiler VERBATIM)
+        COMMAND Fcitx5::configdesc-compiler -n "${name}" -p "${prefix}" -o ${_target_h} ${_in_file}
+        DEPENDS ${_in_file} Fcitx5::configdesc-compiler VERBATIM)
+
+    add_custom_command(OUTPUT ${_target_c}
+        COMMAND Fcitx5::configdesc-compiler -c -i "${basename}.h" -n "${name}" -p "${prefix}" -o ${_target_c} ${_in_file}
+        DEPENDS ${_in_file} ${_target_h} Fcitx5::configdesc-compiler ${_target_h} VERBATIM)
+endmacro()
+
+macro(fcitx5_generate_binary_file_header infile outfile varname)
+    get_filename_component(_in_file ${infile} ABSOLUTE)
+    add_custom_command(OUTPUT ${outfile}
+                       COMMAND Fcitx5::text2cstring varname ${_in_file} > ${outfile}
+                       DEPENDS ${_in_file})
 endmacro()
 
 macro(fcitx5_merge_config_translation infile outfile)
@@ -21,8 +28,8 @@ macro(fcitx5_merge_config_translation infile outfile)
     endif()
 
     add_custom_command(OUTPUT "${_outfile}"
-        COMMAND Fcitx::config-merge-translation "${abs_infile}" "${PROJECT_SOURCE_DIR}/po" "${_outfile}"
-        DEPENDS "${abs_infile}" Fcitx::config-merge-translation VERBATIM)
+        COMMAND Fcitx5::config-merge-translation "${abs_infile}" "${PROJECT_SOURCE_DIR}/po" "${_outfile}"
+        DEPENDS "${abs_infile}" Fcitx5::config-merge-translation VERBATIM)
 
     add_custom_target("${infile_name}.target" ALL DEPENDS "${_outfile}")
 endmacro()
@@ -32,17 +39,17 @@ macro(fcitx5_generate_addon_function infile)
     get_filename_component(infile_name ${infile} NAME_WE)
 
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h"
-        COMMAND Fcitx::addon-function-compiler -i "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h"
-        DEPENDS "${abs_infile}" Fcitx::addon-function-compiler VERBATIM)
+        COMMAND Fcitx5::addon-function-compiler -i "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h"
+        DEPENDS "${abs_infile}" Fcitx5::addon-function-compiler VERBATIM)
 
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h"
-        COMMAND Fcitx::addon-function-compiler "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h"
-        DEPENDS "${abs_infile}" Fcitx::addon-function-compiler VERBATIM)
+        COMMAND Fcitx5::addon-function-compiler "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h"
+        DEPENDS "${abs_infile}" Fcitx5::addon-function-compiler VERBATIM)
     add_custom_target("${infile_name}.h.target" ALL DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.h" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h")
 
     add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.c"
-        COMMAND Fcitx::addon-function-compiler -c "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.c"
-        DEPENDS "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h" Fcitx::addon-function-compiler VERBATIM)
+        COMMAND Fcitx5::addon-function-compiler -c "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}.c"
+        DEPENDS "${abs_infile}" "${CMAKE_CURRENT_BINARY_DIR}/${infile_name}-internal.h" Fcitx5::addon-function-compiler VERBATIM)
 endmacro()
 
 macro(fcitx5_translate_add_po_file )

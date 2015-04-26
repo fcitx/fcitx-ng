@@ -66,21 +66,25 @@ void fcitx_text_clear(FcitxText* text)
     utarray_clear(&text->strings);
 }
 
+FCITX_EXPORT_API
 size_t fcitx_text_size(FcitxText* text)
 {
     return utarray_len(&text->strings);
 }
 
+FCITX_EXPORT_API
 FcitxTextFormatFlags fcitx_text_get_format(FcitxText* text, size_t index)
 {
     return ((FcitxTextString*) utarray_eltptr(&text->strings, index))->format;
 }
 
+FCITX_EXPORT_API
 const char* fcitx_text_get_string(FcitxText* text, size_t index)
 {
     return ((FcitxTextString*) utarray_eltptr(&text->strings, index))->string;
 }
 
+FCITX_EXPORT_API
 char* fcitx_text_to_string(FcitxText* text)
 {
     size_t length = 0;

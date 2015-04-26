@@ -121,6 +121,10 @@ FcitxDictData* fcitx_dict_first(FcitxDict* dict);
 
 FcitxDictData* fcitx_dict_data_next(FcitxDictData* data);
 
+#define FCITX_DICT_DATA_FOREACH(data, tmp, dict) \
+    for (FcitxDictData *data = fcitx_dict_first(dict), *tmp = data ? fcitx_dict_data_next(data) : NULL; \
+         data != NULL; \
+         data = tmp, tmp = tmp ? fcitx_dict_data_next(tmp) : NULL)
 
 FCITX_DECL_END
 

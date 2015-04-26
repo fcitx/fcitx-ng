@@ -3,4 +3,4 @@ set_target_properties(fcitx-configdesc-compiler PROPERTIES
                       OUTPUT_NAME fcitx-configdesc-compiler)
 target_link_libraries(fcitx-configdesc-compiler fcitx-config)
 target_include_directories(fcitx-configdesc-compiler PUBLIC ../common/)
-add_executable(Fcitx::configdesc-compiler ALIAS fcitx-configdesc-compiler)
+add_executable(Fcitx5::configdesc-compiler ALIAS fcitx-configdesc-compiler)

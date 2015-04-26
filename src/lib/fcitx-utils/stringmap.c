@@ -129,14 +129,17 @@ char* fcitx_string_map_to_string(FcitxStringMap* map, char delim)
         return fcitx_utils_strdup("");
 
     size_t len = 0;
-    HASH_FOREACH(item, map->items, FcitxStringMapItem) {
+
+    FcitxStringMapItem *item, *tmp;
+    HASH_ITER(hh, map->items, item, tmp) {
         len += item->hh.keylen + 1 + (item->value ? strlen("true") :
                                       strlen("false")) + 1;
     }
 
     char* result = (char*)fcitx_utils_malloc(sizeof(char) * len);
     char* p = result;
-    HASH_FOREACH(item2, map->items, FcitxStringMapItem) {
+    FcitxStringMapItem *item2;
+    HASH_ITER(hh, map->items, item2, tmp) {
         size_t strl = item2->hh.keylen;
         memcpy(p, item2->key, strl);
         p += strl;

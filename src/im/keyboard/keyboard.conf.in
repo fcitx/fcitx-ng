@@ -1,0 +1,7 @@
+[InputMethods]\n"
+InputMethods/0=keyboard\n"
+
+[keyboard/IM]
+UniqueName=keyboard
+_Name=Keyboard
+Icon=fcitx-kbd

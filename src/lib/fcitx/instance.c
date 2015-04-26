@@ -536,10 +536,7 @@ bool fcitx_instance_event_dispatch(void* self, FcitxEvent* event)
             }
         }
 
-        FcitxInputMethod* im = NULL;
-        if (im) {
-            return im->handleEvent(im->imclass, event);
-        }
+        // TODO
     } else if ((event->type & ET_EventTypeFlag) == ET_InputMethodEventFlag) {
         uint32_t frontend = icEvent->inputContext->frontend;
         if (fcitx_ptr_array_size(instance->addonManager->frontends) > frontend) {

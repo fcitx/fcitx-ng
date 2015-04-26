@@ -7,32 +7,32 @@ if(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 2.8.12)
     message(AUTHOR_WARNING "Your project should require at least CMake 2.8.12 to use FindFcitx.cmake")
 endif()
 
-if (NOT Fcitx_FIND_COMPONENTS)
-    set(Fcitx_NOT_FOUND_MESSAGE "The Fcitx package requires at least one component")
-    set(Fcitx_FOUND False)
+if (NOT Fcitx5_FIND_COMPONENTS)
+    set(Fcitx5_NOT_FOUND_MESSAGE "The Fcitx5 package requires at least one component")
+    set(Fcitx5_FOUND False)
     return()
 endif()
 
 set(_quiet_arg)
-if (Fcitx_FIND_QUIETLY)
+if (Fcitx5_FIND_QUIETLY)
     set(_quiet_arg QUIET)
 endif()
 set(_exact_arg)
-if (Fcitx_FIND_EXACT)
+if (Fcitx5_FIND_EXACT)
     set(_exact_arg EXACT)
 endif()
 
 include(FindPackageHandleStandardArgs)
 include(FeatureSummary)
 
-set(Fcitx_VERSION)
-foreach(_module ${Fcitx_FIND_COMPONENTS})
-    find_package(Fcitx${_module} ${Fcitx_FIND_VERSION}
+set(Fcitx5_VERSION)
+foreach(_module ${Fcitx5_FIND_COMPONENTS})
+    find_package(Fcitx${_module} ${Fcitx5_FIND_VERSION}
         ${_exact_arg} ${_quiet_arg}
         CONFIG
     )
     find_package_handle_standard_args(Fcitx${_module} CONFIG_MODE)
-    if (Fcitx_FIND_REQUIRED AND Fcitx_FIND_REQUIRED_${_module})
+    if (Fcitx5_FIND_REQUIRED AND Fcitx5_FIND_REQUIRED_${_module})
         # If the component was required, we tell FeatureSummary so that it
         # will be displayed in the correct list. We do not use the REQUIRED
         # argument of find_package() to allow all the missing frameworks
@@ -45,7 +45,7 @@ foreach(_module ${Fcitx_FIND_COMPONENTS})
     # <module>_<component>_FOUND and <module>_<component>_VERSION variables,
     # but the find_package calls above will have set Fcitx<component>_*
     # variables.
-    set(Fcitx_${_module}_FOUND ${Fcitx${_module}_FOUND})
+    set(Fcitx5_${_module}_FOUND ${Fcitx${_module}_FOUND})
     if(Fcitx${_module}_FOUND)
         set(Fcitx_${_module}_VERSION ${Fcitx${_module}_VERSION})
 
@@ -63,9 +63,9 @@ endforeach()
 # on success.
 set(_dummy_req_var "success")
 
-find_package_handle_standard_args(Fcitx
+find_package_handle_standard_args(Fcitx5
     FOUND_VAR
-        Fcitx_FOUND
+        Fcitx5_FOUND
     REQUIRED_VARS
         _dummy_req_var
     VERSION_VAR
@@ -73,4 +73,4 @@ find_package_handle_standard_args(Fcitx
     HANDLE_COMPONENTS
 )
 
-include("${CMAKE_CURRENT_LIST_DIR}/FcitxMacros.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/Fcitx5Macros.cmake")

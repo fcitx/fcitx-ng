@@ -19,19 +19,21 @@
 #ifndef _FCITX_IME_H_
 #define _FCITX_IME_H_
 
+#include <stdio.h>
 #include "addon.h"
 #include "inputcontext.h"
 
 typedef struct _FcitxInputMethodItem FcitxInputMethodItem;
 
-typedef struct FcitxConfiguration* (*FcitxListAvailableInputMethod)(void* data);
-typedef void* (*FcitxNewInputMethod)(FcitxInputMethodItem* item, void* data);
+typedef FcitxConfiguration* (*FcitxListAvailableInputMethodCallback)(void* data);
+typedef void* (*FcitxInputMethodNewCallback)(FcitxInputMethodItem* item, void* data);
+typedef void (*FcitxInputMethodFreeCallback)(FcitxInputMethodItem* item, void* imData, void* data);
 typedef struct _FcitxAddonAPIInputMethod
 {
     FcitxAddonAPICommon common;
-    FcitxListAvailableInputMethod* listInputMethod;
-    FcitxNewInputMethod newInputMethod;
-    FcitxClosureFunc freeInputMethod;
+    FcitxListAvailableInputMethodCallback listInputMethod;
+    FcitxInputMethodNewCallback newInputMethod;
+    FcitxInputMethodFreeCallback freeInputMethod;
 } FcitxAddonAPIInputMethod;
 
 typedef enum _FcitxInputMethodItemProperty
@@ -48,15 +50,6 @@ typedef struct _FcitxInputMethodManager FcitxInputMethodManager;
 FcitxInputMethodManager* fcitx_input_method_manager_new(FcitxAddonManager* manager);
 FcitxInputMethodManager* fcitx_input_method_manager_ref(FcitxInputMethodManager* manager);
 void fcitx_input_method_manager_unref(FcitxInputMethodManager* manager);
-
-bool fcitx_input_method_manager_register(FcitxInputMethodManager* manager,
-                                         void *imclass,
-                                         const char* uniqueName,
-                                         const char* name,
-                                         const char* iconName,
-                                         FcitxDispatchEventCallback handleEvent,
-                                         int priority,
-                                         const char *langCode);
 
 /**
  * now we have a concept of input method group
@@ -98,5 +91,9 @@ size_t fcitx_input_method_manager_get_group_size(FcitxInputMethodManager* manage
 void fcitx_input_method_manager_set_event_dispatcher(FcitxInputMethodManager* manager, FcitxDispatchEventCallback callback, FcitxDestroyNotify destroyNotify, void* userData);
 
 void fcitx_input_method_item_get_property(FcitxInputMethodItem* item, ...);
+
+void fcitx_input_method_manager_save_configuration(FcitxInputMethodManager* manager, FILE* fp);
+
+void fcitx_input_method_manager_load_metadata(FcitxInputMethodManager* manager);
 
 #endif // _FCITX_IME_H_

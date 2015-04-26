@@ -46,17 +46,17 @@ int main()
     FcitxInputContextManager* manager = fcitx_input_context_manager_new();
 
     fcitx_input_context_manager_set_event_dispatcher(manager, dispatch_ic_event, NULL, NULL);
-    FcitxInputContext *ic[] = { fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0),
-                                fcitx_input_context_new(manager, 0) };
+    FcitxInputContext *ic[] = { fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL),
+                                fcitx_input_context_new(manager, 0, NULL, NULL) };
 
     fcitx_input_context_destroy(ic[7]);
-    ic[7] = fcitx_input_context_new(manager, 0);
+    ic[7] = fcitx_input_context_new(manager, 0, NULL, NULL);
 
     FcitxInputContextFocusGroup* group = fcitx_input_context_focus_group_new(manager);
     FcitxInputContextFocusGroup* group2 = fcitx_input_context_focus_group_new(manager);

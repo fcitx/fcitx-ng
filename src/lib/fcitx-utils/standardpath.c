@@ -274,7 +274,7 @@ FCITX_EXPORT_API
 FcitxStandardPathFile fcitx_standard_path_create_tempfile(FcitxStandardPath* sp, FcitxStandardPathType type, const char* path)
 {
     FcitxStandardPathFile result = { NULL, NULL };
-    if (fcitx_utils_string_ends_with(path, "XXXXXX")) {
+    if (!fcitx_utils_string_ends_with(path, "XXXXXX")) {
         return result;
     }
 
