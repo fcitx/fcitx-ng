@@ -21,6 +21,7 @@ bool _fcitx_addon_dump(const char* key, size_t keyLen, void** data, void* arg)
 int main (int argc, char* argv[])
 {
     if (argc < 3) {
+        fprintf(stderr, "testaddon XDG_DATA_HOME/XDG_DATA_DIRS FCITX_ADDON_DIRS\n");
         return 1;
     }
 
@@ -38,6 +39,11 @@ int main (int argc, char* argv[])
 
     fcitx_addon_manager_load(manager);
     fcitx_dict_foreach(manager->addons, _fcitx_addon_dump, NULL);
+
+    FcitxInputMethodManager* imManager = fcitx_input_method_manager_new(manager);
+    fcitx_input_method_manager_load_metadata(imManager);
+
+    fcitx_input_method_manager_unref(imManager);
 
 #if 0
     extern int testim_test_invoke(int* self);

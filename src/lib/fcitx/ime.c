@@ -298,6 +298,7 @@ FcitxInputMethod* fcitx_input_method_manager_get(FcitxInputMethodManager* manage
     return NULL;
 }
 
+FCITX_EXPORT_API
 void fcitx_input_method_manager_load_metadata(FcitxInputMethodManager* manager)
 {
     FcitxInputMethodList* list = fcitx_input_method_list_new();
@@ -319,8 +320,11 @@ void fcitx_input_method_manager_load_metadata(FcitxInputMethodManager* manager)
 
             if (metadata->iM.uniqueName[0]) {
             }
+
+            fcitx_input_method_metadata_free(metadata);
         }
 
+        fcitx_configuration_unref(metadataConfig);
     }
     fcitx_input_method_list_free(list);
 }
