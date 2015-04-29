@@ -44,9 +44,9 @@ typedef struct _FcitxIsoCodes {
     FcitxIsoCodes3166Entry* iso3166;
 } FcitxIsoCodes;
 
-FcitxIsoCodes* FcitxXkbReadIsoCodes(const char* iso639, const char* iso3166);
-FcitxIsoCodes639Entry* FcitxIsoCodesGetEntry(FcitxIsoCodes* isocodes, const char* lang);
-const char* FindBestLanguage(FcitxIsoCodes* isocodes, const char* hint, UT_array* languages);
-void FcitxIsoCodesFree(FcitxIsoCodes* isocodes);
+FcitxIsoCodes* fcitx_isocodes_new(const char* iso639, const char* iso3166);
+FcitxIsoCodes639Entry* fcitx_isocodes_get(FcitxIsoCodes* isocodes, const char* lang);
+const char* fcitx_isocodes_find_best(FcitxIsoCodes* isocodes, const char* hint, UT_array* languages);
+void fcitx_isocodes_free(FcitxIsoCodes* isocodes);
 
 #endif

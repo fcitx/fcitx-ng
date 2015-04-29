@@ -12,5 +12,5 @@ endif()
 
 add_library(fcitx-keyboard MODULE ${FCITX_KEYBOARD_SOURCES})
 target_include_directories(fcitx-keyboard PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(fcitx-keyboard XKBCommon::XKBCommon LibXml2::LibXml Fcitx5::Core fcitx-xcb-interface)
+target_link_libraries(fcitx-keyboard XKBCommon::XKBCommon Fcitx5::Core fcitx-xcb-interface)
 set_target_properties(fcitx-keyboard PROPERTIES PREFIX "")

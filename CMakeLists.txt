@@ -10,12 +10,12 @@ include(FeatureSummary)
 include(ECMSetupVersion)
 include(ECMGenerateHeaders)
 include(ECMOptionalAddSubdirectory)
-include(ECMCoverageOption)
 include(Utils)
 
 include(Fcitx5Macros)
 
 option(ENABLE_TEST "Build Test" On)
+option(BUILD_COVERAGE "Build the project with gcov support" OFF)
 
 if(NOT NO_SNOOPER_APPS)
   set(NO_SNOOPER_APPS ".*chrome.*,.*chromium.*,firefox.*,Do.*"
@@ -79,9 +79,9 @@ find_package(GettextPo REQUIRED)
 find_package(RT)
 find_package(LibExecinfo)
 find_package(XKBCommon 0.5.0 REQUIRED COMPONENTS XKBCommon X11)
+find_package(LibXml2 REQUIRED)
 
 ########### optional dependency ################
-find_package(LibXml2)
 find_package(DBus)
 find_package(XCB COMPONENTS XCB AUX XKB)
 find_package(XCBImdkit)
@@ -93,6 +93,13 @@ set(CMAKE_C_FLAGS "-fPIC -std=c99 -Wall -Wextra -fvisibility=hidden ${CMAKE_C_FL
 set(CMAKE_CXX_FLAGS "-fPIC -Wall -Wextra -fvisibility=hidden ${CMAKE_CXX_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS "-Wl,--as-needed -Wl,--no-undefined ${CMAKE_SHARED_LINKER_FLAGS}")
 set(CMAKE_MODULE_LINKER_FLAGS "-Wl,--as-needed -Wl,--no-undefined ${CMAKE_MODULE_LINKER_FLAGS}")
+
+if(BUILD_COVERAGE)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov")
+endif()
+
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.in ${CMAKE_CURRENT_BINARY_DIR}/config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR})
@@ -125,6 +132,14 @@ add_subdirectory(src)
 if (ENABLE_TEST)
     enable_testing()
     add_subdirectory(test)
+
+    if (BUILD_COVERAGE)
+        add_custom_target(coverage
+                        COMMAND "${CMAKE_CTEST_COMMAND}"
+                        COMMAND lcov --capture --directory ./ --output-file coverage.info
+                        COMMAND genhtml coverage.info --output-directory "coverage_pages"
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+    endif()
 endif ()
 
 add_subdirectory(tools)

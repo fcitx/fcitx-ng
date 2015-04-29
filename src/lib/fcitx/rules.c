@@ -68,7 +68,7 @@ static const UT_icd ptr_icd = {
     sizeof(void*), NULL, NULL, NULL
 };
 
-FcitxXkbRules* FcitxXkbReadRules(const char* file)
+FcitxXkbRules* fcitx_xkb_rules_new(const char* file)
 {
     xmlSAXHandler handle;
     memset(&handle, 0, sizeof(xmlSAXHandler));
@@ -112,7 +112,7 @@ FcitxXkbRules* FcitxXkbReadRules(const char* file)
     return rules;
 }
 
-void FcitxXkbRulesFree(FcitxXkbRules* rules)
+void fcitx_xkb_rules_free(FcitxXkbRules* rules)
 {
     if (!rules)
         return;
@@ -153,71 +153,7 @@ void MergeRules(FcitxXkbRules* rules, FcitxXkbRules* rulesextra)
     }
 
     utarray_done(&toAdd);
-    FcitxXkbRulesFree(rulesextra);
-}
-
-
-char* FcitxXkbRulesToReadableString(FcitxXkbRules* rules)
-{
-    FcitxXkbLayoutInfo* layoutInfo;
-    FcitxXkbModelInfo* modelInfo;
-    FcitxXkbVariantInfo* variantInfo;
-    FcitxXkbOptionInfo* optionInfo;
-    FcitxXkbOptionGroupInfo* optionGroupInfo;
-
-    UT_array* list = fcitx_utils_string_list_new();
-
-    fcitx_utils_string_list_printf_append(list, "Version: %s", rules->version);
-
-    for (layoutInfo = (FcitxXkbLayoutInfo*) utarray_front(rules->layoutInfos);
-         layoutInfo != NULL;
-         layoutInfo = (FcitxXkbLayoutInfo*) utarray_next(rules->layoutInfos, layoutInfo))
-    {
-        fcitx_utils_string_list_printf_append(list, "\tLayout Name: %s", layoutInfo->name);
-        fcitx_utils_string_list_printf_append(list, "\tLayout Description: %s", layoutInfo->description);
-        char* languages = fcitx_utils_string_list_join(layoutInfo->languages, ',');
-        fcitx_utils_string_list_printf_append(list, "\tLayout Languages: %s", languages);
-        free(languages);
-        for (variantInfo = (FcitxXkbVariantInfo*) utarray_front(layoutInfo->variantInfos);
-             variantInfo != NULL;
-             variantInfo = (FcitxXkbVariantInfo*) utarray_next(layoutInfo->variantInfos, variantInfo))
-        {
-            fcitx_utils_string_list_printf_append(list, "\t\tVariant Name: %s", variantInfo->name);
-            fcitx_utils_string_list_printf_append(list, "\t\tVariant Description: %s", variantInfo->description);
-            char* languages = fcitx_utils_string_list_join(variantInfo->languages, ',');
-            fcitx_utils_string_list_printf_append(list, "\t\tVariant Languages: %s", languages);
-            free(languages);
-        }
-    }
-
-    for (modelInfo = (FcitxXkbModelInfo*) utarray_front(rules->modelInfos);
-         modelInfo != NULL;
-         modelInfo = (FcitxXkbModelInfo*) utarray_next(rules->modelInfos, modelInfo))
-    {
-        fcitx_utils_string_list_printf_append(list, "\tModel Name: %s", modelInfo->name);
-        fcitx_utils_string_list_printf_append(list, "\tModel Description: %s", modelInfo->description);
-        fcitx_utils_string_list_printf_append(list, "\tModel Vendor: %s", modelInfo->vendor);
-    }
-
-    for (optionGroupInfo = (FcitxXkbOptionGroupInfo*) utarray_front(rules->optionGroupInfos);
-         optionGroupInfo != NULL;
-         optionGroupInfo = (FcitxXkbOptionGroupInfo*) utarray_next(rules->optionGroupInfos, optionGroupInfo))
-    {
-        fcitx_utils_string_list_printf_append(list, "\tOption Group Name: %s", optionGroupInfo->name);
-        fcitx_utils_string_list_printf_append(list, "\tOption Group Description: %s", optionGroupInfo->description);
-        fcitx_utils_string_list_printf_append(list, "\tOption Group Exclusive: %d", optionGroupInfo->exclusive);
-        for (optionInfo = (FcitxXkbOptionInfo*) utarray_front(optionGroupInfo->optionInfos);
-             optionInfo != NULL;
-             optionInfo = (FcitxXkbOptionInfo*) utarray_next(optionGroupInfo->optionInfos, optionInfo))
-        {
-            fcitx_utils_string_list_printf_append(list, "\t\tOption Name: %s", optionInfo->name);
-            fcitx_utils_string_list_printf_append(list, "\t\tOption Description: %s", optionInfo->description);
-        }
-    }
-
-    char* result = fcitx_utils_string_list_join(list, '\n');
-    utarray_free(list);
-    return result;
+    fcitx_xkb_rules_free(rulesextra);
 }
 
 static inline

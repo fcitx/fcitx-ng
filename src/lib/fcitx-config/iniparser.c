@@ -21,9 +21,53 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <assert.h>
+#include <limits.h>
 #include "fcitx-utils/utils.h"
 #include "configuration.h"
 #include "iniparser.h"
+
+enum {
+    UNESCAPE_STATE_NORMAL,
+    UNESCAPE_STATE_ESCAPE
+};
+
+static const char unescape_map[] = {
+    ['n'] = '\n',
+    ['\"'] = '\"',
+    ['\\'] = '\\',
+};
+
+bool _unescape_string(char* str, bool unescapeQuote)
+{
+    size_t i = 0;
+    size_t j = 0;
+    int state = 0;
+    do {
+        switch(state) {
+            case UNESCAPE_STATE_NORMAL:
+                if (str[i] == '\\') {
+                    state = UNESCAPE_STATE_ESCAPE;
+                } else {
+                    str[j] = str[i];
+                    j++;
+                }
+                break;
+            case UNESCAPE_STATE_ESCAPE:
+                if (str[i] == '\\' ||
+                    str[i] == 'n' ||
+                    (str[i] == '\"' && unescapeQuote)) {
+                    str[j] = unescape_map[(int) str[i]];
+                    j++;
+                } else {
+                    return false;
+                }
+                state = UNESCAPE_STATE_NORMAL;
+                break;
+        }
+    } while(str[i++]);
+    str[j] = '\0';
+    return true;
+}
 
 FCITX_EXPORT_API
 FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
@@ -54,23 +98,17 @@ FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
             *equalPos = 0;
             char* value = equalPos + 1;
             char* end = trimmedLine + len;
-            char* tofree = NULL;
+
+            bool unescapeQuote = false;;
             // having quote at beginning and end, escape
             if (end - value >= 2 && value[0] == '"' && end[-1] == '"') {
                 end[-1] = '\0';
                 value++;
-                char* replaced = fcitx_utils_string_replace(value, "\\\"", "\"", false);
-                if (replaced != NULL) {
-                    value = replaced;
-                    tofree = replaced;
-                }
+                unescapeQuote = true;
             }
 
-            char* replaced = fcitx_utils_string_replace(value, "\\\n", "\n", true);
-            if (replaced != NULL) {
-                value = replaced;
-                free(tofree);
-                tofree = replaced;
+            if (!_unescape_string(value, unescapeQuote)) {
+                continue;
             }
 
             if (currentGroup) {
@@ -81,8 +119,6 @@ FcitxConfiguration* fcitx_ini_parse(FILE* fp, FcitxConfiguration* config)
             } else {
                 fcitx_configuration_set_value_by_path(config, name, value);
             }
-
-            free(tofree);
         }
     }
 
@@ -114,20 +150,28 @@ void _fcitx_ini_foreach_option_callback(FcitxConfiguration* config, const char* 
         if (comment && !strchr(comment, '\n')) {
             fprintf(fp, "# %s\n", comment);
         }
-        char* tofree = NULL;
-        tofree = fcitx_utils_string_replace(value, "\n", "\\\n", true);
-
-        if (tofree) {
-            value = tofree;
+        char* tofree = NULL, *temp = NULL;
+        temp = fcitx_utils_string_replace(value, "\\", "\\\\", true);
+        if (temp) {
+            value = tofree = temp;
         }
-
-        char* quoteEsacpe = fcitx_utils_string_replace(value, "\"", "\\\"", true);
-        if (quoteEsacpe) {
+        temp = fcitx_utils_string_replace(value, "\n", "\\n", true);
+        if (temp) {
             free(tofree);
-            value = tofree = quoteEsacpe;
+            value = tofree = temp;
         }
 
-        if (quoteEsacpe) {
+        bool needQuote = strpbrk(value, "\f\r\t\v ") != NULL;
+
+        if (needQuote) {
+            temp = fcitx_utils_string_replace(value, "\"", "\\\"", true);
+            if (temp) {
+                free(tofree);
+                value = tofree = temp;
+            }
+        }
+
+        if (needQuote) {
             fprintf(fp, "%s=\"%s\"\n", fcitx_configuration_get_name(config), value);
         } else {
             fprintf(fp, "%s=%s\n", fcitx_configuration_get_name(config), value);

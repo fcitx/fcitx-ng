@@ -25,12 +25,8 @@
 
 #include "fcitx-config/iniparser.h"
 #include "fcitx/ime.h"
-#include "isocodes.h"
-#include "rules.h"
 #include "fcitx-xcb.h"
 #include "keyboard_conf.h"
-
-#define XKB_RULES_XML_FILE XKEYBOARDCONFIG_XKBBASE "/rules/evdev.xml"
 
 typedef struct _FcitxKeyboard
 {

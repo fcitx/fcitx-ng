@@ -9,6 +9,8 @@ set(LIBFCITX_SOURCES
   inputdevice.c
   ime.c
   ui.c
+  isocodes.c
+  rules.c
   )
 
 set(FCITX_HEADERS
@@ -44,7 +46,7 @@ target_link_libraries(fcitx-core
     PUBLIC
         Fcitx5::Config Fcitx5::Utils
     PRIVATE
-        LibFFI::FFI LibUUID::UUID DL::DL)
+        LibFFI::FFI LibUUID::UUID DL::DL LibXml2::LibXml)
 target_include_directories(fcitx-core PUBLIC
     "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>"
     "$<INSTALL_INTERFACE:${CMAKE_INSTALL_FULL_INCLUDEDIR}>/Fcitx5/FcitxCore")

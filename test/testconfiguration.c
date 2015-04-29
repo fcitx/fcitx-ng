@@ -5,6 +5,7 @@
 #include "fcitx-config/iniparser.h"
 
 const char configText[] =
+"#COMMENT\n"
 "Addon=test2\n"
 "[Addon]\n"
 "Name=test\n"
@@ -16,8 +17,9 @@ const char configText[] =
 "[Addon/Enum]\n"
 "Enum1=test1\n"
 "Enum2=test2\n"
-"Enum3=test3\n"
-"Enum4=test4\n";
+"Enum3=test3\\\n"
+"Enum4=test4\\\\\n"
+"Enum5=\"test5    \\n\\\\\\\"test    \"";
 
 void dump(FcitxConfiguration* config, const char* path, void* data)
 {

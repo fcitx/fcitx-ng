@@ -319,6 +319,7 @@ void fcitx_input_method_manager_load_metadata(FcitxInputMethodManager* manager)
             fcitx_input_method_metadata_load(metadata, subConfig);
 
             if (metadata->iM.uniqueName[0]) {
+                
             }
 
             fcitx_input_method_metadata_free(metadata);

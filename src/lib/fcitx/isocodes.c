@@ -37,7 +37,7 @@ static void IsoCodes3166HandlerStartElement(void *ctx,
 static void FcitxIsoCodes639EntryFree(FcitxIsoCodes639Entry* entry);
 static void FcitxIsoCodes3166EntryFree(FcitxIsoCodes3166Entry* entry);
 
-FcitxIsoCodes* FcitxXkbReadIsoCodes(const char* iso639, const char* iso3166)
+FcitxIsoCodes* fcitx_isocodes_new(const char* iso639, const char* iso3166)
 {
     xmlSAXHandler handle;
     memset(&handle, 0, sizeof(xmlSAXHandler));
@@ -133,7 +133,7 @@ FcitxIsoCodes639Entry* FcitxIsoCodesGetEntry(FcitxIsoCodes* isocodes, const char
     return entry;
 }
 
-void FcitxIsoCodesFree(FcitxIsoCodes* isocodes)
+void fcitx_isocodes_free(FcitxIsoCodes* isocodes)
 {
     FcitxIsoCodes639Entry* isocodes639 = isocodes->iso6392B;
     while (isocodes639) {
@@ -157,7 +157,7 @@ void FcitxIsoCodesFree(FcitxIsoCodes* isocodes)
     free(isocodes);
 }
 
-const char* FindBestLanguage(FcitxIsoCodes* isocodes, const char* hint, UT_array* languages)
+const char* fcitx_isocodes_find_best(FcitxIsoCodes* isocodes, const char* hint, UT_array* languages)
 {
     const char* bestLang = NULL;
 

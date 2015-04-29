@@ -66,9 +66,7 @@ typedef struct _FcitxXkbOptionInfo {
     char* description;
 } FcitxXkbOptionInfo;
 
-FcitxXkbRules* FcitxXkbReadRules(const char* file);
-void FcitxXkbRulesFree(FcitxXkbRules* rules);
-char* FcitxXkbRulesToReadableString(FcitxXkbRules* rules);
-bool StringEndsWith(const char* str, const char* suffix);
+FcitxXkbRules* fcitx_xkb_rules_new(const char* file);
+void fcitx_xkb_rules_free(FcitxXkbRules* rules);
 
 #endif
